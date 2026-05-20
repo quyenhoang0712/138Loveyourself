@@ -3,5 +3,6 @@ export const quotes = [
   '"Your story is not over yet.\nKeep going."',
   '"Breathe.\nYou are not your thoughts."',
   '"Your feelings are valid.\nEven the quiet ones."',
-  '"Healing is not linear.\nBe gentle with yourself."',
+  '"con me may.\nthang ngu."',
+  
 ]

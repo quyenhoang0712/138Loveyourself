@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { selfHelpBooks } from './books'
 import { quotes } from './quotes'
 import './App.css'
 
 const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp4'
-const defaultQuote = quotes[0]
+const letterCount = 4
+const lastQuoteStorageKey = 'lastOpenedQuote'
 const timerModes = {
   pomodoro: {
     label: 'Pomodoro',
@@ -30,13 +32,40 @@ function formatTime(totalSeconds) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-function getRandomQuote(currentQuote) {
-  if (quotes.length < 2) {
-    return quotes[0]
+function cleanQuote(quoteText) {
+  return quoteText.replaceAll('"', '').replaceAll('\n', ' ').trim()
+}
+
+function getRandomQuote() {
+  const availableQuotes = quotes.map(cleanQuote).filter(Boolean)
+  if (availableQuotes.length === 0) return ''
+
+  let lastQuote = ''
+
+  try {
+    lastQuote = sessionStorage.getItem(lastQuoteStorageKey) || ''
+  } catch {
+    lastQuote = ''
   }
 
-  const availableQuotes = quotes.filter((item) => item !== currentQuote)
-  return availableQuotes[Math.floor(Math.random() * availableQuotes.length)]
+  const nextQuoteOptions =
+    availableQuotes.length > 1 ? availableQuotes.filter((quoteText) => quoteText !== lastQuote) : availableQuotes
+  const nextQuote = nextQuoteOptions[Math.floor(Math.random() * nextQuoteOptions.length)]
+
+  try {
+    sessionStorage.setItem(lastQuoteStorageKey, nextQuote)
+  } catch {
+    // Ignore storage errors so the quote still works in restricted browser modes.
+  }
+
+  return nextQuote
+}
+
+function getQuoteLetters() {
+  return Array.from({ length: letterCount }, (_, index) => ({
+    id: `letter-${index + 1}`,
+    label: `Thư ${index + 1}`,
+  }))
 }
 
 function HeartIcon({ size = 34 }) {
@@ -50,14 +79,6 @@ function HeartIcon({ size = 34 }) {
       fill="currentColor"
     >
       <path d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z" />
-    </svg>
-  )
-}
-
-function PlayIcon() {
-  return (
-    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5.14v13.72c0 .79.87 1.27 1.54.84l10.72-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z" />
     </svg>
   )
 }
@@ -76,18 +97,11 @@ function ShareIcon() {
   )
 }
 
-function PlusIcon() {
-  return (
-    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 4a1.25 1.25 0 0 1 1.25 1.25v5.5h5.5a1.25 1.25 0 1 1 0 2.5h-5.5v5.5a1.25 1.25 0 1 1-2.5 0v-5.5h-5.5a1.25 1.25 0 1 1 0-2.5h5.5v-5.5A1.25 1.25 0 0 1 12 4Z" />
-    </svg>
-  )
-}
-
 function App() {
-  const [quote, setQuote] = useState(defaultQuote)
-  const [quoteMotion, setQuoteMotion] = useState('idle')
-  const [isQuoteVisible, setIsQuoteVisible] = useState(false)
+  const [quoteLetters] = useState(getQuoteLetters)
+  const [randomQuote] = useState(getRandomQuote)
+  const [quote, setQuote] = useState('')
+  const [openedLetterId, setOpenedLetterId] = useState(null)
   const [savedQuotes, setSavedQuotes] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('savedQuotes') || '[]')
@@ -100,11 +114,13 @@ function App() {
   const [secondsLeft, setSecondsLeft] = useState(timerModes.pomodoro.minutes * 60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [focusRound, setFocusRound] = useState(1)
-  const [taskInput, setTaskInput] = useState('')
-  const [tasks, setTasks] = useState([])
+  const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
+  const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const toastTimeoutRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
   const activeTimerMode = timerModes[timerMode]
+  const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
+  const activeBook = selfHelpBooks.find((book) => book.id === activeBookId) || selfHelpBooks[0]
 
   useEffect(() => {
     if (!isTimerRunning) return undefined
@@ -131,7 +147,6 @@ function App() {
 
   useEffect(() => {
     const animatedElements = document.querySelectorAll('.scroll-pop')
-    const quoteInput = document.querySelector('.quote-input')
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -147,41 +162,14 @@ function App() {
 
     animatedElements.forEach((element) => observer.observe(element))
 
-    const quoteObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsQuoteVisible(true)
-          quoteObserver.disconnect()
-        }
-      },
-      { threshold: 0.2, rootMargin: '0px 0px -8% 0px' },
-    )
-
-    if (quoteInput) {
-      quoteObserver.observe(quoteInput)
-    }
-
     return () => {
       observer.disconnect()
-      quoteObserver.disconnect()
     }
   }, [])
 
-  const handleNewQuote = () => {
-    if (quoteMotion !== 'idle') return
-
-    setQuoteMotion('leaving')
-
-    window.setTimeout(() => {
-      setQuote(getRandomQuote(quote))
-      setQuoteMotion('entering')
-
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          setQuoteMotion('idle')
-        })
-      })
-    }, 1500)
+  const handleOpenLetter = (letter) => {
+    setOpenedLetterId(letter.id)
+    setQuote(randomQuote)
   }
 
   const showToast = (message) => {
@@ -193,16 +181,20 @@ function App() {
   }
 
   const handleToggleSaveQuote = () => {
+    if (!quote) return
+
     const nextSavedQuotes = isQuoteSaved
       ? savedQuotes.filter((savedQuote) => savedQuote !== quote)
       : [...savedQuotes, quote]
 
     setSavedQuotes(nextSavedQuotes)
     localStorage.setItem('savedQuotes', JSON.stringify(nextSavedQuotes))
-    showToast(isQuoteSaved ? 'Đã bỏ lưu câu này' : 'Đã lưu câu này')
+    showToast(isQuoteSaved ? 'Đã bỏ khỏi mục yêu thích' : 'Đã lưu lại cho bạn')
   }
 
   const handleShareQuote = async () => {
+    if (!quote) return
+
     const shareData = {
       title: '138.loveyourself',
       text: quote,
@@ -212,12 +204,12 @@ function App() {
     try {
       if (navigator.share) {
         await navigator.share(shareData)
-        showToast('Đã mở chia sẻ')
+        showToast('Bạn có thể chia sẻ câu này rồi')
         return
       }
 
       await navigator.clipboard.writeText(`${quote}\n\n${shareData.url}`)
-      showToast('Đã sao chép quote')
+      showToast('Đã sao chép câu quote')
     } catch (error) {
       if (error?.name !== 'AbortError') {
         showToast('Chưa thể chia sẻ lúc này')
@@ -236,27 +228,9 @@ function App() {
     setSecondsLeft(activeTimerMode.minutes * 60)
   }
 
-  const handleAddTask = (event) => {
-    event.preventDefault()
-
-    const trimmedTask = taskInput.trim()
-    if (!trimmedTask) return
-
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      {
-        id: crypto.randomUUID(),
-        title: trimmedTask,
-        done: false,
-      },
-    ])
-    setTaskInput('')
-  }
-
-  const handleToggleTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
-    )
+  const handleSelectBook = (bookId) => {
+    setActiveBookId(bookId)
+    setBookAnimationKey((currentKey) => currentKey + 1)
   }
 
   return (
@@ -281,37 +255,53 @@ function App() {
       </section>
 
       <section className="quote-section" id="quote">
-        <label className="quote-label" htmlFor="quote-input">
-          Nhập câu của bạn
-        </label>
-        <textarea
-          id="quote-input"
-          className={`quote-input quote-reveal ${isQuoteVisible ? 'is-visible' : ''} ${quoteMotion !== 'idle' ? `is-${quoteMotion}` : ''}`}
-          value={quote}
-          onChange={(event) => setQuote(event.target.value)}
-          spellCheck="false"
-          rows="3"
-          aria-label="Nhập câu quote của bạn"
-        />
+        <div className={`quote-envelope-content ${openedLetter ? 'is-open' : ''}`}>
+          <div className="quote-section-heading">
+            <p>Open a letter</p>
+            <h2>Chọn một phong thư cho hôm nay.</h2>
+          </div>
 
-        <div className="quote-actions scroll-pop" aria-label="Quote actions">
-          <button className="primary-action" type="button" onClick={handleNewQuote}>
-            <PlayIcon />
-            <span>Câu Mới</span>
-          </button>
-          <button
-            className={`circle-action ${isQuoteSaved ? 'is-active' : ''}`}
-            type="button"
-            aria-label={isQuoteSaved ? 'Bỏ lưu quote' : 'Lưu quote'}
-            aria-pressed={isQuoteSaved}
-            onClick={handleToggleSaveQuote}
-          >
-            <HeartIcon size={26} />
-          </button>
-          <button className="circle-action" type="button" aria-label="Chia sẻ quote" onClick={handleShareQuote}>
-            <ShareIcon />
-          </button>
+          <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} aria-label="Chọn phong thư quote">
+            {(openedLetter ? [openedLetter] : quoteLetters).map((letter) => (
+              <button
+                className={`letter-card ${openedLetterId === letter.id ? 'is-open' : ''}`}
+                type="button"
+                key={letter.id}
+                onClick={() => handleOpenLetter(letter)}
+                aria-pressed={openedLetterId === letter.id}
+              >
+                <span className="letter-paper">
+                  <span className="letter-label">{letter.label}</span>
+                  <span className="letter-quote">{quote}</span>
+                </span>
+                <span className="envelope-back" />
+                <span className="envelope-flap" />
+                <span className="envelope-left" />
+                <span className="envelope-right" />
+                <span className="envelope-front" />
+              </button>
+            ))}
+          </div>
         </div>
+
+        {quote && (
+          <div className="quote-actions scroll-pop is-visible" aria-label="Quote actions">
+            <button
+              className={`quote-action-button ${isQuoteSaved ? 'is-active' : ''}`}
+              type="button"
+              aria-label={isQuoteSaved ? 'Bỏ lưu quote' : 'Lưu quote'}
+              aria-pressed={isQuoteSaved}
+              onClick={handleToggleSaveQuote}
+            >
+              <HeartIcon size={26} />
+              <span>{isQuoteSaved ? 'Đã lưu' : 'Lưu lại'}</span>
+            </button>
+            <button className="quote-action-button" type="button" aria-label="Chia sẻ quote" onClick={handleShareQuote}>
+              <ShareIcon />
+              <span>Chia sẻ</span>
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="pomodoro-section" id="focus">
@@ -353,41 +343,53 @@ function App() {
             <span>#{focusRound}</span>
             <p>{activeTimerMode.message}</p>
           </div>
+        </div>
+      </section>
 
-          <div className="tasks-panel">
-            <div className="tasks-header">
-              <h3>Tasks</h3>
-              <span>{tasks.filter((task) => task.done).length}/{tasks.length}</span>
+      <section className="book-library-section" id="library">
+        <div className="book-library-shell scroll-pop">
+          <div className="book-library-heading">
+            <p>Self-help library</p>
+            <h2>Một kệ sách nhỏ để quay về với mình.</h2>
+          </div>
+
+          <div className="featured-book" aria-live="polite">
+            <div className={`featured-book-cover ${activeBook.coverClass}`} key={`${activeBook.id}-${bookAnimationKey}`}>
+              <span>{activeBook.tag}</span>
+              <strong>{activeBook.title}</strong>
+              <em>{activeBook.author}</em>
             </div>
 
-            <form className="task-form" onSubmit={handleAddTask}>
-              <label className="task-label" htmlFor="task-input">
-                Thêm task
-              </label>
-              <input
-                id="task-input"
-                type="text"
-                value={taskInput}
-                onChange={(event) => setTaskInput(event.target.value)}
-                placeholder="Việc cần làm..."
-              />
-              <button type="submit" aria-label="Thêm task">
-                <PlusIcon />
-              </button>
-            </form>
+            <div className="featured-book-copy">
+              <p>{activeBook.tag}</p>
+              <h3>{activeBook.title}</h3>
+              <span>{activeBook.author}</span>
+              <p>{activeBook.note}</p>
+              <p>{activeBook.takeaway}</p>
+              {activeBook.pdfUrl ? (
+                <a className="book-pdf-link" href={activeBook.pdfUrl} target="_blank" rel="noreferrer">
+                  Đọc sách
+                </a>
+              ) : (
+                <button className="book-pdf-link is-disabled" type="button" disabled>
+                  Đọc sách
+                </button>
+              )}
+            </div>
+          </div>
 
-            {tasks.length > 0 && (
-              <ul className="task-list" aria-label="Danh sách task">
-                {tasks.map((task) => (
-                  <li key={task.id}>
-                    <label>
-                      <input type="checkbox" checked={task.done} onChange={() => handleToggleTask(task.id)} />
-                      <span>{task.title}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="book-shelf" aria-label="Chọn sách self-help">
+            {selfHelpBooks.map((book) => (
+              <button
+                className={`book-spine ${book.coverClass} ${activeBookId === book.id ? 'is-active' : ''}`}
+                type="button"
+                key={book.id}
+                onClick={() => handleSelectBook(book.id)}
+                aria-pressed={activeBookId === book.id}
+              >
+                <strong>{book.title}</strong>
+              </button>
+            ))}
           </div>
         </div>
       </section>
