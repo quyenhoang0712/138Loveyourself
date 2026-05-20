@@ -4,6 +4,31 @@ import './App.css'
 
 const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp4'
 const defaultQuote = quotes[0]
+const timerModes = {
+  pomodoro: {
+    label: 'Pomodoro',
+    minutes: 25,
+    message: 'Time to focus!',
+  },
+  short: {
+    label: 'Short Break',
+    minutes: 5,
+    message: 'Take a soft break.',
+  },
+  long: {
+    label: 'Long Break',
+    minutes: 15,
+    message: 'Rest a little deeper.',
+  },
+}
+const timerModeKeys = Object.keys(timerModes)
+
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
 
 function getRandomQuote(currentQuote) {
   if (quotes.length < 2) {
@@ -51,6 +76,14 @@ function ShareIcon() {
   )
 }
 
+function PlusIcon() {
+  return (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 4a1.25 1.25 0 0 1 1.25 1.25v5.5h5.5a1.25 1.25 0 1 1 0 2.5h-5.5v5.5a1.25 1.25 0 1 1-2.5 0v-5.5h-5.5a1.25 1.25 0 1 1 0-2.5h5.5v-5.5A1.25 1.25 0 0 1 12 4Z" />
+    </svg>
+  )
+}
+
 function App() {
   const [quote, setQuote] = useState(defaultQuote)
   const [quoteMotion, setQuoteMotion] = useState('idle')
@@ -63,8 +96,38 @@ function App() {
     }
   })
   const [toastMessage, setToastMessage] = useState('')
+  const [timerMode, setTimerMode] = useState('pomodoro')
+  const [secondsLeft, setSecondsLeft] = useState(timerModes.pomodoro.minutes * 60)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [focusRound, setFocusRound] = useState(1)
+  const [taskInput, setTaskInput] = useState('')
+  const [tasks, setTasks] = useState([])
   const toastTimeoutRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
+  const activeTimerMode = timerModes[timerMode]
+
+  useEffect(() => {
+    if (!isTimerRunning) return undefined
+
+    const timerId = window.setInterval(() => {
+      setSecondsLeft((currentSeconds) => {
+        if (currentSeconds <= 1) {
+          window.clearInterval(timerId)
+          setIsTimerRunning(false)
+
+          if (timerMode === 'pomodoro') {
+            setFocusRound((currentRound) => currentRound + 1)
+          }
+
+          return 0
+        }
+
+        return currentSeconds - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(timerId)
+  }, [isTimerRunning, timerMode])
 
   useEffect(() => {
     const animatedElements = document.querySelectorAll('.scroll-pop')
@@ -162,8 +225,42 @@ function App() {
     }
   }
 
+  const handleTimerModeChange = (mode) => {
+    setTimerMode(mode)
+    setIsTimerRunning(false)
+    setSecondsLeft(timerModes[mode].minutes * 60)
+  }
+
+  const handleResetTimer = () => {
+    setIsTimerRunning(false)
+    setSecondsLeft(activeTimerMode.minutes * 60)
+  }
+
+  const handleAddTask = (event) => {
+    event.preventDefault()
+
+    const trimmedTask = taskInput.trim()
+    if (!trimmedTask) return
+
+    setTasks((currentTasks) => [
+      ...currentTasks,
+      {
+        id: crypto.randomUUID(),
+        title: trimmedTask,
+        done: false,
+      },
+    ])
+    setTaskInput('')
+  }
+
+  const handleToggleTask = (taskId) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+    )
+  }
+
   return (
-    <main className="landing-page">
+    <main className={`landing-page timer-theme-${timerMode}`}>
       <header className="site-header">
         <a className="brand" href="/" aria-label="138.loveyourself">
           <HeartIcon />
@@ -214,6 +311,84 @@ function App() {
           <button className="circle-action" type="button" aria-label="Chia sẻ quote" onClick={handleShareQuote}>
             <ShareIcon />
           </button>
+        </div>
+      </section>
+
+      <section className="pomodoro-section" id="focus">
+        <div className="pomodoro-shell scroll-pop">
+          <div className="pomodoro-heading">
+            <p>Focus room</p>
+            <h2>Pomodoro cho một ngày dịu hơn.</h2>
+          </div>
+
+          <div className="pomodoro-card">
+            <div className="timer-tabs" aria-label="Chọn chế độ timer">
+              {timerModeKeys.map((mode) => (
+                <button
+                  className={timerMode === mode ? 'is-active' : ''}
+                  type="button"
+                  key={mode}
+                  onClick={() => handleTimerModeChange(mode)}
+                >
+                  {timerModes[mode].label}
+                </button>
+              ))}
+            </div>
+
+            <div className="timer-display" aria-live="polite">
+              {formatTime(secondsLeft)}
+            </div>
+
+            <div className="timer-actions">
+              <button className="timer-start" type="button" onClick={() => setIsTimerRunning((current) => !current)}>
+                {isTimerRunning ? 'PAUSE' : 'START'}
+              </button>
+              <button className="timer-reset" type="button" onClick={handleResetTimer}>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div className="focus-status">
+            <span>#{focusRound}</span>
+            <p>{activeTimerMode.message}</p>
+          </div>
+
+          <div className="tasks-panel">
+            <div className="tasks-header">
+              <h3>Tasks</h3>
+              <span>{tasks.filter((task) => task.done).length}/{tasks.length}</span>
+            </div>
+
+            <form className="task-form" onSubmit={handleAddTask}>
+              <label className="task-label" htmlFor="task-input">
+                Thêm task
+              </label>
+              <input
+                id="task-input"
+                type="text"
+                value={taskInput}
+                onChange={(event) => setTaskInput(event.target.value)}
+                placeholder="Việc cần làm..."
+              />
+              <button type="submit" aria-label="Thêm task">
+                <PlusIcon />
+              </button>
+            </form>
+
+            {tasks.length > 0 && (
+              <ul className="task-list" aria-label="Danh sách task">
+                {tasks.map((task) => (
+                  <li key={task.id}>
+                    <label>
+                      <input type="checkbox" checked={task.done} onChange={() => handleToggleTask(task.id)} />
+                      <span>{task.title}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
 
