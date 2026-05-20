@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { selfHelpBooks } from './books'
 import { quotes } from './quotes'
 import './App.css'
@@ -6,6 +6,7 @@ import './App.css'
 const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp4'
 const letterCount = 4
 const lastQuoteStorageKey = 'lastOpenedQuote'
+const customShareFramesStorageKey = 'customShareFrames'
 const timerModes = {
   pomodoro: {
     label: 'Pomodoro',
@@ -24,6 +25,153 @@ const timerModes = {
   },
 }
 const timerModeKeys = Object.keys(timerModes)
+const shareFrames = [
+  {
+    id: 'mint',
+    label: 'Mint',
+    background: '#b7e1cc',
+    card: '#8fc3d4',
+    accent: '#fffef0',
+    text: '#6f9ed8',
+  },
+  {
+    id: 'blue',
+    label: 'Blue',
+    background: '#b8d8ef',
+    card: '#6f9ed8',
+    accent: '#fffadc',
+    text: '#5d92d4',
+  },
+  {
+    id: 'cream',
+    label: 'Cream',
+    background: '#fffadc',
+    card: '#9ed0df',
+    accent: '#fffef0',
+    text: '#6f9ed8',
+  },
+  {
+    id: 'dark',
+    label: 'Dark',
+    background: '#1f1f1f',
+    card: '#32463a',
+    accent: '#f8fff5',
+    text: '#314236',
+  },
+  {
+    id: 'rose',
+    label: 'Rose',
+    background: '#f4b1b1',
+    card: '#df8fa7',
+    accent: '#fff7ec',
+    text: '#d47496',
+  },
+  {
+    id: 'lavender',
+    label: 'Lavender',
+    background: '#c3c8ef',
+    card: '#7f8cc7',
+    accent: '#fffadc',
+    text: '#6f7ec6',
+  },
+  {
+    id: 'sage',
+    label: 'Sage',
+    background: '#cfd7a8',
+    card: '#7d9478',
+    accent: '#fffef0',
+    text: '#6e8a75',
+  },
+  {
+    id: 'sky',
+    label: 'Sky',
+    background: '#d8eff4',
+    card: '#8fc3d4',
+    accent: '#ffffff',
+    text: '#6f9ed8',
+  },
+]
+const shareTextColors = ['#6f9ed8', '#d47496', '#6f7ec6', '#6e8a75', '#314236', '#fffef0', '#ffffff', '#111111']
+
+function drawRoundRect(context, x, y, width, height, radius) {
+  context.beginPath()
+  context.moveTo(x + radius, y)
+  context.lineTo(x + width - radius, y)
+  context.quadraticCurveTo(x + width, y, x + width, y + radius)
+  context.lineTo(x + width, y + height - radius)
+  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+  context.lineTo(x + radius, y + height)
+  context.quadraticCurveTo(x, y + height, x, y + height - radius)
+  context.lineTo(x, y + radius)
+  context.quadraticCurveTo(x, y, x + radius, y)
+  context.closePath()
+}
+
+function wrapCanvasText(context, text, maxWidth) {
+  const words = text.split(' ')
+  const lines = []
+  let currentLine = ''
+
+  words.forEach((word) => {
+    const nextLine = currentLine ? `${currentLine} ${word}` : word
+    if (context.measureText(nextLine).width <= maxWidth || !currentLine) {
+      currentLine = nextLine
+      return
+    }
+
+    lines.push(currentLine)
+    currentLine = word
+  })
+
+  if (currentLine) lines.push(currentLine)
+  return lines
+}
+
+function getShareQuoteFontSize(text) {
+  if (text.length > 190) return 'clamp(0.7rem, 1.7vw, 0.92rem)'
+  if (text.length > 140) return 'clamp(0.78rem, 1.9vw, 1.08rem)'
+  if (text.length > 95) return 'clamp(0.88rem, 2.25vw, 1.28rem)'
+  if (text.length > 58) return 'clamp(0.98rem, 2.65vw, 1.5rem)'
+
+  return 'clamp(1.08rem, 3.1vw, 1.75rem)'
+}
+
+function fitCanvasQuote(context, text, maxWidth, maxHeight, initialFontSize) {
+  let fontSize = initialFontSize
+  let lines = []
+  let lineHeight = 0
+
+  while (fontSize >= 26) {
+    context.font = `800 ${fontSize}px Sora, Inter, Arial, sans-serif`
+    lines = wrapCanvasText(context, text, maxWidth)
+    lineHeight = fontSize * 1.18
+
+    if (lines.length * lineHeight <= maxHeight) break
+    fontSize -= 4
+  }
+
+  return { lines, lineHeight, fontSize }
+}
+
+function loadCanvasImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = reject
+    image.src = src
+  })
+}
+
+function drawCoverImage(context, image, width, height) {
+  const imageRatio = image.width / image.height
+  const canvasRatio = width / height
+  const drawHeight = imageRatio > canvasRatio ? height : width / imageRatio
+  const drawWidth = imageRatio > canvasRatio ? height * imageRatio : width
+  const drawX = (width - drawWidth) / 2
+  const drawY = (height - drawHeight) / 2
+
+  context.drawImage(image, drawX, drawY, drawWidth, drawHeight)
+}
 
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -97,6 +245,65 @@ function ShareIcon() {
   )
 }
 
+function InstagramIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+      <rect
+        x="4"
+        y="4"
+        width="16"
+        height="16"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+      />
+      <circle cx="12" cy="12" r="3.4" stroke="currentColor" strokeWidth="1.9" />
+      <circle cx="16.9" cy="7.1" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M9 9h10v10H9V9ZM5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function DownloadIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 3v11m0 0 4-4m-4 4-4-4M5 19h14"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path
+        d="m6 6 12 12M18 6 6 18"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 function App() {
   const [quoteLetters] = useState(getQuoteLetters)
   const [randomQuote] = useState(getRandomQuote)
@@ -116,11 +323,86 @@ function App() {
   const [focusRound, setFocusRound] = useState(1)
   const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
   const [bookAnimationKey, setBookAnimationKey] = useState(0)
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
+  const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
+  const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
+  const [customShareFrames, setCustomShareFrames] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(customShareFramesStorageKey) || '[]')
+    } catch {
+      return []
+    }
+  })
   const toastTimeoutRef = useRef(null)
+  const customFrameInputRef = useRef(null)
+  const audioContextRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
   const activeTimerMode = timerModes[timerMode]
   const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
   const activeBook = selfHelpBooks.find((book) => book.id === activeBookId) || selfHelpBooks[0]
+  const allShareFrames = [...shareFrames, ...customShareFrames]
+  const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
+  const shareQuoteFontSize = getShareQuoteFontSize(quote)
+
+  const getAudioContext = useCallback(() => {
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext
+      if (!AudioContextClass) return null
+      audioContextRef.current = new AudioContextClass()
+    }
+
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume()
+    }
+
+    return audioContextRef.current
+  }, [])
+
+  const playTone = useCallback(
+    ({ frequency = 520, duration = 0.08, gain = 0.08, type = 'sine', delay = 0 }) => {
+      const audioContext = getAudioContext()
+      if (!audioContext) return
+
+      const startTime = audioContext.currentTime + delay
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.type = type
+      oscillator.frequency.setValueAtTime(frequency, startTime)
+      gainNode.gain.setValueAtTime(0.0001, startTime)
+      gainNode.gain.exponentialRampToValueAtTime(gain, startTime + 0.01)
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration)
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      oscillator.start(startTime)
+      oscillator.stop(startTime + duration + 0.02)
+    },
+    [getAudioContext],
+  )
+
+  const playButtonClick = useCallback(() => {
+    playTone({ frequency: 740, duration: 0.045, gain: 0.045, type: 'triangle' })
+  }, [playTone])
+
+  const playTimerTick = useCallback(() => {
+    playTone({ frequency: 880, duration: 0.035, gain: 0.035, type: 'square' })
+  }, [playTone])
+
+  const playTimerDone = useCallback(() => {
+    playTone({ frequency: 660, duration: 0.11, gain: 0.06, type: 'sine' })
+    playTone({ frequency: 880, duration: 0.13, gain: 0.06, type: 'sine', delay: 0.12 })
+    playTone({ frequency: 1108, duration: 0.18, gain: 0.065, type: 'sine', delay: 0.26 })
+  }, [playTone])
+
+  const handleInterfaceClick = useCallback(
+    (event) => {
+      const clickedButton = event.target.closest('button')
+      if (!clickedButton || clickedButton.disabled) return
+      playButtonClick()
+    },
+    [playButtonClick],
+  )
 
   useEffect(() => {
     if (!isTimerRunning) return undefined
@@ -128,6 +410,7 @@ function App() {
     const timerId = window.setInterval(() => {
       setSecondsLeft((currentSeconds) => {
         if (currentSeconds <= 1) {
+          playTimerDone()
           window.clearInterval(timerId)
           setIsTimerRunning(false)
 
@@ -138,12 +421,13 @@ function App() {
           return 0
         }
 
+        playTimerTick()
         return currentSeconds - 1
       })
     }, 1000)
 
     return () => window.clearInterval(timerId)
-  }, [isTimerRunning, timerMode])
+  }, [isTimerRunning, timerMode, playTimerDone, playTimerTick])
 
   useEffect(() => {
     const animatedElements = document.querySelectorAll('.scroll-pop')
@@ -166,6 +450,17 @@ function App() {
       observer.disconnect()
     }
   }, [])
+
+  useEffect(() => {
+    if (!isShareSheetOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isShareSheetOpen])
 
   const handleOpenLetter = (letter) => {
     setOpenedLetterId(letter.id)
@@ -192,7 +487,71 @@ function App() {
     showToast(isQuoteSaved ? 'Đã bỏ khỏi mục yêu thích' : 'Đã lưu lại cho bạn')
   }
 
-  const handleShareQuote = async () => {
+  const handleShareQuote = () => {
+    if (!quote) return
+    setIsShareSheetOpen(true)
+  }
+
+  const handleSelectShareFrame = (frame) => {
+    setActiveShareFrameId(frame.id)
+    setShareTextColor(frame.text)
+  }
+
+  const createShareImageBlob = async () => {
+    if (document.fonts?.load) {
+      await document.fonts.load('800 50px Sora')
+    }
+
+    const canvas = document.createElement('canvas')
+    const scale = 1
+    const width = 1080
+    const height = 1920
+    canvas.width = width * scale
+    canvas.height = height * scale
+
+    const context = canvas.getContext('2d')
+    context.scale(scale, scale)
+
+    context.fillStyle = activeShareFrame.background
+    drawRoundRect(context, 0, 0, width, height, 54)
+    context.fill()
+
+    if (activeShareFrame.imageUrl) {
+      const frameImage = await loadCanvasImage(activeShareFrame.imageUrl)
+      context.fillStyle = activeShareFrame.background
+      context.fillRect(0, 0, width, height)
+      drawCoverImage(context, frameImage, width, height)
+    }
+
+    if (!activeShareFrame.imageUrl) {
+      context.fillStyle = activeShareFrame.accent
+      drawRoundRect(context, 124, 430, 832, 1060, 14)
+      context.fill()
+    }
+
+    context.fillStyle = shareTextColor
+    context.textAlign = 'center'
+    const quoteMaxWidth = activeShareFrame.imageUrl ? 780 : 720
+    const quoteMaxHeight = activeShareFrame.imageUrl ? 620 : 720
+    const { lines: quoteLines, lineHeight } = fitCanvasQuote(context, quote, quoteMaxWidth, quoteMaxHeight, 50)
+    const quoteStartY = 960 - ((quoteLines.length - 1) * lineHeight) / 2
+    quoteLines.forEach((line, index) => {
+      context.fillText(line, width / 2, quoteStartY + index * lineHeight)
+    })
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob)
+          return
+        }
+
+        reject(new Error('Canvas export failed'))
+      }, 'image/png')
+    })
+  }
+
+  const handleNativeShareQuote = async () => {
     if (!quote) return
 
     const shareData = {
@@ -202,8 +561,22 @@ function App() {
     }
 
     try {
+      const imageBlob = await createShareImageBlob()
+      const imageFile = new File([imageBlob], '138-love-yourself-quote.png', { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [imageFile] })) {
+        await navigator.share({
+          ...shareData,
+          files: [imageFile],
+        })
+        setIsShareSheetOpen(false)
+        showToast('Bạn có thể chia sẻ khung này rồi')
+        return
+      }
+
       if (navigator.share) {
         await navigator.share(shareData)
+        setIsShareSheetOpen(false)
         showToast('Bạn có thể chia sẻ câu này rồi')
         return
       }
@@ -215,6 +588,105 @@ function App() {
         showToast('Chưa thể chia sẻ lúc này')
       }
     }
+  }
+
+  const handleCopyShareQuote = async () => {
+    if (!quote) return
+
+    try {
+      await navigator.clipboard.writeText(`${quote}\n\n${window.location.href.split('#')[0]}`)
+      showToast('Đã sao chép câu quote')
+    } catch {
+      showToast('Chưa thể sao chép lúc này')
+    }
+  }
+
+  const handleDownloadShareImage = async () => {
+    if (!quote) return
+
+    try {
+      const imageBlob = await createShareImageBlob()
+      const imageUrl = URL.createObjectURL(imageBlob)
+      const link = document.createElement('a')
+      link.href = imageUrl
+      link.download = '138-love-yourself-quote.png'
+      link.click()
+      URL.revokeObjectURL(imageUrl)
+      showToast('Đã tạo ảnh quote')
+    } catch {
+      showToast('Chưa thể tạo ảnh lúc này')
+    }
+  }
+
+  const handleShareInstagramStory = async () => {
+    if (!quote) return
+
+    try {
+      const imageBlob = await createShareImageBlob()
+      const imageFile = new File([imageBlob], '138-love-yourself-story.png', { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [imageFile] })) {
+        await navigator.share({
+          files: [imageFile],
+          title: '138.loveyourself',
+        })
+        showToast('Chọn Instagram hoặc Tin trong bảng chia sẻ')
+        return
+      }
+
+      const imageUrl = URL.createObjectURL(imageBlob)
+      const link = document.createElement('a')
+      link.href = imageUrl
+      link.download = '138-love-yourself-story.png'
+      link.click()
+      URL.revokeObjectURL(imageUrl)
+      showToast('Thiết bị này chưa hỗ trợ share ảnh, mình đã tải ảnh xuống')
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        showToast('Chưa thể mở chia sẻ Instagram lúc này')
+      }
+    }
+  }
+
+  const handleAddCustomFrame = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Vui lòng chọn file ảnh')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const nextFrame = {
+        id: `custom-${Date.now()}`,
+        label: file.name.replace(/\.[^.]+$/, '') || 'Custom',
+        background: '#fffadc',
+        card: '#8fc3d4',
+        accent: '#fffef0',
+        text: '#6f9ed8',
+        imageUrl: reader.result,
+      }
+      const nextFrames = [...customShareFrames, nextFrame]
+
+      setCustomShareFrames(nextFrames)
+      setActiveShareFrameId(nextFrame.id)
+      setShareTextColor(nextFrame.text)
+
+      try {
+        localStorage.setItem(customShareFramesStorageKey, JSON.stringify(nextFrames))
+      } catch {
+        showToast('Ảnh hơi nặng, chưa lưu được khung')
+        return
+      }
+
+      showToast('Đã thêm khung custom')
+    }
+    reader.onerror = () => showToast('Chưa đọc được ảnh này')
+    reader.readAsDataURL(file)
   }
 
   const handleTimerModeChange = (mode) => {
@@ -234,7 +706,7 @@ function App() {
   }
 
   return (
-    <main className={`landing-page timer-theme-${timerMode}`}>
+    <main className={`landing-page timer-theme-${timerMode}`} onClickCapture={handleInterfaceClick}>
       <header className="site-header">
         <a className="brand" href="/" aria-label="138.loveyourself">
           <HeartIcon />
@@ -385,6 +857,7 @@ function App() {
                 type="button"
                 key={book.id}
                 onClick={() => handleSelectBook(book.id)}
+                aria-label={`Chọn sách ${book.title}`}
                 aria-pressed={activeBookId === book.id}
               >
                 <strong>{book.title}</strong>
@@ -429,20 +902,180 @@ function App() {
       <footer className="site-footer">
         <div className="footer-main">
           <div className="footer-column footer-company scroll-pop">
-          </div>
-
-          <div className="footer-column scroll-pop">
-          </div>
-
-          <div className="footer-column scroll-pop">
+            <h2>138knitwear</h2>
+            <p>
+              HỘ KINH DOANH 138KNITWEAR
+              <br />
+              GPKD số 070200003950 cấp ngày 09/10/2025 tại Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh
+            </p>
+            <p>Trụ sở: 84 Nguyễn Thiện Thuật, Phường Bàn Cờ, TP Hồ Chí Minh</p>
+            <a href="tel:0867789138">0867789138</a>
+            <a href="mailto:with138knitwear@gmail.com">with138knitwear@gmail.com</a>
+            <p>The Love Exchange Store: 83 Thạch Thị Thanh, phường Tân Định, quận 1, tp.HCM</p>
+            <img className="commerce-badge" src="/image.png" alt="Đã thông báo Bộ Công Thương" />
           </div>
 
           <div className="footer-column footer-contact scroll-pop">
+            <h3>LIÊN HỆ</h3>
+            <form className="footer-email-form" onSubmit={(event) => event.preventDefault()}>
+              <label htmlFor="footer-email">Email</label>
+              <div>
+                <input id="footer-email" type="email" aria-label="Email liên hệ" />
+                <button type="submit" aria-label="Gửi email">
+                  <ShareIcon />
+                </button>
+              </div>
+            </form>
+            <div className="footer-socials" aria-label="Mạng xã hội">
+              <a className="social-zalo" href="https://zalo.me/0867789138" target="_blank" rel="noreferrer">
+                Zalo
+              </a>
+              <a className="social-tiktok" href="https://www.tiktok.com/" target="_blank" rel="noreferrer">
+                TikTok
+              </a>
+              <a className="social-instagram" href="https://www.instagram.com/" target="_blank" rel="noreferrer">
+                IG
+              </a>
+              <a className="social-facebook" href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+                f
+              </a>
+            </div>
           </div>
         </div>
 
-        <div className="footer-bottom"></div>
+        <div className="footer-bottom">138 love yourself</div>
       </footer>
+
+      <div className={`share-sheet-backdrop ${isShareSheetOpen ? 'is-open' : ''}`} aria-hidden={!isShareSheetOpen}>
+        <button
+          className="share-sheet-dismiss"
+          type="button"
+          aria-label="Đóng khung chia sẻ"
+          onClick={() => setIsShareSheetOpen(false)}
+        />
+        <section
+          className="share-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Chọn khung chia sẻ"
+          style={{
+            '--share-bg': activeShareFrame.background,
+            '--share-card': activeShareFrame.card,
+            '--share-accent': activeShareFrame.accent,
+            '--share-text': shareTextColor,
+          }}
+        >
+          <button
+            className="share-sheet-close"
+            type="button"
+            aria-label="Đóng khung chia sẻ"
+            onClick={() => setIsShareSheetOpen(false)}
+          >
+            <CloseIcon />
+          </button>
+
+          <div
+            className={`share-preview-letter ${activeShareFrame.imageUrl ? 'has-custom-frame' : ''}`}
+            style={
+              activeShareFrame.imageUrl
+                ? {
+                    backgroundImage: `url(${activeShareFrame.imageUrl})`,
+                  }
+                : undefined
+            }
+          >
+            <div className="share-letter-paper">
+              <strong style={{ '--share-quote-size': shareQuoteFontSize }}>{quote}</strong>
+            </div>
+          </div>
+
+          <div className="share-frame-picker" aria-label="Chọn màu khung">
+            {allShareFrames.map((frame) => (
+              <button
+                className={activeShareFrameId === frame.id ? 'is-active' : ''}
+                type="button"
+                key={frame.id}
+                aria-label={`Chọn khung ${frame.label}`}
+                aria-pressed={activeShareFrameId === frame.id}
+                onClick={() => handleSelectShareFrame(frame)}
+                style={{
+                  '--frame-bg': frame.background,
+                  '--frame-card': frame.card,
+                }}
+              >
+                {frame.imageUrl && <img src={frame.imageUrl} alt="" />}
+              </button>
+            ))}
+            <button
+              className="share-frame-add"
+              type="button"
+              aria-label="Thêm ảnh khung"
+              onClick={() => customFrameInputRef.current?.click()}
+            >
+              +
+            </button>
+            <input
+              ref={customFrameInputRef}
+              className="share-frame-input"
+              type="file"
+              accept="image/*"
+              onChange={handleAddCustomFrame}
+            />
+          </div>
+
+          <div className="share-text-color-control" aria-label="Chọn màu chữ quote">
+            <span>Màu chữ</span>
+            <div className="share-text-color-options">
+              {shareTextColors.map((color) => (
+                <button
+                  className={shareTextColor.toLowerCase() === color ? 'is-active' : ''}
+                  type="button"
+                  key={color}
+                  aria-label={`Chọn màu chữ ${color}`}
+                  aria-pressed={shareTextColor.toLowerCase() === color}
+                  onClick={() => setShareTextColor(color)}
+                  style={{ '--text-color-option': color }}
+                />
+              ))}
+              <label className="share-text-color-custom">
+                <input
+                  type="color"
+                  value={shareTextColor}
+                  onChange={(event) => setShareTextColor(event.target.value)}
+                  aria-label="Tự chọn màu chữ"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="share-sheet-actions" aria-label="Chia sẻ quote">
+            <button type="button" onClick={handleCopyShareQuote}>
+              <span>
+                <CopyIcon />
+              </span>
+              <p>Sao chép</p>
+            </button>
+            <button type="button" onClick={handleNativeShareQuote}>
+              <span>
+                <ShareIcon />
+              </span>
+              <p>Chia sẻ</p>
+            </button>
+            <button type="button" onClick={handleShareInstagramStory}>
+              <span>
+                <InstagramIcon />
+              </span>
+              <p>Tin IG</p>
+            </button>
+            <button type="button" onClick={handleDownloadShareImage}>
+              <span>
+                <DownloadIcon />
+              </span>
+              <p>Tải ảnh</p>
+            </button>
+          </div>
+        </section>
+      </div>
 
       <div className={`toast-message ${toastMessage ? 'is-visible' : ''}`} role="status" aria-live="polite">
         {toastMessage}
