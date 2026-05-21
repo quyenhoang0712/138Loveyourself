@@ -550,8 +550,8 @@ input {
   width: 100%;
   justify-items: center;
   transition:
-    grid-template-columns 320ms ease,
-    max-width 320ms ease;
+    grid-template-columns 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 620ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .letter-grid.has-open-letter {
@@ -576,9 +576,9 @@ input {
   filter: drop-shadow(0 20px 24px rgba(85, 127, 176, 0.2));
   transform: translateY(0);
   transition:
-    transform 240ms ease,
-    max-width 360ms ease,
-    filter 240ms ease;
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 680ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 520ms ease;
 }
 
 .letter-card:hover,
@@ -629,8 +629,9 @@ input {
   box-shadow: 0 8px 18px rgba(85, 127, 176, 0.12);
   transform: translateY(18%);
   transition:
-    transform 420ms cubic-bezier(0.2, 0.9, 0.22, 1),
-    opacity 300ms ease;
+    transform 1080ms cubic-bezier(0.16, 1, 0.3, 1) 160ms,
+    opacity 520ms ease 120ms,
+    box-shadow 720ms ease;
 }
 
 .letter-label {
@@ -653,7 +654,7 @@ input {
   opacity: 0;
   overflow-wrap: anywhere;
   transition:
-    opacity 180ms ease 260ms;
+    opacity 520ms ease 620ms;
 }
 
 .letter-card.is-open .letter-paper {
@@ -680,8 +681,8 @@ input {
   clip-path: polygon(0 0, 50% 92%, 100% 0);
   transform-origin: top center;
   transition:
-    transform 420ms cubic-bezier(0.2, 0.9, 0.22, 1),
-    opacity 260ms ease;
+    transform 920ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 620ms ease 160ms;
 }
 
 .letter-card.is-open .envelope-flap {
@@ -1121,9 +1122,9 @@ input {
   min-height: 56%;
   padding: clamp(16px, 3.5vw, 32px);
   color: var(--share-text);
-  background: var(--share-accent);
+  background: transparent;
   border-radius: 8px;
-  box-shadow: 0 14px 32px rgba(69, 105, 135, 0.1);
+  box-shadow: none;
   text-align: center;
   transform: translateY(-50%);
 }

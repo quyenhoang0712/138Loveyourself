@@ -691,12 +691,6 @@ function App() {
       drawCoverImage(context, frameImage, width, height)
     }
 
-    if (!activeShareFrame.imageUrl) {
-      context.fillStyle = activeShareFrame.accent
-      drawRoundRect(context, 124, 430, 832, 1060, 14)
-      context.fill()
-    }
-
     context.fillStyle = shareTextColor
     context.textAlign = 'center'
     const quoteMaxWidth = activeShareFrame.imageUrl ? 780 : 720
