@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { selfHelpBooks } from './books'
+import { decisionMessages } from './decisionMessages'
 import { quotes } from './quotes'
 import './App.css'
 
@@ -25,6 +26,14 @@ const timerModes = {
   },
 }
 const timerModeKeys = Object.keys(timerModes)
+const ambientSoundOptions = [
+  { id: 'rain', label: 'Mưa', src: '/liecio-calming-rain-257596.mp3' },
+  { id: 'waves', label: 'Sóng', src: '/freesound_community-waves-at-the-wave-organ-19507.mp3' },
+  { id: 'fire', label: 'Lửa', src: '/soundreality-fire-crackling-sound-499636.mp3' },
+]
+const rainDropCount = 42
+const waveRippleCount = 12
+const fireSparkCount = 24
 const shareFrames = [
   {
     id: 'mint',
@@ -263,6 +272,124 @@ function InstagramIcon() {
   )
 }
 
+function AmbientIcon({ type }) {
+  if (type === 'rain') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 48 48" className="ambient-icon">
+        <path
+          d="M24 5C18 14 13 22 13 29.5 13 36.3 17.9 42 24 42s11-5.7 11-12.5C35 22 30 14 24 5Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M20 31.5c1 2.5 2.7 3.8 5.2 3.8"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="3.2"
+        />
+      </svg>
+    )
+  }
+
+  if (type === 'waves') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 48 48" className="ambient-icon">
+        <path
+          d="M5 19c4.7 0 4.7-4 9.4-4s4.7 4 9.4 4 4.8-4 9.5-4 4.8 4 9.7 4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="3.6"
+        />
+        <path
+          d="M5 29c4.7 0 4.7-4 9.4-4s4.7 4 9.4 4 4.8-4 9.5-4 4.8 4 9.7 4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="3.6"
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 48 48" className="ambient-icon">
+      <path
+        d="M25.8 4.5c1.4 8.2-5 10.3-5 16 0 2.2 1.2 3.9 3.2 4.9-.6-5.2 4.2-8.3 4.6-13 6.1 4.5 9.4 10.2 9.4 16.4C38 37 31.9 43 24 43S10 37 10 29.3c0-5.9 3.4-11.4 8.6-15.4-.2 4.4 2.7 7 5.1 7.8-1.7-6.1.3-11.7 2.1-17.2Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="3.4"
+      />
+    </svg>
+  )
+}
+
+function AmbientVisualEffect({ activeSound }) {
+  if (!activeSound) return null
+
+  return (
+    <div className={`ambient-visual ambient-visual-${activeSound}`} aria-hidden="true">
+      {activeSound === 'rain' && (
+        <div className="rain-field">
+          {Array.from({ length: rainDropCount }, (_, index) => (
+            <span
+              className="rain-drop"
+              key={`rain-${index}`}
+              style={{
+                '--drop-left': `${(index * 37) % 101}%`,
+                '--drop-delay': `${-((index * 0.19) % 2.6)}s`,
+                '--drop-duration': `${0.82 + (index % 7) * 0.08}s`,
+                '--drop-length': `${48 + (index % 5) * 12}px`,
+                '--drop-opacity': `${0.24 + (index % 6) * 0.06}`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeSound === 'waves' && (
+        <div className="wave-field">
+          {Array.from({ length: waveRippleCount }, (_, index) => (
+            <span
+              className="wave-ripple"
+              key={`wave-${index}`}
+              style={{
+                '--ripple-left': `${6 + ((index * 17) % 88)}%`,
+                '--ripple-bottom': `${18 + (index % 5) * 19}px`,
+                '--ripple-delay': `${-((index * 0.42) % 4.8)}s`,
+                '--ripple-duration': `${3.6 + (index % 4) * 0.55}s`,
+                '--ripple-width': `${96 + (index % 6) * 28}px`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeSound === 'fire' && (
+        <div className="fire-field">
+          <span className="fire-glow" />
+          {Array.from({ length: fireSparkCount }, (_, index) => (
+            <span
+              className="fire-spark"
+              key={`fire-${index}`}
+              style={{
+                '--spark-left': `${8 + ((index * 11) % 84)}%`,
+                '--spark-delay': `${-((index * 0.23) % 2.8)}s`,
+                '--spark-duration': `${1.2 + (index % 7) * 0.16}s`,
+                '--spark-size': `${4 + (index % 5) * 2}px`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CopyIcon() {
   return (
     <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
@@ -321,6 +448,10 @@ function App() {
   const [secondsLeft, setSecondsLeft] = useState(timerModes.pomodoro.minutes * 60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [focusRound, setFocusRound] = useState(1)
+  const [activeAmbientSound, setActiveAmbientSound] = useState(null)
+  const [decisionMessage, setDecisionMessage] = useState('')
+  const [decisionMotion, setDecisionMotion] = useState('idle')
+  const [decisionAnimationKey, setDecisionAnimationKey] = useState(0)
   const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
   const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
@@ -334,8 +465,10 @@ function App() {
     }
   })
   const toastTimeoutRef = useRef(null)
+  const decisionTimeoutRef = useRef(null)
   const customFrameInputRef = useRef(null)
   const audioContextRef = useRef(null)
+  const ambientAudioRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
   const activeTimerMode = timerModes[timerMode]
   const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
@@ -395,6 +528,15 @@ function App() {
     playTone({ frequency: 1108, duration: 0.18, gain: 0.065, type: 'sine', delay: 0.26 })
   }, [playTone])
 
+  const stopAmbientSound = useCallback(() => {
+    if (!ambientAudioRef.current) return
+
+    ambientAudioRef.current.pause()
+    ambientAudioRef.current.currentTime = 0
+    ambientAudioRef.current.src = ''
+    ambientAudioRef.current = null
+  }, [])
+
   const handleInterfaceClick = useCallback(
     (event) => {
       const clickedButton = event.target.closest('button')
@@ -430,6 +572,25 @@ function App() {
   }, [isTimerRunning, timerMode, playTimerDone, playTimerTick])
 
   useEffect(() => {
+    stopAmbientSound()
+    if (!activeAmbientSound) return undefined
+
+    const selectedSound = ambientSoundOptions.find((sound) => sound.id === activeAmbientSound)
+    if (!selectedSound) return undefined
+
+    const audio = new Audio(selectedSound.src)
+    audio.loop = true
+    audio.volume = 0.62
+    ambientAudioRef.current = audio
+
+    audio.play().catch(() => {
+      setActiveAmbientSound(null)
+    })
+
+    return stopAmbientSound
+  }, [activeAmbientSound, stopAmbientSound])
+
+  useEffect(() => {
     const animatedElements = document.querySelectorAll('.scroll-pop')
 
     const observer = new IntersectionObserver(
@@ -461,6 +622,13 @@ function App() {
       document.body.style.overflow = previousOverflow
     }
   }, [isShareSheetOpen])
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(decisionTimeoutRef.current)
+    },
+    [],
+  )
 
   const handleOpenLetter = (letter) => {
     setOpenedLetterId(letter.id)
@@ -700,13 +868,50 @@ function App() {
     setSecondsLeft(activeTimerMode.minutes * 60)
   }
 
+  const handleAmbientSoundToggle = (soundId) => {
+    setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
+  }
+
+  const getNextDecisionMessage = (currentMessage = '') => {
+    const nextOptions =
+      decisionMessages.length > 1
+        ? decisionMessages.filter((message) => message !== currentMessage)
+        : decisionMessages
+
+    return nextOptions[Math.floor(Math.random() * nextOptions.length)]
+  }
+
+  const revealDecisionMessage = (currentMessage = '') => {
+    setDecisionMessage(getNextDecisionMessage(currentMessage))
+    setDecisionAnimationKey((currentKey) => currentKey + 1)
+    setDecisionMotion('revealed')
+  }
+
+  const handleAskDecision = () => {
+    window.clearTimeout(decisionTimeoutRef.current)
+    revealDecisionMessage(decisionMessage)
+  }
+
+  const handleChooseAgain = () => {
+    setDecisionMotion('hiding')
+    window.clearTimeout(decisionTimeoutRef.current)
+    decisionTimeoutRef.current = window.setTimeout(() => {
+      revealDecisionMessage(decisionMessage)
+    }, 360)
+  }
+
   const handleSelectBook = (bookId) => {
     setActiveBookId(bookId)
     setBookAnimationKey((currentKey) => currentKey + 1)
   }
 
   return (
-    <main className={`landing-page timer-theme-${timerMode}`} onClickCapture={handleInterfaceClick}>
+    <main
+      className={`landing-page timer-theme-${timerMode} ${activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''}`}
+      onClickCapture={handleInterfaceClick}
+    >
+      <AmbientVisualEffect activeSound={activeAmbientSound} />
+
       <header className="site-header">
         <a className="brand" href="/" aria-label="138.loveyourself">
           <HeartIcon />
@@ -724,6 +929,23 @@ function App() {
           playsInline
           aria-label="138 love yourself opening video"
         />
+        <div className="hero-intro">
+          <p>Self-care space</p>
+          <h1>138.loveyourself</h1>
+          <span>
+            Một góc nhỏ để bạn thở chậm lại, mở một lá thư cho hôm nay, xin một dấu hiệu, chọn âm thanh nền,
+            đọc vài cuốn sách dịu nhẹ, bật nhạc và quay về tập trung bằng Pomodoro.
+          </span>
+          <div className="hero-flow" aria-label="Flow trải nghiệm">
+            <a href="#quote">1. Open Letter</a>
+            <a href="#decision">2. Ask a sign</a>
+            <a href="#ambient">3. Sound Room</a>
+            <a href="#library">4. Books</a>
+            <a href="#collection">5. Spotify</a>
+            <a href="#focus">6. Pomodoro</a>
+            <a href="#about">7. Ending</a>
+          </div>
+        </div>
       </section>
 
       <section className="quote-section" id="quote">
@@ -776,44 +998,50 @@ function App() {
         )}
       </section>
 
-      <section className="pomodoro-section" id="focus">
-        <div className="pomodoro-shell scroll-pop">
-          <div className="pomodoro-heading">
-            <p>Focus room</p>
-            <h2>Pomodoro cho một ngày dịu hơn.</h2>
-          </div>
-
-          <div className="pomodoro-card">
-            <div className="timer-tabs" aria-label="Chọn chế độ timer">
-              {timerModeKeys.map((mode) => (
-                <button
-                  className={timerMode === mode ? 'is-active' : ''}
-                  type="button"
-                  key={mode}
-                  onClick={() => handleTimerModeChange(mode)}
-                >
-                  {timerModes[mode].label}
-                </button>
-              ))}
-            </div>
-
-            <div className="timer-display" aria-live="polite">
-              {formatTime(secondsLeft)}
-            </div>
-
-            <div className="timer-actions">
-              <button className="timer-start" type="button" onClick={() => setIsTimerRunning((current) => !current)}>
-                {isTimerRunning ? 'PAUSE' : 'START'}
-              </button>
-              <button className="timer-reset" type="button" onClick={handleResetTimer}>
-                Reset
-              </button>
+      <section className="decision-section" id="decision">
+        <div className="decision-shell scroll-pop">
+          <p>vị thần quyết định</p>
+          <h2>xin một dấu hiệu nhỏ khi trái tim bạn còn phân vân.</h2>
+          <div className={`decision-stage ${decisionMotion !== 'idle' ? 'has-card' : ''}`}>
+            <div
+              className={`decision-card is-${decisionMotion}`}
+              key={decisionAnimationKey}
+              aria-live="polite"
+              aria-hidden={decisionMotion === 'idle'}
+            >
+              <span>{decisionMessage || 'hít một hơi thật chậm, rồi hỏi nhé.'}</span>
             </div>
           </div>
+          <button
+            className={`decision-button ${decisionMotion === 'revealed' ? 'is-secondary' : ''}`}
+            type="button"
+            onClick={decisionMotion === 'revealed' ? handleChooseAgain : handleAskDecision}
+          >
+            {decisionMotion === 'revealed' ? 'hỏi lại' : 'xin một dấu hiệu'}
+          </button>
+        </div>
+      </section>
 
-          <div className="focus-status">
-            <span>#{focusRound}</span>
-            <p>{activeTimerMode.message}</p>
+      <section className="ambient-section" id="ambient" aria-label="Âm thanh nền">
+        <div className="ambient-shell scroll-pop">
+          <div className="ambient-heading">
+            <p>Sound room</p>
+            <h2>Chọn âm thanh để thả lỏng một chút.</h2>
+          </div>
+
+          <div className="ambient-controls">
+            {ambientSoundOptions.map((sound) => (
+              <button
+                className={`ambient-button ${activeAmbientSound === sound.id ? 'is-active' : ''}`}
+                type="button"
+                key={sound.id}
+                aria-pressed={activeAmbientSound === sound.id}
+                onClick={() => handleAmbientSoundToggle(sound.id)}
+              >
+                <AmbientIcon type={sound.id} />
+                <span>{sound.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -833,7 +1061,6 @@ function App() {
             </div>
 
             <div className="featured-book-copy">
-              <p>{activeBook.tag}</p>
               <h3>{activeBook.title}</h3>
               <span>{activeBook.author}</span>
               <p>{activeBook.note}</p>
@@ -884,18 +1111,57 @@ function App() {
         />
       </section>
 
-      <section className="brand-story-section" id="about">
-        <div className="brand-story-content scroll-pop">
+      <section className="pomodoro-section" id="focus">
+        <div className="pomodoro-shell scroll-pop">
+          <div className="pomodoro-heading">
+            <p>Focus room</p>
+            <h2>Pomodoro cho một ngày dịu hơn.</h2>
+          </div>
+
+          <div className="pomodoro-card">
+            <div className="timer-tabs" aria-label="Chọn chế độ timer">
+              {timerModeKeys.map((mode) => (
+                <button
+                  className={timerMode === mode ? 'is-active' : ''}
+                  type="button"
+                  key={mode}
+                  onClick={() => handleTimerModeChange(mode)}
+                >
+                  {timerModes[mode].label}
+                </button>
+              ))}
+            </div>
+
+            <div className="timer-display" aria-live="polite">
+              {formatTime(secondsLeft)}
+            </div>
+
+            <div className="timer-actions">
+              <button className="timer-start" type="button" onClick={() => setIsTimerRunning((current) => !current)}>
+                {isTimerRunning ? 'PAUSE' : 'START'}
+              </button>
+              <button className="timer-reset" type="button" onClick={handleResetTimer}>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div className="focus-status">
+            <span>#{focusRound}</span>
+            <p>{activeTimerMode.message}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="ending-section" id="about">
+        <div className="ending-content scroll-pop">
           <HeartIcon size={190} />
-          <h2>Love Yourself</h2>
-          <p>
-          138 love yourself - Thương hiệu thời trang mang thông điệp yêu bản thân.
-          Mỗi sản phẩm được thiết kế với tình yêu, khuyến khích bạn tự tin và thoải
-          mái làm chính mình. Vì bạn xứng đáng được yêu thương.
-          </p>
-          <a className="discover-link" href="https://138knitwear.com/" target="_blank" rel="noreferrer">
+          <h2>thank you for spending time with yourself today.</h2>
+          <p>you did enough for today.</p>
+          <a className="ending-link" href="https://138knitwear.com/" target="_blank" rel="noreferrer">
             Khám Phá Ngay
           </a>
+          <span>♡ 138.loveyourself</span>
         </div>
       </section>
 
@@ -943,7 +1209,7 @@ function App() {
           </div>
         </div>
 
-        <div className="footer-bottom">138 love yourself</div>
+        <div className="footer-bottom">♡ 138.loveyourself</div>
       </footer>
 
       <div className={`share-sheet-backdrop ${isShareSheetOpen ? 'is-open' : ''}`} aria-hidden={!isShareSheetOpen}>
