@@ -8,6 +8,7 @@ const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp
 const letterCount = 4
 const lastQuoteStorageKey = 'lastOpenedQuote'
 const customShareFramesStorageKey = 'customShareFrames'
+const colorModeStorageKey = 'colorMode'
 const timerModes = {
   pomodoro: {
     label: 'Pomodoro',
@@ -431,6 +432,48 @@ function CloseIcon() {
   )
 }
 
+function DayNightSwitch({ isNightMode, onToggle }) {
+  return (
+    <button
+      className={`day-night-switch ${isNightMode ? 'is-night' : ''}`}
+      type="button"
+      aria-label={isNightMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+      aria-pressed={isNightMode}
+      onClick={onToggle}
+    >
+      <span className="switch-scene" aria-hidden="true">
+        <span className="switch-sky">
+          <span className="switch-cloud switch-cloud-one" />
+          <span className="switch-cloud switch-cloud-two" />
+          <span className="switch-cloud switch-cloud-three" />
+          <span className="switch-star switch-star-one" />
+          <span className="switch-star switch-star-two" />
+          <span className="switch-star switch-star-three" />
+          <span className="switch-star switch-star-four" />
+          <span className="switch-star switch-star-five" />
+        </span>
+        <span className="switch-orb">
+          <span className="switch-hand switch-hand-long" />
+          <span className="switch-hand switch-hand-short" />
+          <span className="switch-pin" />
+        </span>
+        <span className="switch-person">
+          <span className="person-shadow" />
+          <span className="person-leg person-leg-back" />
+          <span className="person-leg person-leg-front" />
+          <span className="person-dress" />
+          <span className="person-arm person-arm-back" />
+          <span className="person-arm person-arm-front" />
+          <span className="person-neck" />
+          <span className="person-head" />
+          <span className="person-hair" />
+          <span className="person-sign">{isNightMode ? 'OFF' : 'ON'}</span>
+        </span>
+      </span>
+    </button>
+  )
+}
+
 function App() {
   const [quoteLetters] = useState(getQuoteLetters)
   const [randomQuote] = useState(getRandomQuote)
@@ -455,6 +498,13 @@ function App() {
   const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
   const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
+  const [isNightMode, setIsNightMode] = useState(() => {
+    try {
+      return localStorage.getItem(colorModeStorageKey) === 'night'
+    } catch {
+      return false
+    }
+  })
   const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
   const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
   const [customShareFrames, setCustomShareFrames] = useState(() => {
@@ -866,6 +916,20 @@ function App() {
     setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
   }
 
+  const handleToggleColorMode = () => {
+    setIsNightMode((currentMode) => {
+      const nextMode = !currentMode
+
+      try {
+        localStorage.setItem(colorModeStorageKey, nextMode ? 'night' : 'day')
+      } catch {
+        // The visual switch still works if storage is unavailable.
+      }
+
+      return nextMode
+    })
+  }
+
   const getNextDecisionMessage = (currentMessage = '') => {
     const nextOptions =
       decisionMessages.length > 1
@@ -901,7 +965,9 @@ function App() {
 
   return (
     <main
-      className={`landing-page timer-theme-${timerMode} ${activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''}`}
+      className={`landing-page ${isNightMode ? 'is-night-mode' : 'is-day-mode'} timer-theme-${timerMode} ${
+        activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''
+      }`}
       onClickCapture={handleInterfaceClick}
     >
       <AmbientVisualEffect activeSound={activeAmbientSound} />
@@ -911,6 +977,7 @@ function App() {
           <HeartIcon />
           <span>138.loveyourself</span>
         </a>
+        <DayNightSwitch isNightMode={isNightMode} onToggle={handleToggleColorMode} />
       </header>
 
       <section className="hero-section" id="home">
