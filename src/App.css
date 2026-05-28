@@ -766,6 +766,68 @@
     linear-gradient(180deg, #203d64, #102746 72%);
 }
 
+.landing-page.is-night-mode .language-trigger {
+  color: #102746;
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.42), transparent 34%),
+    linear-gradient(135deg, #ffe88f, #f5c85d);
+  border-color: rgba(255, 226, 122, 0.7);
+  box-shadow:
+    0 16px 34px rgba(6, 19, 36, 0.34),
+    0 0 0 5px rgba(255, 226, 122, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.54);
+}
+
+.landing-page.is-night-mode .language-trigger:hover,
+.landing-page.is-night-mode .language-trigger:focus-visible,
+.landing-page.is-night-mode .language-switcher.is-open .language-trigger {
+  color: #102746;
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.52), transparent 34%),
+    linear-gradient(135deg, #fff0a8, #ffe27a);
+  border-color: rgba(255, 240, 168, 0.86);
+  box-shadow:
+    0 20px 44px rgba(6, 19, 36, 0.44),
+    0 0 0 7px rgba(255, 226, 122, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.landing-page.is-night-mode .language-menu {
+  color: #ffe27a;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 226, 122, 0.14), transparent 32%),
+    linear-gradient(145deg, rgba(23, 47, 82, 0.96), rgba(16, 39, 70, 0.98));
+  border-color: rgba(255, 226, 122, 0.26);
+  box-shadow:
+    0 26px 56px rgba(3, 11, 22, 0.5),
+    inset 0 1px 0 rgba(255, 226, 122, 0.14);
+}
+
+.landing-page.is-night-mode .language-menu button {
+  color: #ffe27a;
+}
+
+.landing-page.is-night-mode .language-menu button small {
+  color: rgba(255, 226, 122, 0.78);
+  opacity: 1;
+}
+
+.landing-page.is-night-mode .language-menu button:hover,
+.landing-page.is-night-mode .language-menu button:focus-visible,
+.landing-page.is-night-mode .language-menu button.is-active {
+  color: #102746;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.34), transparent 36%),
+    linear-gradient(135deg, #fff0a8, #ffe27a);
+  box-shadow: 0 12px 24px rgba(255, 226, 122, 0.16);
+}
+
+.landing-page.is-night-mode .language-menu button:hover small,
+.landing-page.is-night-mode .language-menu button:focus-visible small,
+.landing-page.is-night-mode .language-menu button.is-active small {
+  color: rgba(16, 39, 70, 0.74);
+}
+
 .landing-page.is-night-mode .ambient-section {
   background:
     radial-gradient(circle at 80% 12%, rgba(255, 226, 122, 0.2), transparent 26%),
