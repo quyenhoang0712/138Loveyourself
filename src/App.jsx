@@ -123,6 +123,16 @@ function getNightModeFromPreference(colorModePreference) {
   return getAutomaticNightMode()
 }
 
+function getNextDecisionMessageForLanguage(language, currentMessage = '') {
+  const activeDecisionMessages = decisionMessages[language] || decisionMessages.vi
+  const nextOptions =
+    activeDecisionMessages.length > 1
+      ? activeDecisionMessages.filter((message) => message !== currentMessage)
+      : activeDecisionMessages
+
+  return nextOptions[Math.floor(Math.random() * nextOptions.length)]
+}
+
 function drawRoundRect(context, x, y, width, height, radius) {
   context.beginPath()
   context.moveTo(x + radius, y)
@@ -553,7 +563,6 @@ function App() {
   const shareQuoteFontSize = getShareQuoteFontSize(quote)
   const copy = translations[language] || translations.vi
   const activeTimerMessage = copy.timer.messages[timerMode]
-  const activeLanguageOption = languageOptions.find((option) => option.id === language) || languageOptions[0]
   const activeBookCopy = language === 'vi' ? {} : bookTranslations[language]?.[activeBook.id] || bookTranslations.en[activeBook.id] || {}
   const localizedActiveBook = { ...activeBook, ...activeBookCopy }
 
@@ -687,7 +696,7 @@ function App() {
     ambientAudioRef.current = audio
 
     audio.play().catch(() => {
-      setActiveAmbientSound(null)
+      stopAmbientSound()
     })
 
     return stopAmbientSound
@@ -748,11 +757,6 @@ function App() {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isLanguageMenuOpen])
-
-  useEffect(() => {
-    if (decisionMotion === 'idle') return
-    setDecisionMessage(getNextDecisionMessage())
-  }, [language])
 
   useEffect(() => {
     const updateAutomaticColorMode = () => {
@@ -1058,6 +1062,11 @@ function App() {
     setLanguage(nextLanguage)
     setIsLanguageMenuOpen(false)
 
+    if (decisionMotion !== 'idle') {
+      setDecisionMessage(getNextDecisionMessageForLanguage(nextLanguage, decisionMessage))
+      setDecisionAnimationKey((currentKey) => currentKey + 1)
+    }
+
     try {
       localStorage.setItem(languageStorageKey, nextLanguage)
     } catch {
@@ -1065,18 +1074,8 @@ function App() {
     }
   }
 
-  const getNextDecisionMessage = (currentMessage = '') => {
-    const activeDecisionMessages = decisionMessages[language] || decisionMessages.vi
-    const nextOptions =
-      activeDecisionMessages.length > 1
-        ? activeDecisionMessages.filter((message) => message !== currentMessage)
-        : activeDecisionMessages
-
-    return nextOptions[Math.floor(Math.random() * nextOptions.length)]
-  }
-
   const revealDecisionMessage = (currentMessage = '') => {
-    setDecisionMessage(getNextDecisionMessage(currentMessage))
+    setDecisionMessage(getNextDecisionMessageForLanguage(language, currentMessage))
     setDecisionAnimationKey((currentKey) => currentKey + 1)
     setDecisionMotion('revealed')
   }
