@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { selfHelpBooks } from './books'
+import { bookTranslations, languageOptions, translations } from './i18n'
 import { decisionMessages } from './decisionMessages'
 import { quotes } from './quotes'
 import './App.css'
@@ -8,22 +9,17 @@ const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp
 const letterCount = 4
 const lastQuoteStorageKey = 'lastOpenedQuote'
 const customShareFramesStorageKey = 'customShareFrames'
-const colorModeStorageKey = 'colorMode'
+const colorModeOverrideStorageKey = 'colorModeOverride'
+const languageStorageKey = 'language'
 const timerModes = {
   pomodoro: {
-    label: 'Pomodoro',
     minutes: 25,
-    message: 'Time to focus!',
   },
   short: {
-    label: 'Short Break',
     minutes: 5,
-    message: 'Take a soft break.',
   },
   long: {
-    label: 'Long Break',
     minutes: 15,
-    message: 'Rest a little deeper.',
   },
 }
 const timerModeKeys = Object.keys(timerModes)
@@ -102,6 +98,30 @@ const shareFrames = [
   },
 ]
 const shareTextColors = ['#6f9ed8', '#d47496', '#6f7ec6', '#6e8a75', '#314236', '#fffef0', '#ffffff', '#111111']
+
+function getAutomaticNightMode() {
+  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+    return true
+  }
+
+  const currentHour = new Date().getHours()
+  return currentHour < 6 || currentHour >= 17
+}
+
+function getSavedColorModeOverride() {
+  try {
+    const savedMode = localStorage.getItem(colorModeOverrideStorageKey)
+    return savedMode === 'day' || savedMode === 'night' ? savedMode : 'auto'
+  } catch {
+    return 'auto'
+  }
+}
+
+function getNightModeFromPreference(colorModePreference) {
+  if (colorModePreference === 'night') return true
+  if (colorModePreference === 'day') return false
+  return getAutomaticNightMode()
+}
 
 function drawRoundRect(context, x, y, width, height, radius) {
   context.beginPath()
@@ -432,12 +452,12 @@ function CloseIcon() {
   )
 }
 
-function DayNightSwitch({ isNightMode, onToggle }) {
+function DayNightSwitch({ isNightMode, labels, onToggle }) {
   return (
     <button
       className={`day-night-switch ${isNightMode ? 'is-night' : ''}`}
       type="button"
-      aria-label={isNightMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+      aria-label={isNightMode ? labels.toDay : labels.toNight}
       aria-pressed={isNightMode}
       onClick={onToggle}
     >
@@ -498,13 +518,17 @@ function App() {
   const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
   const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
-  const [isNightMode, setIsNightMode] = useState(() => {
+  const [colorModePreference, setColorModePreference] = useState(getSavedColorModeOverride)
+  const [isNightMode, setIsNightMode] = useState(() => getNightModeFromPreference(getSavedColorModeOverride()))
+  const [language, setLanguage] = useState(() => {
     try {
-      return localStorage.getItem(colorModeStorageKey) === 'night'
+      const savedLanguage = localStorage.getItem(languageStorageKey)
+      return translations[savedLanguage] ? savedLanguage : 'vi'
     } catch {
-      return false
+      return 'vi'
     }
   })
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
   const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
   const [customShareFrames, setCustomShareFrames] = useState(() => {
@@ -517,6 +541,7 @@ function App() {
   const toastTimeoutRef = useRef(null)
   const decisionTimeoutRef = useRef(null)
   const customFrameInputRef = useRef(null)
+  const languageSwitcherRef = useRef(null)
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
@@ -526,6 +551,32 @@ function App() {
   const allShareFrames = [...shareFrames, ...customShareFrames]
   const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
   const shareQuoteFontSize = getShareQuoteFontSize(quote)
+  const copy = translations[language] || translations.vi
+  const activeTimerMessage = copy.timer.messages[timerMode]
+  const activeLanguageOption = languageOptions.find((option) => option.id === language) || languageOptions[0]
+  const activeBookCopy = language === 'vi' ? {} : bookTranslations[language]?.[activeBook.id] || bookTranslations.en[activeBook.id] || {}
+  const localizedActiveBook = { ...activeBook, ...activeBookCopy }
+
+  useLayoutEffect(() => {
+    const canControlScrollRestoration = 'scrollRestoration' in window.history
+    const previousScrollRestoration = canControlScrollRestoration ? window.history.scrollRestoration : null
+
+    if (canControlScrollRestoration) {
+      window.history.scrollRestoration = 'manual'
+    }
+
+    if (window.location.hash) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    }
+
+    window.scrollTo(0, 0)
+
+    return () => {
+      if (canControlScrollRestoration) {
+        window.history.scrollRestoration = previousScrollRestoration
+      }
+    }
+  }, [])
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
@@ -608,6 +659,8 @@ function App() {
 
           if (timerMode === 'pomodoro') {
             setFocusRound((currentRound) => currentRound + 1)
+            setTimerMode('short')
+            return timerModes.short.minutes * 60
           }
 
           return 0
@@ -673,6 +726,61 @@ function App() {
     }
   }, [isShareSheetOpen])
 
+  useEffect(() => {
+    if (!isLanguageMenuOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (languageSwitcherRef.current?.contains(event.target)) return
+      setIsLanguageMenuOpen(false)
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsLanguageMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isLanguageMenuOpen])
+
+  useEffect(() => {
+    if (decisionMotion === 'idle') return
+    setDecisionMessage(getNextDecisionMessage())
+  }, [language])
+
+  useEffect(() => {
+    const updateAutomaticColorMode = () => {
+      setIsNightMode(getNightModeFromPreference(colorModePreference))
+    }
+
+    const colorSchemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)')
+    updateAutomaticColorMode()
+
+    if (colorSchemeQuery?.addEventListener) {
+      colorSchemeQuery.addEventListener('change', updateAutomaticColorMode)
+    } else if (colorSchemeQuery?.addListener) {
+      colorSchemeQuery.addListener(updateAutomaticColorMode)
+    }
+
+    const colorModeTimer = window.setInterval(updateAutomaticColorMode, 60 * 1000)
+
+    return () => {
+      window.clearInterval(colorModeTimer)
+
+      if (colorSchemeQuery?.removeEventListener) {
+        colorSchemeQuery.removeEventListener('change', updateAutomaticColorMode)
+      } else if (colorSchemeQuery?.removeListener) {
+        colorSchemeQuery.removeListener(updateAutomaticColorMode)
+      }
+    }
+  }, [colorModePreference])
+
   useEffect(
     () => () => {
       window.clearTimeout(decisionTimeoutRef.current)
@@ -702,7 +810,7 @@ function App() {
 
     setSavedQuotes(nextSavedQuotes)
     localStorage.setItem('savedQuotes', JSON.stringify(nextSavedQuotes))
-    showToast(isQuoteSaved ? 'Đã bỏ khỏi mục yêu thích' : 'Đã lưu lại cho bạn')
+    showToast(isQuoteSaved ? copy.toasts.unsaved : copy.toasts.saved)
   }
 
   const handleShareQuote = () => {
@@ -782,22 +890,22 @@ function App() {
           files: [imageFile],
         })
         setIsShareSheetOpen(false)
-        showToast('Bạn có thể chia sẻ khung này rồi')
+        showToast(copy.toasts.sharedFrame)
         return
       }
 
       if (navigator.share) {
         await navigator.share(shareData)
         setIsShareSheetOpen(false)
-        showToast('Bạn có thể chia sẻ câu này rồi')
+        showToast(copy.toasts.sharedQuote)
         return
       }
 
       await navigator.clipboard.writeText(`${quote}\n\n${shareData.url}`)
-      showToast('Đã sao chép câu quote')
+      showToast(copy.toasts.copied)
     } catch (error) {
       if (error?.name !== 'AbortError') {
-        showToast('Chưa thể chia sẻ lúc này')
+        showToast(copy.toasts.shareFailed)
       }
     }
   }
@@ -807,9 +915,9 @@ function App() {
 
     try {
       await navigator.clipboard.writeText(`${quote}\n\n${window.location.href.split('#')[0]}`)
-      showToast('Đã sao chép câu quote')
+      showToast(copy.toasts.copied)
     } catch {
-      showToast('Chưa thể sao chép lúc này')
+      showToast(copy.toasts.copyFailed)
     }
   }
 
@@ -824,9 +932,9 @@ function App() {
       link.download = '138-love-yourself-quote.png'
       link.click()
       URL.revokeObjectURL(imageUrl)
-      showToast('Đã tạo ảnh quote')
+      showToast(copy.toasts.imageCreated)
     } catch {
-      showToast('Chưa thể tạo ảnh lúc này')
+      showToast(copy.toasts.imageFailed)
     }
   }
 
@@ -842,7 +950,7 @@ function App() {
           files: [imageFile],
           title: '138.loveyourself',
         })
-        showToast('Chọn Instagram hoặc Tin trong bảng chia sẻ')
+        showToast(copy.toasts.chooseInstagram)
         return
       }
 
@@ -852,10 +960,10 @@ function App() {
       link.download = '138-love-yourself-story.png'
       link.click()
       URL.revokeObjectURL(imageUrl)
-      showToast('Thiết bị này chưa hỗ trợ share ảnh, mình đã tải ảnh xuống')
+      showToast(copy.toasts.downloadedFallback)
     } catch (error) {
       if (error?.name !== 'AbortError') {
-        showToast('Chưa thể mở chia sẻ Instagram lúc này')
+        showToast(copy.toasts.instagramFailed)
       }
     }
   }
@@ -867,7 +975,7 @@ function App() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      showToast('Vui lòng chọn file ảnh')
+      showToast(copy.toasts.chooseImageFile)
       return
     }
 
@@ -891,13 +999,13 @@ function App() {
       try {
         localStorage.setItem(customShareFramesStorageKey, JSON.stringify(nextFrames))
       } catch {
-        showToast('Ảnh hơi nặng, chưa lưu được khung')
+        showToast(copy.toasts.frameTooLarge)
         return
       }
 
-      showToast('Đã thêm khung custom')
+      showToast(copy.toasts.frameAdded)
     }
-    reader.onerror = () => showToast('Chưa đọc được ảnh này')
+    reader.onerror = () => showToast(copy.toasts.imageReadFailed)
     reader.readAsDataURL(file)
   }
 
@@ -912,29 +1020,57 @@ function App() {
     setSecondsLeft(activeTimerMode.minutes * 60)
   }
 
+  const handleTimerStartToggle = () => {
+    if (isTimerRunning) {
+      setIsTimerRunning(false)
+      return
+    }
+
+    if (secondsLeft === 0 && timerMode !== 'pomodoro') {
+      setTimerMode('pomodoro')
+      setSecondsLeft(timerModes.pomodoro.minutes * 60)
+    }
+
+    setIsTimerRunning(true)
+  }
+
   const handleAmbientSoundToggle = (soundId) => {
     setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
   }
 
   const handleToggleColorMode = () => {
     setIsNightMode((currentMode) => {
-      const nextMode = !currentMode
+      const nextMode = currentMode ? 'day' : 'night'
+
+      setColorModePreference(nextMode)
 
       try {
-        localStorage.setItem(colorModeStorageKey, nextMode ? 'night' : 'day')
+        localStorage.setItem(colorModeOverrideStorageKey, nextMode)
       } catch {
-        // The visual switch still works if storage is unavailable.
+        // The switch still works for the current session if storage is unavailable.
       }
 
-      return nextMode
+      return nextMode === 'night'
     })
   }
 
+  const handleLanguageChange = (nextLanguage) => {
+    setLanguage(nextLanguage)
+    setIsLanguageMenuOpen(false)
+
+    try {
+      localStorage.setItem(languageStorageKey, nextLanguage)
+    } catch {
+      // The selector still works if storage is unavailable.
+    }
+  }
+
   const getNextDecisionMessage = (currentMessage = '') => {
+    const activeDecisionMessages = decisionMessages[language] || decisionMessages.vi
     const nextOptions =
-      decisionMessages.length > 1
-        ? decisionMessages.filter((message) => message !== currentMessage)
-        : decisionMessages
+      activeDecisionMessages.length > 1
+        ? activeDecisionMessages.filter((message) => message !== currentMessage)
+        : activeDecisionMessages
 
     return nextOptions[Math.floor(Math.random() * nextOptions.length)]
   }
@@ -973,11 +1109,41 @@ function App() {
       <AmbientVisualEffect activeSound={activeAmbientSound} />
 
       <header className="site-header">
-        <a className="brand" href="/" aria-label="138.loveyourself">
+        <a className="brand" href="/" aria-label="138.LoveYourself">
           <HeartIcon />
-          <span>138.loveyourself</span>
+          <span>138.LoveYourself</span>
         </a>
-        <DayNightSwitch isNightMode={isNightMode} onToggle={handleToggleColorMode} />
+        <div className="header-actions">
+          <div className={`language-switcher ${isLanguageMenuOpen ? 'is-open' : ''}`} ref={languageSwitcherRef}>
+            <button
+              className="language-trigger"
+              type="button"
+              aria-label={copy.language.toggle}
+              aria-expanded={isLanguageMenuOpen}
+              aria-haspopup="listbox"
+              onClick={() => setIsLanguageMenuOpen((current) => !current)}
+            >
+              <span>{copy.language.trigger}</span>
+              <span className="language-trigger-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div className="language-menu" role="listbox" aria-label={copy.language.label}>
+              {languageOptions.map((option) => (
+                <button
+                  className={language === option.id ? 'is-active' : ''}
+                  type="button"
+                  key={option.id}
+                  role="option"
+                  aria-selected={language === option.id}
+                  onClick={() => handleLanguageChange(option.id)}
+                >
+                  <span>{option.label}</span>
+                  <small>{option.name}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+          <DayNightSwitch isNightMode={isNightMode} labels={copy.theme} onToggle={handleToggleColorMode} />
+        </div>
       </header>
 
       <section className="hero-section" id="home">
@@ -988,23 +1154,20 @@ function App() {
           muted
           loop
           playsInline
-          aria-label="138 love yourself opening video"
+          aria-label="138 LoveYourself opening video"
         />
-        <div className="hero-intro">
-          <p>Self-care space</p>
-          <h1>138.loveyourself</h1>
-          <span>
-            Một góc nhỏ để bạn thở chậm lại, mở một lá thư cho hôm nay, xin một dấu hiệu, chọn âm thanh nền,
-            đọc vài cuốn sách dịu nhẹ, bật nhạc và quay về tập trung bằng Pomodoro.
-          </span>
-          <div className="hero-flow" aria-label="Flow trải nghiệm">
-            <a href="#quote">1. Open Letter</a>
-            <a href="#decision">2. Ask a sign</a>
-            <a href="#ambient">3. Sound Room</a>
-            <a href="#library">4. Books</a>
-            <a href="#collection">5. Spotify</a>
-            <a href="#focus">6. Pomodoro</a>
-            <a href="#about">7. Ending</a>
+        <div className="hero-intro scroll-pop">
+          <p>{copy.hero.eyebrow}</p>
+          <h1>{copy.hero.title}</h1>
+          <span>{copy.hero.body}</span>
+          <div className="hero-flow" aria-label={copy.hero.flowLabel}>
+            <a href="#quote">1. {copy.hero.flow[0]}</a>
+            <a href="#decision">2. {copy.hero.flow[1]}</a>
+            <a href="#ambient">3. {copy.hero.flow[2]}</a>
+            <a href="#library">4. {copy.hero.flow[3]}</a>
+            <a href="#collection">5. {copy.hero.flow[4]}</a>
+            <a href="#focus">6. {copy.hero.flow[5]}</a>
+            <a href="#about">7. {copy.hero.flow[6]}</a>
           </div>
         </div>
       </section>
@@ -1012,11 +1175,11 @@ function App() {
       <section className="quote-section" id="quote">
         <div className={`quote-envelope-content ${openedLetter ? 'is-open' : ''}`}>
           <div className="quote-section-heading">
-            <p>Open a letter</p>
-            <h2>Chọn một phong thư cho hôm nay.</h2>
+            <p>{copy.quote.eyebrow}</p>
+            <h2>{copy.quote.title}</h2>
           </div>
 
-          <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} aria-label="Chọn phong thư quote">
+          <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} aria-label={copy.quote.gridLabel}>
             {(openedLetter ? [openedLetter] : quoteLetters).map((letter) => (
               <button
                 className={`letter-card ${openedLetterId === letter.id ? 'is-open' : ''}`}
@@ -1026,7 +1189,7 @@ function App() {
                 aria-pressed={openedLetterId === letter.id}
               >
                 <span className="letter-paper">
-                  <span className="letter-label">{letter.label}</span>
+                  <span className="letter-label">{copy.quote.letterLabel(Number(letter.id.split('-').pop()))}</span>
                   <span className="letter-quote">{quote}</span>
                 </span>
                 <span className="envelope-back" />
@@ -1040,20 +1203,20 @@ function App() {
         </div>
 
         {quote && (
-          <div className="quote-actions scroll-pop is-visible" aria-label="Quote actions">
+          <div className="quote-actions scroll-pop is-visible" aria-label={copy.quote.actionsLabel}>
             <button
               className={`quote-action-button ${isQuoteSaved ? 'is-active' : ''}`}
               type="button"
-              aria-label={isQuoteSaved ? 'Bỏ lưu quote' : 'Lưu quote'}
+              aria-label={isQuoteSaved ? copy.quote.savedLabel : copy.quote.saveLabel}
               aria-pressed={isQuoteSaved}
               onClick={handleToggleSaveQuote}
             >
               <HeartIcon size={26} />
-              <span>{isQuoteSaved ? 'Đã lưu' : 'Lưu lại'}</span>
+              <span>{isQuoteSaved ? copy.quote.saved : copy.quote.save}</span>
             </button>
-            <button className="quote-action-button" type="button" aria-label="Chia sẻ quote" onClick={handleShareQuote}>
+            <button className="quote-action-button" type="button" aria-label={copy.quote.shareLabel} onClick={handleShareQuote}>
               <ShareIcon />
-              <span>Chia sẻ</span>
+              <span>{copy.quote.share}</span>
             </button>
           </div>
         )}
@@ -1061,8 +1224,8 @@ function App() {
 
       <section className="decision-section" id="decision">
         <div className="decision-shell scroll-pop">
-          <p>vị thần quyết định</p>
-          <h2>xin một dấu hiệu nhỏ khi trái tim bạn còn phân vân.</h2>
+          <p>{copy.decision.eyebrow}</p>
+          <h2>{copy.decision.title}</h2>
           <div className={`decision-stage ${decisionMotion !== 'idle' ? 'has-card' : ''}`}>
             <div
               className={`decision-card is-${decisionMotion}`}
@@ -1070,7 +1233,7 @@ function App() {
               aria-live="polite"
               aria-hidden={decisionMotion === 'idle'}
             >
-              <span>{decisionMessage || 'hít một hơi thật chậm, rồi hỏi nhé.'}</span>
+              <span>{decisionMessage || copy.decision.idle}</span>
             </div>
           </div>
           <button
@@ -1078,16 +1241,16 @@ function App() {
             type="button"
             onClick={decisionMotion === 'revealed' ? handleChooseAgain : handleAskDecision}
           >
-            {decisionMotion === 'revealed' ? 'hỏi lại' : 'xin một dấu hiệu'}
+            {decisionMotion === 'revealed' ? copy.decision.again : copy.decision.ask}
           </button>
         </div>
       </section>
 
-      <section className="ambient-section" id="ambient" aria-label="Âm thanh nền">
+      <section className="ambient-section" id="ambient" aria-label={copy.ambient.label}>
         <div className="ambient-shell scroll-pop">
           <div className="ambient-heading">
-            <p>Sound room</p>
-            <h2>Chọn âm thanh để thả lỏng một chút.</h2>
+            <p>{copy.ambient.eyebrow}</p>
+            <h2>{copy.ambient.title}</h2>
           </div>
 
           <div className="ambient-controls">
@@ -1100,7 +1263,7 @@ function App() {
                 onClick={() => handleAmbientSoundToggle(sound.id)}
               >
                 <AmbientIcon type={sound.id} />
-                <span>{sound.label}</span>
+                <span>{copy.ambient.sounds[sound.id]}</span>
               </button>
             ))}
           </div>
@@ -1110,60 +1273,65 @@ function App() {
       <section className="book-library-section" id="library">
         <div className="book-library-shell scroll-pop">
           <div className="book-library-heading">
-            <p>Self-help library</p>
-            <h2>Một kệ sách nhỏ để quay về với mình.</h2>
+            <p>{copy.library.eyebrow}</p>
+            <h2>{copy.library.title}</h2>
           </div>
 
           <div className="featured-book" aria-live="polite">
-            <div className={`featured-book-cover ${activeBook.coverClass}`} key={`${activeBook.id}-${bookAnimationKey}`}>
-              <span>{activeBook.tag}</span>
-              <strong>{activeBook.title}</strong>
-              <em>{activeBook.author}</em>
+            <div className={`featured-book-cover ${localizedActiveBook.coverClass}`} key={`${localizedActiveBook.id}-${bookAnimationKey}`}>
+              <span>{localizedActiveBook.tag}</span>
+              <strong>{localizedActiveBook.title}</strong>
+              <em>{localizedActiveBook.author}</em>
             </div>
 
             <div className="featured-book-copy">
-              <h3>{activeBook.title}</h3>
-              <span>{activeBook.author}</span>
-              <p>{activeBook.note}</p>
-              <p>{activeBook.takeaway}</p>
-              {activeBook.pdfUrl ? (
-                <a className="book-pdf-link" href={activeBook.pdfUrl} target="_blank" rel="noreferrer">
-                  Đọc sách
+              <h3>{localizedActiveBook.title}</h3>
+              <span>{localizedActiveBook.author}</span>
+              <p>{localizedActiveBook.note}</p>
+              <p>{localizedActiveBook.takeaway}</p>
+              {localizedActiveBook.pdfUrl ? (
+                <a className="book-pdf-link" href={localizedActiveBook.pdfUrl} target="_blank" rel="noreferrer">
+                  {copy.library.read}
                 </a>
               ) : (
                 <button className="book-pdf-link is-disabled" type="button" disabled>
-                  Đọc sách
+                  {copy.library.read}
                 </button>
               )}
             </div>
           </div>
 
-          <div className="book-shelf" aria-label="Chọn sách self-help">
-            {selfHelpBooks.map((book) => (
-              <button
-                className={`book-spine ${book.coverClass} ${activeBookId === book.id ? 'is-active' : ''}`}
-                type="button"
-                key={book.id}
-                onClick={() => handleSelectBook(book.id)}
-                aria-label={`Chọn sách ${book.title}`}
-                aria-pressed={activeBookId === book.id}
-              >
-                <strong>{book.title}</strong>
-              </button>
-            ))}
+          <div className="book-shelf" aria-label={copy.library.shelfLabel}>
+            {selfHelpBooks.map((book) => {
+              const bookCopy = language === 'vi' ? {} : bookTranslations[language]?.[book.id] || bookTranslations.en[book.id] || {}
+              const localizedBook = { ...book, ...bookCopy }
+
+              return (
+                <button
+                  className={`book-spine ${localizedBook.coverClass} ${activeBookId === localizedBook.id ? 'is-active' : ''}`}
+                  type="button"
+                  key={localizedBook.id}
+                  onClick={() => handleSelectBook(localizedBook.id)}
+                  aria-label={copy.library.chooseBook(localizedBook.title)}
+                  aria-pressed={activeBookId === localizedBook.id}
+                >
+                  <strong>{localizedBook.title}</strong>
+                </button>
+              )
+            })}
           </div>
         </div>
       </section>
 
       <section className="playlist-section" id="collection">
         <div className="spotify-caption scroll-pop">
-          <p>Playlist dành cho hôm nay</p>
-          <h2>Chọn một bài nhạc và thở chậm lại một chút.</h2>
+          <p>{copy.playlist.eyebrow}</p>
+          <h2>{copy.playlist.title}</h2>
         </div>
 
         <iframe
           className="spotify-player scroll-pop"
-          title="Spotify playlist player"
+          title={copy.playlist.playerTitle}
           src="https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0"
           width="100%"
           height="560"
@@ -1175,12 +1343,12 @@ function App() {
       <section className="pomodoro-section" id="focus">
         <div className="pomodoro-shell scroll-pop">
           <div className="pomodoro-heading">
-            <p>Focus room</p>
-            <h2>Pomodoro cho một ngày dịu hơn.</h2>
+            <p>{copy.timer.eyebrow}</p>
+            <h2>{copy.timer.title}</h2>
           </div>
 
           <div className="pomodoro-card">
-            <div className="timer-tabs" aria-label="Chọn chế độ timer">
+            <div className="timer-tabs" aria-label={copy.timer.tabsLabel}>
               {timerModeKeys.map((mode) => (
                 <button
                   className={timerMode === mode ? 'is-active' : ''}
@@ -1188,7 +1356,7 @@ function App() {
                   key={mode}
                   onClick={() => handleTimerModeChange(mode)}
                 >
-                  {timerModes[mode].label}
+                  {copy.timer.labels[mode]}
                 </button>
               ))}
             </div>
@@ -1198,18 +1366,18 @@ function App() {
             </div>
 
             <div className="timer-actions">
-              <button className="timer-start" type="button" onClick={() => setIsTimerRunning((current) => !current)}>
-                {isTimerRunning ? 'PAUSE' : 'START'}
+              <button className="timer-start" type="button" onClick={handleTimerStartToggle}>
+                {isTimerRunning ? copy.timer.pause : copy.timer.start}
               </button>
               <button className="timer-reset" type="button" onClick={handleResetTimer}>
-                Reset
+                {copy.timer.reset}
               </button>
             </div>
           </div>
 
           <div className="focus-status">
-            <span>#{focusRound}</span>
-            <p>{activeTimerMode.message}</p>
+            <span>{copy.timer.round(focusRound)}</span>
+            <p>{activeTimerMessage}</p>
           </div>
         </div>
       </section>
@@ -1217,12 +1385,12 @@ function App() {
       <section className="ending-section" id="about">
         <div className="ending-content scroll-pop">
           <HeartIcon size={190} />
-          <h2>thank you for spending time with yourself today.</h2>
-          <p>you did enough for today.</p>
+          <h2>{copy.ending.title}</h2>
+          <p>{copy.ending.body}</p>
           <a className="ending-link" href="https://138knitwear.com/" target="_blank" rel="noreferrer">
-            Khám Phá Ngay
+            {copy.ending.cta}
           </a>
-          <span>♡ 138.loveyourself</span>
+          <span>♡ 138.LoveYourself</span>
         </div>
       </section>
 
@@ -1230,30 +1398,26 @@ function App() {
         <div className="footer-main">
           <div className="footer-column footer-company scroll-pop">
             <h2>138knitwear</h2>
-            <p>
-              HỘ KINH DOANH 138KNITWEAR
-              <br />
-              GPKD số 070200003950 cấp ngày 09/10/2025 tại Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh
-            </p>
-            <p>Trụ sở: 84 Nguyễn Thiện Thuật, Phường Bàn Cờ, TP Hồ Chí Minh</p>
+            <p>{copy.footer.business}</p>
+            <p>{copy.footer.address}</p>
             <a href="tel:0867789138">0867789138</a>
             <a href="mailto:with138knitwear@gmail.com">with138knitwear@gmail.com</a>
-            <p>The Love Exchange Store: 83 Thạch Thị Thanh, phường Tân Định, quận 1, tp.HCM</p>
-            <img className="commerce-badge" src="/image.png" alt="Đã thông báo Bộ Công Thương" />
+            <p>{copy.footer.store}</p>
+            <img className="commerce-badge" src="/image.png" alt={copy.footer.badgeAlt} />
           </div>
 
           <div className="footer-column footer-contact scroll-pop">
-            <h3>LIÊN HỆ</h3>
+            <h3>{copy.footer.contact}</h3>
             <form className="footer-email-form" onSubmit={(event) => event.preventDefault()}>
-              <label htmlFor="footer-email">Email</label>
+              <label htmlFor="footer-email">{copy.footer.emailLabel}</label>
               <div>
-                <input id="footer-email" type="email" aria-label="Email liên hệ" />
-                <button type="submit" aria-label="Gửi email">
+                <input id="footer-email" type="email" aria-label={copy.footer.emailAria} />
+                <button type="submit" aria-label={copy.footer.submitAria}>
                   <ShareIcon />
                 </button>
               </div>
             </form>
-            <div className="footer-socials" aria-label="Mạng xã hội">
+            <div className="footer-socials" aria-label={copy.footer.socialsLabel}>
               <a className="social-zalo" href="https://zalo.me/0867789138" target="_blank" rel="noreferrer">
                 Zalo
               </a>
@@ -1270,21 +1434,21 @@ function App() {
           </div>
         </div>
 
-        <div className="footer-bottom">♡ 138.loveyourself</div>
+        <div className="footer-bottom">♡ 138.LoveYourself</div>
       </footer>
 
       <div className={`share-sheet-backdrop ${isShareSheetOpen ? 'is-open' : ''}`} aria-hidden={!isShareSheetOpen}>
         <button
           className="share-sheet-dismiss"
           type="button"
-          aria-label="Đóng khung chia sẻ"
+          aria-label={copy.shareSheet.close}
           onClick={() => setIsShareSheetOpen(false)}
         />
         <section
           className="share-sheet"
           role="dialog"
           aria-modal="true"
-          aria-label="Chọn khung chia sẻ"
+          aria-label={copy.shareSheet.dialog}
           style={{
             '--share-bg': activeShareFrame.background,
             '--share-card': activeShareFrame.card,
@@ -1295,7 +1459,7 @@ function App() {
           <button
             className="share-sheet-close"
             type="button"
-            aria-label="Đóng khung chia sẻ"
+            aria-label={copy.shareSheet.close}
             onClick={() => setIsShareSheetOpen(false)}
           >
             <CloseIcon />
@@ -1316,13 +1480,13 @@ function App() {
             </div>
           </div>
 
-          <div className="share-frame-picker" aria-label="Chọn màu khung">
+          <div className="share-frame-picker" aria-label={copy.shareSheet.framePicker}>
             {allShareFrames.map((frame) => (
               <button
                 className={activeShareFrameId === frame.id ? 'is-active' : ''}
                 type="button"
                 key={frame.id}
-                aria-label={`Chọn khung ${frame.label}`}
+                aria-label={copy.shareSheet.chooseFrame(frame.label)}
                 aria-pressed={activeShareFrameId === frame.id}
                 onClick={() => handleSelectShareFrame(frame)}
                 style={{
@@ -1336,7 +1500,7 @@ function App() {
             <button
               className="share-frame-add"
               type="button"
-              aria-label="Thêm ảnh khung"
+              aria-label={copy.shareSheet.addFrame}
               onClick={() => customFrameInputRef.current?.click()}
             >
               +
@@ -1350,15 +1514,15 @@ function App() {
             />
           </div>
 
-          <div className="share-text-color-control" aria-label="Chọn màu chữ quote">
-            <span>Màu chữ</span>
+          <div className="share-text-color-control" aria-label={copy.shareSheet.textColorLabel}>
+            <span>{copy.shareSheet.textColor}</span>
             <div className="share-text-color-options">
               {shareTextColors.map((color) => (
                 <button
                   className={shareTextColor.toLowerCase() === color ? 'is-active' : ''}
                   type="button"
                   key={color}
-                  aria-label={`Chọn màu chữ ${color}`}
+                  aria-label={copy.shareSheet.chooseTextColor(color)}
                   aria-pressed={shareTextColor.toLowerCase() === color}
                   onClick={() => setShareTextColor(color)}
                   style={{ '--text-color-option': color }}
@@ -1369,36 +1533,36 @@ function App() {
                   type="color"
                   value={shareTextColor}
                   onChange={(event) => setShareTextColor(event.target.value)}
-                  aria-label="Tự chọn màu chữ"
+                  aria-label={copy.shareSheet.customTextColor}
                 />
               </label>
             </div>
           </div>
 
-          <div className="share-sheet-actions" aria-label="Chia sẻ quote">
+          <div className="share-sheet-actions" aria-label={copy.shareSheet.actions}>
             <button type="button" onClick={handleCopyShareQuote}>
               <span>
                 <CopyIcon />
               </span>
-              <p>Sao chép</p>
+              <p>{copy.shareSheet.copy}</p>
             </button>
             <button type="button" onClick={handleNativeShareQuote}>
               <span>
                 <ShareIcon />
               </span>
-              <p>Chia sẻ</p>
+              <p>{copy.shareSheet.share}</p>
             </button>
             <button type="button" onClick={handleShareInstagramStory}>
               <span>
                 <InstagramIcon />
               </span>
-              <p>Tin IG</p>
+              <p>{copy.shareSheet.instagram}</p>
             </button>
             <button type="button" onClick={handleDownloadShareImage}>
               <span>
                 <DownloadIcon />
               </span>
-              <p>Tải ảnh</p>
+              <p>{copy.shareSheet.download}</p>
             </button>
           </div>
         </section>
