@@ -62,7 +62,7 @@ export const translations = {
     },
     timer: {
       eyebrow: 'Phòng tập trung',
-      title: 'Pomodoro cho một ngày dịu hơn.',
+      title: 'Học đến khi đá tan.',
       tabsLabel: 'Chọn chế độ timer',
       labels: {
         pomodoro: 'Pomodoro',
@@ -192,7 +192,7 @@ export const translations = {
     },
     timer: {
       eyebrow: 'Focus room',
-      title: 'Pomodoro for a softer day.',
+      title: 'Study until the ice melts.',
       tabsLabel: 'Choose timer mode',
       labels: {
         pomodoro: 'Pomodoro',
@@ -319,7 +319,7 @@ Object.assign(translations, {
     },
     timer: {
       eyebrow: 'Salle de focus',
-      title: 'Pomodoro pour une journée plus douce.',
+      title: 'Étudie jusqu’à ce que la glace fonde.',
       tabsLabel: 'Choisir le mode du timer',
       labels: { pomodoro: 'Pomodoro', short: 'Pause courte', long: 'Pause longue' },
       messages: { pomodoro: 'C’est l’heure de te concentrer.', short: 'Prends une pause douce.', long: 'Repose-toi un peu plus profondément.' },
@@ -429,7 +429,7 @@ Object.assign(translations, {
     },
     timer: {
       eyebrow: 'Комната фокуса',
-      title: 'Pomodoro для более мягкого дня.',
+      title: 'Учись, пока лед не растает.',
       tabsLabel: 'Выбрать режим таймера',
       labels: { pomodoro: 'Pomodoro', short: 'Короткий перерыв', long: 'Длинный перерыв' },
       messages: { pomodoro: 'Время сосредоточиться.', short: 'Сделай мягкий перерыв.', long: 'Отдохни немного глубже.' },
@@ -539,7 +539,7 @@ Object.assign(translations, {
     },
     timer: {
       eyebrow: 'फोकस रूम',
-      title: 'एक नरम दिन के लिए Pomodoro।',
+      title: 'बर्फ पिघलने तक पढ़ो।',
       tabsLabel: 'टाइमर मोड चुनें',
       labels: { pomodoro: 'Pomodoro', short: 'छोटा ब्रेक', long: 'लंबा ब्रेक' },
       messages: { pomodoro: 'अब फोकस का समय है।', short: 'एक नरम-सा ब्रेक लो।', long: 'थोड़ा गहरा आराम करो।' },
@@ -649,7 +649,7 @@ Object.assign(translations, {
     },
     timer: {
       eyebrow: '집중 방',
-      title: '조금 더 다정한 하루를 위한 Pomodoro.',
+      title: '얼음이 녹을 때까지 공부해요.',
       tabsLabel: '타이머 모드 선택',
       labels: { pomodoro: 'Pomodoro', short: '짧은 휴식', long: '긴 휴식' },
       messages: { pomodoro: '이제 집중할 시간이에요.', short: '부드럽게 잠깐 쉬어요.', long: '조금 더 깊게 쉬어가요.' },
@@ -710,4 +710,3 @@ Object.assign(translations, {
     },
   },
 })
-

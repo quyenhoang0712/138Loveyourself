@@ -62,7 +62,7 @@ export const bookTranslations = {
     },
     timer: {
       eyebrow: '专注房间',
-      title: '给温柔一天的番茄钟。',
+      title: '学习到冰块融化为止。',
       tabsLabel: '选择计时模式',
       labels: {
         pomodoro: '番茄钟',
@@ -191,7 +191,7 @@ export const bookTranslations = {
     },
     timer: {
       eyebrow: '集中ルーム',
-      title: 'やさしい一日のためのPomodoro。',
+      title: '氷が溶けるまで勉強しましょう。',
       tabsLabel: 'タイマーモードを選択',
       labels: {
         pomodoro: 'Pomodoro',
@@ -321,7 +321,7 @@ export const bookTranslations = {
     },
     timer: {
       eyebrow: 'Sala de foco',
-      title: 'Pomodoro para un día más suave.',
+      title: 'Estudia hasta que el hielo se derrita.',
       tabsLabel: 'Elegir modo de temporizador',
       labels: {
         pomodoro: 'Pomodoro',

@@ -11,18 +11,8 @@ const lastQuoteStorageKey = 'lastOpenedQuote'
 const customShareFramesStorageKey = 'customShareFrames'
 const colorModeOverrideStorageKey = 'colorModeOverride'
 const languageStorageKey = 'language'
-const timerModes = {
-  pomodoro: {
-    minutes: 25,
-  },
-  short: {
-    minutes: 5,
-  },
-  long: {
-    minutes: 15,
-  },
-}
-const timerModeKeys = Object.keys(timerModes)
+const iceCubeMinutes = 30
+const maxIceCubes = 6
 const ambientSoundOptions = [
   { id: 'rain', label: 'Mưa', src: '/liecio-calming-rain-257596.mp3' },
   { id: 'waves', label: 'Sóng', src: '/freesound_community-waves-at-the-wave-organ-19507.mp3' },
@@ -31,6 +21,14 @@ const ambientSoundOptions = [
 const rainDropCount = 42
 const waveRippleCount = 12
 const fireSparkCount = 24
+const iceStackLayout = [
+  { left: 34, bottom: 0, rotate: -15, size: 0.94, z: 1 },
+  { left: 50, bottom: 1, rotate: 7, size: 0.98, z: 2 },
+  { left: 66, bottom: 0, rotate: -8, size: 0.9, z: 3 },
+  { left: 42, bottom: 15, rotate: 10, size: 0.82, z: 4 },
+  { left: 58, bottom: 16, rotate: -11, size: 0.8, z: 5 },
+  { left: 50, bottom: 29, rotate: 5, size: 0.72, z: 6 },
+]
 const shareFrames = [
   {
     id: 'mint',
@@ -517,8 +515,11 @@ function App() {
     }
   })
   const [toastMessage, setToastMessage] = useState('')
-  const [timerMode, setTimerMode] = useState('pomodoro')
-  const [secondsLeft, setSecondsLeft] = useState(timerModes.pomodoro.minutes * 60)
+  const [iceCubeCount, setIceCubeCount] = useState(1)
+  const [draggingIcePosition, setDraggingIcePosition] = useState(null)
+  const [isIceDroppingIntoCup, setIsIceDroppingIntoCup] = useState(false)
+  const [iceDropAnimationKey, setIceDropAnimationKey] = useState(0)
+  const [secondsLeft, setSecondsLeft] = useState(iceCubeMinutes * 60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [focusRound, setFocusRound] = useState(1)
   const [activeAmbientSound, setActiveAmbientSound] = useState(null)
@@ -550,19 +551,30 @@ function App() {
   })
   const toastTimeoutRef = useRef(null)
   const decisionTimeoutRef = useRef(null)
+  const iceAddTimeoutRef = useRef(null)
+  const iceDropTimeoutRef = useRef(null)
+  const isIceDragFinishingRef = useRef(false)
+  const latestIceDragPositionRef = useRef(null)
   const customFrameInputRef = useRef(null)
   const languageSwitcherRef = useRef(null)
+  const iceCupRef = useRef(null)
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
   const isQuoteSaved = savedQuotes.includes(quote)
-  const activeTimerMode = timerModes[timerMode]
+  const totalIceSeconds = iceCubeCount * iceCubeMinutes * 60
+  const iceMeltProgress = totalIceSeconds > 0 ? 1 - secondsLeft / totalIceSeconds : 1
+  const canAddIceCube = !isTimerRunning && iceCubeCount < maxIceCubes
   const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
   const activeBook = selfHelpBooks.find((book) => book.id === activeBookId) || selfHelpBooks[0]
   const allShareFrames = [...shareFrames, ...customShareFrames]
   const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
   const shareQuoteFontSize = getShareQuoteFontSize(quote)
   const copy = translations[language] || translations.vi
-  const activeTimerMessage = copy.timer.messages[timerMode]
+  const activeTimerMessage = isTimerRunning
+    ? 'Đá đang tan, mình cứ học tiếp nhé.'
+    : secondsLeft === 0
+      ? 'Đá tan hết rồi. Bạn đã hoàn thành một phiên học.'
+      : 'Thêm đá vào cốc rồi bắt đầu học đến khi đá tan.'
   const activeBookCopy = language === 'vi' ? {} : bookTranslations[language]?.[activeBook.id] || bookTranslations.en[activeBook.id] || {}
   const localizedActiveBook = { ...activeBook, ...activeBookCopy }
 
@@ -656,6 +668,71 @@ function App() {
     [playButtonClick],
   )
 
+  const handleIceCubeCountChange = useCallback(
+    (nextCount) => {
+      const normalizedCount = Math.min(maxIceCubes, Math.max(1, nextCount))
+      setIceCubeCount(normalizedCount)
+
+      if (!isTimerRunning) {
+        setSecondsLeft(normalizedCount * iceCubeMinutes * 60)
+      }
+    },
+    [isTimerRunning],
+  )
+
+  const finishIceDrag = useCallback(
+    (clientX, clientY) => {
+      if (isIceDragFinishingRef.current) return
+      isIceDragFinishingRef.current = true
+      const releaseX = latestIceDragPositionRef.current?.x ?? clientX
+      const releaseY = latestIceDragPositionRef.current?.y ?? clientY
+
+      const cupBounds = iceCupRef.current?.getBoundingClientRect()
+      if (!cupBounds) {
+        setDraggingIcePosition({ x: releaseX, y: releaseY, isDropping: false, isReturning: true })
+        window.setTimeout(() => {
+          setDraggingIcePosition(null)
+          latestIceDragPositionRef.current = null
+          isIceDragFinishingRef.current = false
+        }, 260)
+        return
+      }
+
+      const dropZonePaddingX = Math.min(34, cupBounds.width * 0.1)
+      const dropZonePaddingTop = Math.min(56, cupBounds.height * 0.16)
+      const isInsideCup =
+        releaseX >= cupBounds.left - dropZonePaddingX &&
+        releaseX <= cupBounds.right + dropZonePaddingX &&
+        releaseY >= cupBounds.top - dropZonePaddingTop &&
+        releaseY <= cupBounds.bottom - cupBounds.height * 0.02
+
+      if (isInsideCup && canAddIceCube) {
+        setDraggingIcePosition(null)
+        setIsIceDroppingIntoCup(true)
+        setIceDropAnimationKey((currentKey) => currentKey + 1)
+        window.clearTimeout(iceAddTimeoutRef.current)
+        window.clearTimeout(iceDropTimeoutRef.current)
+        iceAddTimeoutRef.current = window.setTimeout(() => {
+          handleIceCubeCountChange(iceCubeCount + 1)
+        }, 620)
+        iceDropTimeoutRef.current = window.setTimeout(() => {
+          setIsIceDroppingIntoCup(false)
+          latestIceDragPositionRef.current = null
+          isIceDragFinishingRef.current = false
+        }, 1320)
+        return
+      }
+
+      setDraggingIcePosition({ x: releaseX, y: releaseY, isDropping: false, isReturning: true })
+      window.setTimeout(() => {
+        setDraggingIcePosition(null)
+        latestIceDragPositionRef.current = null
+        isIceDragFinishingRef.current = false
+      }, 260)
+    },
+    [canAddIceCube, handleIceCubeCountChange, iceCubeCount],
+  )
+
   useEffect(() => {
     if (!isTimerRunning) return undefined
 
@@ -665,12 +742,7 @@ function App() {
           playTimerDone()
           window.clearInterval(timerId)
           setIsTimerRunning(false)
-
-          if (timerMode === 'pomodoro') {
-            setFocusRound((currentRound) => currentRound + 1)
-            setTimerMode('short')
-            return timerModes.short.minutes * 60
-          }
+          setFocusRound((currentRound) => currentRound + 1)
 
           return 0
         }
@@ -681,7 +753,7 @@ function App() {
     }, 1000)
 
     return () => window.clearInterval(timerId)
-  }, [isTimerRunning, timerMode, playTimerDone, playTimerTick])
+  }, [isTimerRunning, playTimerDone, playTimerTick])
 
   useEffect(() => {
     stopAmbientSound()
@@ -759,6 +831,31 @@ function App() {
   }, [isLanguageMenuOpen])
 
   useEffect(() => {
+    if (!draggingIcePosition || draggingIcePosition.isDropping) return undefined
+
+    const handlePointerMove = (event) => {
+      event.preventDefault()
+      latestIceDragPositionRef.current = { x: event.clientX, y: event.clientY }
+      setDraggingIcePosition({ x: event.clientX, y: event.clientY, isDropping: false, isReturning: false })
+    }
+
+    const handlePointerUp = (event) => {
+      event.preventDefault()
+      finishIceDrag(event.clientX, event.clientY)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: false })
+    window.addEventListener('pointerup', handlePointerUp, { passive: false })
+    window.addEventListener('pointercancel', handlePointerUp, { passive: false })
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [draggingIcePosition, finishIceDrag])
+
+  useEffect(() => {
     const updateAutomaticColorMode = () => {
       setIsNightMode(getNightModeFromPreference(colorModePreference))
     }
@@ -788,6 +885,8 @@ function App() {
   useEffect(
     () => () => {
       window.clearTimeout(decisionTimeoutRef.current)
+      window.clearTimeout(iceAddTimeoutRef.current)
+      window.clearTimeout(iceDropTimeoutRef.current)
     },
     [],
   )
@@ -1013,15 +1112,26 @@ function App() {
     reader.readAsDataURL(file)
   }
 
-  const handleTimerModeChange = (mode) => {
-    setTimerMode(mode)
-    setIsTimerRunning(false)
-    setSecondsLeft(timerModes[mode].minutes * 60)
+  const handleIceDragStart = (event) => {
+    if (!canAddIceCube) return
+
+    event.preventDefault()
+    isIceDragFinishingRef.current = false
+    latestIceDragPositionRef.current = { x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    setDraggingIcePosition({ x: event.clientX, y: event.clientY, isDropping: false, isReturning: false })
+  }
+
+  const handleIceDragEnd = (event) => {
+    if (!draggingIcePosition || draggingIcePosition.isDropping) return
+    event.preventDefault()
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+    finishIceDrag(event.clientX, event.clientY)
   }
 
   const handleResetTimer = () => {
     setIsTimerRunning(false)
-    setSecondsLeft(activeTimerMode.minutes * 60)
+    setSecondsLeft(totalIceSeconds)
   }
 
   const handleTimerStartToggle = () => {
@@ -1030,9 +1140,8 @@ function App() {
       return
     }
 
-    if (secondsLeft === 0 && timerMode !== 'pomodoro') {
-      setTimerMode('pomodoro')
-      setSecondsLeft(timerModes.pomodoro.minutes * 60)
+    if (secondsLeft === 0) {
+      setSecondsLeft(totalIceSeconds)
     }
 
     setIsTimerRunning(true)
@@ -1100,9 +1209,9 @@ function App() {
 
   return (
     <main
-      className={`landing-page ${isNightMode ? 'is-night-mode' : 'is-day-mode'} timer-theme-${timerMode} ${
+      className={`landing-page ${isNightMode ? 'is-night-mode' : 'is-day-mode'} ${
         activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''
-      }`}
+      } ${draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''}`}
       onClickCapture={handleInterfaceClick}
     >
       <AmbientVisualEffect activeSound={activeAmbientSound} />
@@ -1347,15 +1456,132 @@ function App() {
           </div>
 
           <div className="pomodoro-card">
-            <div className="timer-tabs" aria-label={copy.timer.tabsLabel}>
-              {timerModeKeys.map((mode) => (
-                <button
-                  className={timerMode === mode ? 'is-active' : ''}
-                  type="button"
-                  key={mode}
-                  onClick={() => handleTimerModeChange(mode)}
+            <div className="ice-study-stage">
+              <div
+                className={`ice-cup ${isTimerRunning ? 'is-running' : ''} ${secondsLeft === 0 ? 'is-finished' : ''} ${
+                  (draggingIcePosition || isIceDroppingIntoCup) && canAddIceCube ? 'is-drop-target' : ''
+                }`}
+                ref={iceCupRef}
+                style={{ '--melt-progress': iceMeltProgress }}
+                aria-hidden="true"
+              >
+                <div className="ice-cup-rim" />
+                {draggingIcePosition && canAddIceCube && <div className="ice-drop-hint">Thả vào miệng ly</div>}
+                <div className="ice-cup-glass">
+                  <div className="ice-water" />
+                  {isIceDroppingIntoCup && (
+                    <span className="ice-cup-drop-cube" key={iceDropAnimationKey} aria-hidden="true" />
+                  )}
+                  <div className="ice-cubes">
+                    {Array.from({ length: iceCubeCount }, (_, index) => {
+                      const cubeLayout = iceStackLayout[index % iceStackLayout.length]
+
+                      return (
+                        <span
+                          className="ice-cube"
+                          key={`ice-${index}`}
+                          style={{
+                            '--cube-index': index,
+                            '--cube-left': `${cubeLayout.left}%`,
+                            '--cube-bottom': `${cubeLayout.bottom}%`,
+                            '--cube-rotate': `${cubeLayout.rotate}deg`,
+                            '--cube-size': cubeLayout.size,
+                            '--cube-z': cubeLayout.z,
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                  <div className="ice-bubbles">
+                    {Array.from({ length: 12 }, (_, index) => (
+                      <span
+                        key={`bubble-${index}`}
+                        style={{
+                          '--bubble-index': index,
+                          '--bubble-left': `${(index * 19) % 100}%`,
+                          '--bubble-bottom': `${(index * 11) % 58}%`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="ice-cup-shadow" />
+              </div>
+
+              <div className="ice-bucket-panel">
+                <div
+                  className={`ice-bucket ${canAddIceCube ? '' : 'is-disabled'}`}
+                  role="button"
+                  tabIndex={canAddIceCube ? 0 : -1}
+                  aria-disabled={!canAddIceCube}
+                  aria-label="Kéo một viên đá vào cốc"
+                  onPointerDown={handleIceDragStart}
+                  onPointerUp={handleIceDragEnd}
+                  onPointerCancel={() => setDraggingIcePosition(null)}
                 >
-                  {copy.timer.labels[mode]}
+                  <span className="ice-bucket-handle" />
+                  <span className="ice-bucket-body">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <span className="ice-bucket-cube" key={`bucket-ice-${index}`} />
+                    ))}
+                  </span>
+                  <span className="ice-bucket-grabber" aria-hidden="true">
+                    <span className="ice-bucket-grab-cube" />
+                  </span>
+                  <span className="ice-bucket-label">Kéo đá</span>
+                </div>
+                {draggingIcePosition && (
+                  <span
+                    className={`ice-drag-ghost ${draggingIcePosition.isDropping ? 'is-dropping' : ''} ${
+                      draggingIcePosition.isReturning ? 'is-returning' : ''
+                    }`}
+                    style={{
+                      '--drag-x': `${draggingIcePosition.x}px`,
+                      '--drag-y': `${draggingIcePosition.y}px`,
+                      '--drop-mid': `${draggingIcePosition.dropMid || 0}px`,
+                      '--drop-end': `${draggingIcePosition.dropEnd || 0}px`,
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="ice-picker" aria-label="Chọn số viên đá">
+              <button
+                type="button"
+                onClick={() => handleIceCubeCountChange(iceCubeCount - 1)}
+                disabled={isTimerRunning || iceCubeCount === 1}
+                aria-label="Giảm một viên đá"
+              >
+                −
+              </button>
+              <div>
+                <strong>{iceCubeCount}</strong>
+                <span>{iceCubeCount * iceCubeMinutes} phút</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleIceCubeCountChange(iceCubeCount + 1)}
+                disabled={isTimerRunning || iceCubeCount === maxIceCubes}
+                aria-label="Thêm một viên đá"
+              >
+                +
+              </button>
+            </div>
+
+            <div className="ice-cube-tray">
+              {Array.from({ length: maxIceCubes }, (_, index) => (
+                <button
+                  className={index < iceCubeCount ? 'is-active' : ''}
+                  type="button"
+                  key={`ice-choice-${index}`}
+                  onClick={() => handleIceCubeCountChange(index + 1)}
+                  disabled={isTimerRunning}
+                  aria-label={`Chọn ${index + 1} viên đá`}
+                  aria-pressed={index < iceCubeCount}
+                >
+                  <span />
                 </button>
               ))}
             </div>
