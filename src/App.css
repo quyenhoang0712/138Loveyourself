@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap");
 
 .landing-page {
+  --ice-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='0' dy='5' stdDeviation='4' flood-color='%23285787' flood-opacity='0.24'/%3E%3C/filter%3E%3Cpath d='M13 11 47 6 59 36 40 58 9 50 4 24Z' fill='%23f7fdff' stroke='%23ffffff' stroke-width='4' filter='url(%23shadow)'/%3E%3Cpath d='M16 14 47 10 55 35 39 53 13 46 8 25Z' fill='%23dff8ff' opacity='0.82'/%3E%3Cpath d='M17 18 42 13 51 22 21 27Z' fill='%23ffffff' opacity='0.78'/%3E%3Cpath d='M24 26 43 15M29 31 48 40M20 42 34 25' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' opacity='0.62'/%3E%3C/svg%3E") 24 24, grabbing;
   --page-bg: #fffadc;
   --page-surface: #fffef0;
   --page-surface-soft: #f4fbff;
@@ -30,7 +31,7 @@
 
 .landing-page.is-dragging-ice,
 .landing-page.is-dragging-ice * {
-  cursor: none !important;
+  cursor: var(--ice-cursor) !important;
 }
 
 .site-header {
@@ -2444,6 +2445,12 @@ input {
 
 .ice-cup {
   --melt-progress: 0;
+  --ice-water-progress: 0;
+  --ice-water-surface: 8%;
+  --ice-shrink-progress: 0;
+  --ice-fade-progress: 0;
+  --ice-drop-depth: 300%;
+  --ice-impact-bottom: 19%;
   position: relative;
   width: min(330px, 74vw);
   aspect-ratio: 0.88 / 1;
@@ -2563,11 +2570,11 @@ input {
   left: -8%;
   right: -8%;
   bottom: 0;
-  height: calc(var(--melt-progress) * 68%);
+  height: calc(var(--ice-water-progress) * 78%);
   background:
     radial-gradient(circle at 35% 18%, rgba(255, 255, 255, 0.66), transparent 22%),
     linear-gradient(180deg, rgba(220, 247, 255, 0.76), rgba(130, 204, 229, 0.58));
-  opacity: calc(var(--melt-progress) * 0.94);
+  opacity: calc(var(--ice-water-progress) * 0.68);
   transform-origin: 50% 100%;
   transition: height 680ms ease, opacity 680ms ease;
   animation: ice-water-sway 4.4s ease-in-out infinite;
@@ -2593,8 +2600,8 @@ input {
 
 .ice-cup-drop-cube {
   position: absolute;
-  left: 50%;
-  top: 6%;
+  left: 49%;
+  top: 4%;
   z-index: 12;
   width: clamp(56px, 9.2vw, 76px);
   aspect-ratio: 1;
@@ -2611,8 +2618,10 @@ input {
     inset -8px -10px 16px rgba(76, 148, 185, 0.28),
     0 10px 16px rgba(24, 55, 86, 0.2),
     0 0 18px rgba(225, 248, 255, 0.32);
-  transform: translate(-50%, -56%) rotate(-12deg) scale(1.1);
-  animation: ice-cup-fall 1320ms cubic-bezier(0.16, 0.78, 0.16, 1) forwards;
+  filter: drop-shadow(0 16px 18px rgba(29, 70, 110, 0.22));
+  transform: translate(-50%, -64%) rotate(-16deg) scale(1.08);
+  animation: ice-cup-fall 1320ms linear forwards;
+  will-change: transform, opacity;
 }
 
 .ice-cup-drop-cube::before {
@@ -2638,14 +2647,100 @@ input {
   mix-blend-mode: screen;
 }
 
+.ice-cup-drop-splash {
+  position: absolute;
+  left: 50%;
+  bottom: var(--ice-impact-bottom);
+  z-index: 11;
+  width: 62%;
+  height: 34px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) scale(0.42);
+  animation: ice-impact-ripple 1320ms ease-out forwards;
+}
+
+.ice-cup-drop-splash::before {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  height: 12px;
+  border: 2px solid rgba(232, 250, 255, 0.82);
+  border-radius: 50%;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.ice-cup-drop-splash span {
+  position: absolute;
+  left: calc(50% + (var(--splash-index) - 3) * 10%);
+  bottom: 42%;
+  width: 5px;
+  aspect-ratio: 1;
+  background: rgba(239, 252, 255, 0.86);
+  border-radius: 999px;
+  filter: blur(0.2px);
+  opacity: 0;
+  transform: translate(-50%, 0) scale(0.58);
+  animation: ice-impact-spark 1320ms ease-out forwards;
+  animation-delay: calc(var(--splash-index) * 18ms);
+}
+
+.ice-water-impact {
+  position: absolute;
+  left: 50%;
+  bottom: var(--ice-water-surface);
+  z-index: 13;
+  width: 70%;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 50%) scale(0.5);
+  animation: ice-water-impact-ripple 1320ms ease-out forwards;
+}
+
+.ice-water-impact::before,
+.ice-water-impact::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  height: 13px;
+  border: 2px solid rgba(237, 253, 255, 0.88);
+  border-radius: 50%;
+  content: "";
+  transform: translate(-50%, -50%) scale(0.45);
+}
+
+.ice-water-impact::after {
+  width: 58%;
+  height: 18px;
+  border-color: rgba(176, 231, 248, 0.52);
+}
+
+.ice-water-impact span {
+  position: absolute;
+  left: calc(50% + var(--water-drop-left));
+  top: 44%;
+  width: 4px;
+  aspect-ratio: 1;
+  background: rgba(239, 253, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(218, 248, 255, 0.5);
+  opacity: 0;
+  transform: translate(-50%, 0) scale(0.5);
+  animation: ice-water-droplet 1320ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 .ice-cube {
   position: absolute;
   left: var(--cube-left);
-  bottom: calc(var(--cube-bottom) - var(--melt-progress) * 8%);
+  bottom: calc(var(--cube-bottom) - var(--ice-shrink-progress) * 5%);
   z-index: var(--cube-z);
   width: clamp(46px, 8.2vw, 66px);
   aspect-ratio: 1;
-  opacity: calc(1 - var(--melt-progress) * 0.68);
+  opacity: calc(1 - var(--ice-fade-progress) * 0.86);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0 20%, rgba(222, 248, 255, 0.74) 46%, rgba(146, 206, 230, 0.36) 100%),
     rgba(255, 255, 255, 0.72);
@@ -2657,7 +2752,7 @@ input {
     inset -8px -10px 16px rgba(76, 148, 185, 0.26),
     0 8px 13px rgba(24, 55, 86, 0.2),
     0 0 14px rgba(225, 248, 255, 0.22);
-  transform: translate(-50%, 0) rotate(var(--cube-rotate)) skew(-2deg, 1deg) scale(calc(var(--cube-size) - var(--melt-progress) * 0.34));
+  transform: translate(-50%, 0) rotate(var(--cube-rotate)) skew(-2deg, 1deg) scale(calc(var(--cube-size) - var(--ice-shrink-progress) * 0.48));
   transition:
     opacity 680ms ease,
     bottom 680ms ease,
@@ -2719,7 +2814,7 @@ input {
   bottom: var(--bubble-bottom);
   width: 6px;
   aspect-ratio: 1;
-  opacity: calc(var(--melt-progress) * 0.7);
+  opacity: calc(var(--ice-water-progress) * 0.34);
   background: rgba(255, 255, 255, 0.72);
   border-radius: 999px;
   animation: bubble-rise 2.8s ease-in-out infinite;
@@ -2954,6 +3049,10 @@ input {
   will-change: left, top, transform;
 }
 
+.ice-drag-ghost:not(.is-dropping):not(.is-returning) {
+  opacity: 0;
+}
+
 .ice-drag-ghost.is-dropping {
   animation: ice-drop-into-cup 1160ms cubic-bezier(0.2, 0.72, 0.18, 1) forwards;
 }
@@ -2999,27 +3098,114 @@ input {
 @keyframes ice-cup-fall {
   0% {
     opacity: 1;
-    transform: translate(-50%, -62%) rotate(-12deg) scale(1.1);
+    transform: translate(-56%, -70%) rotate(-16deg) scale(1.08);
   }
 
-  30% {
+  18% {
     opacity: 1;
-    transform: translate(-50%, 95%) rotate(2deg) scale(1.04);
+    transform: translate(-53%, 34%) rotate(-8deg) scale(1.06);
   }
 
-  62% {
+  44% {
     opacity: 1;
-    transform: translate(-50%, 255%) rotate(17deg) scale(0.96);
+    transform: translate(-49%, 72%) rotate(8deg) scale(1);
   }
 
-  84% {
+  68% {
     opacity: 1;
-    transform: translate(-50%, 330%) rotate(25deg) scale(0.9);
+    transform: translate(-52%, var(--ice-drop-depth)) rotate(25deg) scale(0.9);
+  }
+
+  78% {
+    opacity: 1;
+    transform: translate(-50%, calc(var(--ice-drop-depth) - 48%)) rotate(14deg) scale(0.98);
+  }
+
+  91% {
+    opacity: 1;
+    transform: translate(-51%, calc(var(--ice-drop-depth) - 15%)) rotate(21deg) scale(0.92);
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, 365%) rotate(29deg) scale(0.78);
+    transform: translate(-51%, calc(var(--ice-drop-depth) - 8%)) rotate(24deg) scale(0.78);
+  }
+}
+
+@keyframes ice-impact-ripple {
+  0%,
+  60% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.42);
+  }
+
+  68% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(0.72);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.18);
+  }
+}
+
+@keyframes ice-impact-spark {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.58);
+  }
+
+  70% {
+    opacity: 0.88;
+    transform: translate(-50%, calc(-18px - var(--splash-index) * 1px)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 7px) scale(0.36);
+  }
+}
+
+@keyframes ice-water-impact-ripple {
+  0%,
+  55% {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(0.46);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translate(-50%, 50%) scale(0.68);
+  }
+
+  78% {
+    opacity: 0.7;
+    transform: translate(-50%, 50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(1.34);
+  }
+}
+
+@keyframes ice-water-droplet {
+  0%,
+  56% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.5);
+  }
+
+  64% {
+    opacity: 0.9;
+    transform: translate(calc(-50% + var(--water-drop-peak-x)), var(--water-drop-peak-y)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--water-drop-end-x)), var(--water-drop-end-y)) scale(0.38);
   }
 }
 
@@ -3221,7 +3407,8 @@ input {
 }
 
 .timer-start,
-.timer-reset {
+.timer-reset,
+.timer-break-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3252,7 +3439,8 @@ input {
   box-shadow: 0 8px 0 rgba(5, 15, 30, 0.42);
 }
 
-.timer-reset {
+.timer-reset,
+.timer-break-option {
   min-width: 104px;
   padding: 0 24px;
   color: #fff;
@@ -3260,7 +3448,8 @@ input {
   font-size: 1.02rem;
 }
 
-.landing-page.is-night-mode .timer-reset {
+.landing-page.is-night-mode .timer-reset,
+.landing-page.is-night-mode .timer-break-option {
   color: var(--timer-bg-deep);
   background: rgba(255, 226, 122, 0.14);
 }
@@ -3268,12 +3457,24 @@ input {
 .timer-start:hover,
 .timer-start:focus-visible,
 .timer-reset:hover,
-.timer-reset:focus-visible {
+.timer-reset:focus-visible,
+.timer-break-option:hover,
+.timer-break-option:focus-visible {
   transform: translateY(-2px);
 }
 
+.timer-start:disabled,
+.timer-reset:disabled,
+.timer-break-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+  box-shadow: none;
+}
+
 .timer-start:active,
-.timer-reset:active {
+.timer-reset:active,
+.timer-break-option:active {
   transform: translateY(2px);
 }
 
@@ -4351,7 +4552,8 @@ input {
   }
 
   .timer-start,
-  .timer-reset {
+  .timer-reset,
+  .timer-break-option {
     min-height: 62px;
   }
 
