@@ -16,6 +16,7 @@ import {
 import { getRandomQuote, getQuoteLetters } from '../utils/quotes'
 import { createShareImageBlob, getShareQuoteFontSize } from '../utils/shareImage'
 import { getNightModeFromPreference, getSavedColorModeOverride } from '../utils/theme'
+import { formatTime } from '../utils/time'
 
 function getNextDecisionMessageForLanguage(language, currentMessage = '') {
   const activeDecisionMessages = decisionMessages[language] || decisionMessages.vi
@@ -48,7 +49,6 @@ export function useAppState() {
   const [retainedWaterCubes, setRetainedWaterCubes] = useState(0)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [timerPhase, setTimerPhase] = useState('focus')
-  const [focusRound, setFocusRound] = useState(1)
   const [activeAmbientSound, setActiveAmbientSound] = useState(null)
   const [decisionMessage, setDecisionMessage] = useState('')
   const [decisionMotion, setDecisionMotion] = useState('idle')
@@ -159,6 +159,22 @@ export function useAppState() {
     }
   }, [])
 
+  useEffect(() => {
+    const defaultTitle = '138'
+
+    if (!isTimerRunning) {
+      document.title = defaultTitle
+      return
+    }
+
+    const label = isBreakPhase ? 'Break time' : 'Time to focus'
+    document.title = `${formatTime(secondsLeft)} - ${label}!`
+
+    return () => {
+      document.title = defaultTitle
+    }
+  }, [isBreakPhase, isTimerRunning, secondsLeft])
+
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext
@@ -198,10 +214,6 @@ export function useAppState() {
 
   const playButtonClick = useCallback(() => {
     playTone({ frequency: 740, duration: 0.045, gain: 0.045, type: 'triangle' })
-  }, [playTone])
-
-  const playTimerTick = useCallback(() => {
-    playTone({ frequency: 880, duration: 0.035, gain: 0.035, type: 'square' })
   }, [playTone])
 
   const playIceMeltNotice = useCallback(() => {
@@ -330,7 +342,6 @@ export function useAppState() {
             return iceCubeCount > 0 ? iceCubeCount * iceCubeSeconds : 0
           }
 
-          setFocusRound((currentRound) => currentRound + 1)
           setRetainedWaterCubes((currentCubes) => {
             const nextCubes = Math.min(maxIceCubes, currentCubes + iceCubeCount)
             setTimerPhase(nextCubes >= maxIceCubes ? 'longBreakReady' : 'shortBreakReady')
@@ -352,8 +363,6 @@ export function useAppState() {
 
         if (hasMeltedOneCube) {
           playIceMeltNotice()
-        } else {
-          playTimerTick()
         }
 
         return nextSeconds
@@ -361,7 +370,7 @@ export function useAppState() {
     }, 1000)
 
     return () => window.clearInterval(timerId)
-  }, [iceCubeCount, isBreakPhase, isTimerRunning, playIceMeltNotice, playTimerDone, playTimerTick, totalIceSeconds])
+  }, [iceCubeCount, isBreakPhase, isTimerRunning, playIceMeltNotice, playTimerDone, totalIceSeconds])
 
   useEffect(() => {
     stopAmbientSound()
@@ -820,7 +829,6 @@ export function useAppState() {
     decisionMessage,
     decisionMotion,
     draggingIcePosition,
-    focusRound,
     handleAddCustomFrame,
     handleAmbientSoundToggle,
     handleAskDecision,

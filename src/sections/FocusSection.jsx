@@ -6,7 +6,6 @@ export function FocusSection({
   canAddIceCube,
   copy,
   draggingIcePosition,
-  focusRound,
   iceCubeCount,
   iceCubeSeconds,
   iceCupRef,
@@ -247,7 +246,6 @@ export function FocusSection({
         </div>
 
         <div className="focus-status">
-          <span>{copy.timer.round(focusRound)}</span>
           <p>{activeTimerMessage}</p>
         </div>
       </div>

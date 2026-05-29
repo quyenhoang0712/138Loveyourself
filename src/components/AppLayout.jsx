@@ -37,7 +37,6 @@ export function AppLayout({ state }) {
     decisionMessage,
     decisionMotion,
     draggingIcePosition,
-    focusRound,
     handleAddCustomFrame,
     handleAmbientSoundToggle,
     handleAskDecision,
@@ -166,7 +165,6 @@ export function AppLayout({ state }) {
         canAddIceCube={canAddIceCube}
         copy={copy}
         draggingIcePosition={draggingIcePosition}
-        focusRound={focusRound}
         iceCubeCount={iceCubeCount}
         iceCubeSeconds={iceCubeSeconds}
         iceCupRef={iceCupRef}
