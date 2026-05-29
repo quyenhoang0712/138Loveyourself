@@ -4,7 +4,7 @@ export const lastQuoteStorageKey = 'lastOpenedQuote'
 export const customShareFramesStorageKey = 'customShareFrames'
 export const colorModeOverrideStorageKey = 'colorModeOverride'
 export const languageStorageKey = 'language'
-export const iceCubeSeconds = 30 * 60
+export const iceCubeSeconds = 10
 export const shortBreakSeconds = 5 * 60
 export const longBreakSeconds = 15 * 60
 export const maxIceCubes = 6
@@ -16,12 +16,12 @@ export const ambientSoundOptions = [
 ]
 
 export const iceStackLayout = [
-  { left: 34, bottom: 0, rotate: -15, size: 0.94, z: 1 },
-  { left: 50, bottom: 1, rotate: 7, size: 0.98, z: 2 },
-  { left: 66, bottom: 0, rotate: -8, size: 0.9, z: 3 },
-  { left: 42, bottom: 15, rotate: 10, size: 0.82, z: 4 },
-  { left: 58, bottom: 16, rotate: -11, size: 0.8, z: 5 },
-  { left: 50, bottom: 29, rotate: 5, size: 0.72, z: 6 },
+  { left: 32, bottom: 0, rotate: -14, size: 1.1, z: 1 },
+  { left: 55, bottom: 2, rotate: 9, size: 1.12, z: 2 },
+  { left: 44, bottom: 15, rotate: -5, size: 1.04, z: 3 },
+  { left: 64, bottom: 23, rotate: 12, size: 0.98, z: 4 },
+  { left: 37, bottom: 34, rotate: -11, size: 0.94, z: 5 },
+  { left: 54, bottom: 45, rotate: 7, size: 0.86, z: 6 },
 ]
 
 export const shareFrames = [

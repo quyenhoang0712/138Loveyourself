@@ -2449,6 +2449,7 @@ input {
   --ice-water-surface: 8%;
   --ice-shrink-progress: 0;
   --ice-fade-progress: 0;
+  --ice-float-lift: 0%;
   --ice-drop-depth: 300%;
   --ice-impact-bottom: 19%;
   position: relative;
@@ -2736,9 +2737,9 @@ input {
 .ice-cube {
   position: absolute;
   left: var(--cube-left);
-  bottom: calc(var(--cube-bottom) - var(--ice-shrink-progress) * 5%);
+  bottom: calc(var(--cube-bottom) + var(--ice-float-lift) - var(--ice-shrink-progress) * 5%);
   z-index: var(--cube-z);
-  width: clamp(46px, 8.2vw, 66px);
+  width: clamp(54px, 9.4vw, 80px);
   aspect-ratio: 1;
   opacity: calc(1 - var(--ice-fade-progress) * 0.86);
   background:
@@ -2841,6 +2842,7 @@ input {
   position: relative;
   display: grid;
   justify-items: center;
+  gap: 16px;
   padding-bottom: 8%;
 }
 
@@ -3051,6 +3053,14 @@ input {
 
 .ice-drag-ghost:not(.is-dropping):not(.is-returning) {
   opacity: 0;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .ice-drag-ghost:not(.is-dropping):not(.is-returning) {
+    opacity: 1;
+    width: 64px;
+    transform: translate(-50%, calc(-100% - 14px)) rotate(-10deg) scale(1.04);
+  }
 }
 
 .ice-drag-ghost.is-dropping {

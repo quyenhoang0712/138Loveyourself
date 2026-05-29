@@ -13,6 +13,7 @@ export function FocusSection({
   iceDropAnimationKey,
   iceDropDepth,
   iceFadeProgress,
+  iceFloatLift,
   iceImpactBottom,
   iceMeltProgress,
   iceShrinkProgress,
@@ -36,6 +37,7 @@ export function FocusSection({
 }) {
   const isBreakReady = timerPhase === 'shortBreakReady' || timerPhase === 'longBreakReady'
   const isBreakPhase = timerPhase === 'shortBreak' || timerPhase === 'longBreak'
+  const canEditIce = !isTimerRunning && !isBreakPhase
   const isTimerStartDisabled = timerPhase === 'focus' && iceCubeCount === 0
   const timerStartLabel = isTimerRunning
     ? copy.timer.pause
@@ -71,6 +73,7 @@ export function FocusSection({
                 '--ice-water-progress': iceWaterProgress,
                 '--ice-shrink-progress': iceShrinkProgress,
                 '--ice-fade-progress': iceFadeProgress,
+                '--ice-float-lift': iceFloatLift,
                 '--ice-drop-depth': iceDropDepth,
                 '--ice-impact-bottom': iceImpactBottom,
                 '--ice-water-surface': iceWaterSurface,
@@ -184,19 +187,19 @@ export function FocusSection({
               <button
                 type="button"
                 onClick={() => onIceCubeCountChange(iceCubeCount - 1)}
-                disabled={isTimerRunning || timerPhase !== 'focus' || maxSelectableIceCubes === 0 || iceCubeCount === 0}
+                disabled={!canEditIce || maxSelectableIceCubes === 0 || iceCubeCount === 0}
                 aria-label="Giảm một viên đá"
               >
               −
             </button>
             <div>
               <strong>{iceCubeCount}</strong>
-              <span>{iceCubeCount * iceCubeSeconds} giây</span>
+              <span>{formatTime(iceCubeCount * iceCubeSeconds)}</span>
             </div>
               <button
                 type="button"
                 onClick={() => onIceCubeCountChange(iceCubeCount + 1)}
-                disabled={isTimerRunning || timerPhase !== 'focus' || iceCubeCount >= maxSelectableIceCubes}
+                disabled={!canEditIce || iceCubeCount >= maxSelectableIceCubes}
                 aria-label="Thêm một viên đá"
               >
               +
@@ -210,7 +213,7 @@ export function FocusSection({
                 type="button"
                 key={`ice-choice-${index}`}
                 onClick={() => onIceCubeCountChange(index + 1)}
-                disabled={isTimerRunning || timerPhase !== 'focus' || index + 1 > maxSelectableIceCubes}
+                disabled={!canEditIce || index + 1 > maxSelectableIceCubes}
                 aria-label={`Chọn ${index + 1} viên đá`}
                 aria-pressed={index < iceCubeCount}
               >

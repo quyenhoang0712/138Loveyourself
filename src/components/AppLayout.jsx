@@ -66,6 +66,7 @@ export function AppLayout({ state }) {
     iceDropAnimationKey,
     iceDropDepth,
     iceFadeProgress,
+    iceFloatLift,
     iceImpactBottom,
     iceMeltProgress,
     iceShrinkProgress,
@@ -172,6 +173,7 @@ export function AppLayout({ state }) {
         iceDropAnimationKey={iceDropAnimationKey}
         iceDropDepth={iceDropDepth}
         iceFadeProgress={iceFadeProgress}
+        iceFloatLift={iceFloatLift}
         iceImpactBottom={iceImpactBottom}
         iceMeltProgress={iceMeltProgress}
         iceShrinkProgress={iceShrinkProgress}

@@ -92,22 +92,23 @@ export function useAppState() {
   const isQuoteSaved = savedQuotes.includes(quote)
   const isFocusPhase = timerPhase === 'focus'
   const isBreakPhase = timerPhase === 'shortBreak' || timerPhase === 'longBreak'
-  const totalIceSeconds = iceCubeCount > 0 ? iceCubeSeconds : 0
+  const isBreakReadyPhase = timerPhase === 'shortBreakReady' || timerPhase === 'longBreakReady'
+  const totalIceSeconds = iceCubeCount * iceCubeSeconds
   const iceMeltProgress =
     isFocusPhase && totalIceSeconds > 0 ? 1 - Math.min(secondsLeft, totalIceSeconds) / totalIceSeconds : 0
   const currentIceWaterProgress = Math.max(0, (iceMeltProgress - 0.16) / 0.84)
-  const currentMeltingWaterCubes = isFocusPhase && secondsLeft > 0 ? currentIceWaterProgress : 0
+  const currentMeltingWaterCubes = isFocusPhase && secondsLeft > 0 ? iceCubeCount * currentIceWaterProgress : 0
   const iceWaterProgress = Math.min(1, (retainedWaterCubes + currentMeltingWaterCubes) / maxIceCubes)
   const iceShrinkProgress = Math.max(0, (iceMeltProgress - 0.18) / 0.82)
   const iceFadeProgress = Math.max(0, (iceMeltProgress - 0.58) / 0.42)
   const iceWaterSurface = `${Math.max(8, iceWaterProgress * 78)}%`
+  const iceFloatLift = `${Math.min(38, iceWaterProgress * 44)}%`
   const remainingWaterCapacityCubes = Math.max(0, maxIceCubes - retainedWaterCubes)
   const activeIceCubeCount = iceCubeCount
   const maxSelectableIceCubes = remainingWaterCapacityCubes
   const canAddIceCube =
     !isTimerRunning &&
-    isFocusPhase &&
-    (secondsLeft === 0 || secondsLeft === iceCubeSeconds) &&
+    (isBreakReadyPhase || (isFocusPhase && (secondsLeft === 0 || secondsLeft === totalIceSeconds))) &&
     remainingWaterCapacityCubes > activeIceCubeCount
   const iceDropDepth = `${Math.max(148, 338 - iceCubeCount * 38)}%`
   const iceImpactBottom = `${Math.min(43, 13 + iceCubeCount * 6)}%`
@@ -126,7 +127,7 @@ export function useAppState() {
       : timerPhase === 'shortBreakReady'
         ? 'Một viên đá đã tan. Nghỉ 5 phút rồi mình quay lại viên tiếp theo nhé.'
       : timerPhase === 'longBreakReady'
-        ? 'Mẻ đá đã tan hết. Bạn có thể nghỉ nhẹ hoặc nghỉ dài 15 phút.'
+        ? 'Bạn đã hoàn thành viên thứ 6. Nghỉ dài 15 phút nhé.'
       : isBreakPhase
         ? 'Bấm tiếp tục để nghỉ tiếp.'
       : secondsLeft === 0
@@ -203,6 +204,11 @@ export function useAppState() {
     playTone({ frequency: 880, duration: 0.035, gain: 0.035, type: 'square' })
   }, [playTone])
 
+  const playIceMeltNotice = useCallback(() => {
+    playTone({ frequency: 783.99, duration: 0.09, gain: 0.05, type: 'sine' })
+    playTone({ frequency: 1046.5, duration: 0.12, gain: 0.045, type: 'triangle', delay: 0.08 })
+  }, [playTone])
+
   const playTimerDone = useCallback(() => {
     const alarmNotes = [
       { frequency: 880, delay: 0 },
@@ -241,16 +247,20 @@ export function useAppState() {
 
   const handleIceCubeCountChange = useCallback(
     (nextCount) => {
-      if (maxSelectableIceCubes <= 0 || !isFocusPhase) return
+      if (maxSelectableIceCubes <= 0 || (!isFocusPhase && !isBreakReadyPhase)) return
 
       const normalizedCount = Math.min(maxSelectableIceCubes, Math.max(0, nextCount))
       setIceCubeCount(normalizedCount)
 
+      if (isBreakReadyPhase && normalizedCount > 0) {
+        setTimerPhase('focus')
+      }
+
       if (!isTimerRunning) {
-        setSecondsLeft(normalizedCount > 0 ? iceCubeSeconds : 0)
+        setSecondsLeft(normalizedCount * iceCubeSeconds)
       }
     },
-    [isFocusPhase, isTimerRunning, maxSelectableIceCubes],
+    [isBreakReadyPhase, isFocusPhase, isTimerRunning, maxSelectableIceCubes],
   )
 
   const finishIceDrag = useCallback(
@@ -317,27 +327,41 @@ export function useAppState() {
 
           if (isBreakPhase) {
             setTimerPhase('focus')
-            return iceCubeCount > 0 ? iceCubeSeconds : 0
+            return iceCubeCount > 0 ? iceCubeCount * iceCubeSeconds : 0
           }
 
           setFocusRound((currentRound) => currentRound + 1)
-          setRetainedWaterCubes((currentCubes) => Math.min(maxIceCubes, currentCubes + 1))
-          setIceCubeCount((currentCount) => {
-            const nextCount = Math.max(0, currentCount - 1)
-            setTimerPhase(nextCount > 0 ? 'shortBreakReady' : 'longBreakReady')
-            return nextCount
+          setRetainedWaterCubes((currentCubes) => {
+            const nextCubes = Math.min(maxIceCubes, currentCubes + iceCubeCount)
+            setTimerPhase(nextCubes >= maxIceCubes ? 'longBreakReady' : 'shortBreakReady')
+            return nextCubes
           })
+          setIceCubeCount(0)
 
           return 0
         }
 
-        playTimerTick()
-        return currentSeconds - 1
+        const nextSeconds = currentSeconds - 1
+        const completedFocusSeconds = totalIceSeconds - nextSeconds
+        const hasMeltedOneCube =
+          !isBreakPhase &&
+          totalIceSeconds > iceCubeSeconds &&
+          nextSeconds > 0 &&
+          completedFocusSeconds > 0 &&
+          completedFocusSeconds % iceCubeSeconds === 0
+
+        if (hasMeltedOneCube) {
+          playIceMeltNotice()
+        } else {
+          playTimerTick()
+        }
+
+        return nextSeconds
       })
     }, 1000)
 
     return () => window.clearInterval(timerId)
-  }, [iceCubeCount, isBreakPhase, isTimerRunning, playTimerDone, playTimerTick])
+  }, [iceCubeCount, isBreakPhase, isTimerRunning, playIceMeltNotice, playTimerDone, playTimerTick, totalIceSeconds])
 
   useEffect(() => {
     stopAmbientSound()
@@ -703,7 +727,7 @@ export function useAppState() {
     }
 
     if (secondsLeft === 0) {
-      setSecondsLeft(iceCubeSeconds)
+      setSecondsLeft(totalIceSeconds)
     }
 
     setIsTimerRunning(true)
@@ -718,7 +742,7 @@ export function useAppState() {
   const handleSkipBreak = () => {
     setIsTimerRunning(false)
     setTimerPhase('focus')
-    setSecondsLeft(iceCubeCount > 0 ? iceCubeSeconds : 0)
+    setSecondsLeft(iceCubeCount * iceCubeSeconds)
   }
 
   const handleAmbientSoundToggle = (soundId) => {
@@ -825,6 +849,7 @@ export function useAppState() {
     iceDropAnimationKey,
     iceDropDepth,
     iceFadeProgress,
+    iceFloatLift,
     iceImpactBottom,
     iceMeltProgress,
     iceShrinkProgress,
