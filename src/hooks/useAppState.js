@@ -120,21 +120,21 @@ export function useAppState() {
   const copy = translations[language] || translations.vi
   const activeTimerMessage = isTimerRunning
     ? isBreakPhase
-      ? 'Đang nghỉ. Thả lỏng mắt và vai một chút nhé.'
-      : 'Đá đang tan, mình cứ học tiếp nhé.'
+      ? copy.timer.ice.runningBreak
+      : copy.timer.ice.runningFocus
     : iceCubeCount === 0 && retainedWaterCubes === 0
-      ? 'Kéo đá vào cốc để bắt đầu phiên học.'
+      ? copy.timer.ice.empty
       : timerPhase === 'shortBreakReady'
-        ? 'Một viên đá đã tan. Nghỉ 5 phút rồi mình quay lại viên tiếp theo nhé.'
+        ? copy.timer.ice.shortReady
       : timerPhase === 'longBreakReady'
-        ? 'Bạn đã hoàn thành viên thứ 6. Nghỉ dài 15 phút nhé.'
+        ? copy.timer.ice.longReady
       : isBreakPhase
-        ? 'Bấm tiếp tục để nghỉ tiếp.'
+        ? copy.timer.ice.breakPaused
       : secondsLeft === 0
       ? remainingWaterCapacityCubes === 0
-        ? 'Cốc đầy rồi. Bạn đã hoàn thành đủ lượng đá cho hôm nay.'
-        : 'Đá tan hết rồi. Bạn đã hoàn thành một phiên học.'
-      : 'Thêm đá vào cốc rồi bắt đầu học đến khi đá tan.'
+        ? copy.timer.ice.full
+        : copy.timer.ice.finished
+      : copy.timer.ice.ready
   const activeBookCopy = language === 'vi' ? {} : bookTranslations[language]?.[activeBook.id] || bookTranslations.en[activeBook.id] || {}
   const localizedActiveBook = { ...activeBook, ...activeBookCopy }
 
@@ -167,13 +167,13 @@ export function useAppState() {
       return
     }
 
-    const label = isBreakPhase ? 'Break time' : 'Time to focus'
+    const label = isBreakPhase ? copy.timer.pageTitle.break : copy.timer.pageTitle.focus
     document.title = `${formatTime(secondsLeft)} - ${label}!`
 
     return () => {
       document.title = defaultTitle
     }
-  }, [isBreakPhase, isTimerRunning, secondsLeft])
+  }, [copy.timer.pageTitle.break, copy.timer.pageTitle.focus, isBreakPhase, isTimerRunning, secondsLeft])
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {

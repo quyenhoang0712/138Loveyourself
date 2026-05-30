@@ -41,11 +41,11 @@ export function FocusSection({
   const timerStartLabel = isTimerRunning
     ? copy.timer.pause
     : timerPhase === 'shortBreakReady'
-      ? 'Nghỉ 5 phút'
+      ? copy.timer.actions.shortBreak
       : timerPhase === 'longBreakReady'
-        ? 'Nghỉ 15 phút'
+        ? copy.timer.actions.longBreak
         : isBreakPhase
-          ? 'Tiếp tục nghỉ'
+          ? copy.timer.actions.continueStudy
           : copy.timer.start
   const displayedSeconds =
     timerPhase === 'shortBreakReady' ? shortBreakSeconds : timerPhase === 'longBreakReady' ? longBreakSeconds : secondsLeft
@@ -80,7 +80,7 @@ export function FocusSection({
               aria-hidden="true"
             >
               <div className="ice-cup-rim" />
-              {draggingIcePosition && canAddIceCube && <div className="ice-drop-hint">Thả vào miệng ly</div>}
+              {draggingIcePosition && canAddIceCube && <div className="ice-drop-hint">{copy.timer.ice.dropHint}</div>}
               <div className="ice-cup-glass">
                 <div className="ice-water" />
                 {isIceDroppingIntoCup && (
@@ -149,7 +149,7 @@ export function FocusSection({
                 role="button"
                 tabIndex={canAddIceCube ? 0 : -1}
                 aria-disabled={!canAddIceCube}
-                aria-label="Kéo một viên đá vào cốc"
+                aria-label={copy.timer.ice.bucketAria}
                 onPointerDown={onIceDragStart}
                 onPointerUp={onIceDragEnd}
                 onPointerCancel={onIceDragCancel}
@@ -163,7 +163,7 @@ export function FocusSection({
                 <span className="ice-bucket-grabber" aria-hidden="true">
                   <span className="ice-bucket-grab-cube" />
                 </span>
-                <span className="ice-bucket-label">Kéo đá</span>
+                <span className="ice-bucket-label">{copy.timer.ice.bucketLabel}</span>
               </div>
               {draggingIcePosition && (
                 <span
@@ -182,12 +182,12 @@ export function FocusSection({
             </div>
           </div>
 
-          <div className="ice-picker" aria-label="Chọn số viên đá">
+          <div className="ice-picker" aria-label={copy.timer.ice.pickerLabel}>
               <button
                 type="button"
                 onClick={() => onIceCubeCountChange(iceCubeCount - 1)}
                 disabled={!canEditIce || maxSelectableIceCubes === 0 || iceCubeCount === 0}
-                aria-label="Giảm một viên đá"
+                aria-label={copy.timer.ice.decreaseAria}
               >
               −
             </button>
@@ -199,7 +199,7 @@ export function FocusSection({
                 type="button"
                 onClick={() => onIceCubeCountChange(iceCubeCount + 1)}
                 disabled={!canEditIce || iceCubeCount >= maxSelectableIceCubes}
-                aria-label="Thêm một viên đá"
+                aria-label={copy.timer.ice.increaseAria}
               >
               +
             </button>
@@ -213,7 +213,7 @@ export function FocusSection({
                 key={`ice-choice-${index}`}
                 onClick={() => onIceCubeCountChange(index + 1)}
                 disabled={!canEditIce || index + 1 > maxSelectableIceCubes}
-                aria-label={`Chọn ${index + 1} viên đá`}
+                aria-label={copy.timer.ice.chooseAria(index + 1)}
                 aria-pressed={index < iceCubeCount}
               >
                 <span />
@@ -231,12 +231,12 @@ export function FocusSection({
             </button>
             {timerPhase === 'longBreakReady' && (
               <button className="timer-break-option" type="button" onClick={() => onStartBreak('short')}>
-                Nghỉ 5 phút
+                {copy.timer.actions.shortBreak}
               </button>
             )}
             {isBreakReady && iceCubeCount > 0 && (
               <button className="timer-break-option" type="button" onClick={onSkipBreak}>
-                Tiếp tục học
+                {copy.timer.actions.continueStudy}
               </button>
             )}
             <button className="timer-reset" type="button" onClick={onResetTimer}>
