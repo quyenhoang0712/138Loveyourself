@@ -19,12 +19,6 @@ export function WheelNavSection() {
       <div className="wheel-nav-stage">
         <div className="wheel-nav-disc" style={{ '--wheel-rotation': `${rotation}deg` }}>
           <img className="wheel-nav-vector" src="/Vector.svg" alt="" aria-hidden="true" />
-          <span className="wheel-sector-art wheel-sector-art-music" aria-hidden="true">
-            <img src="/nhạc.GIF" alt="" />
-          </span>
-          <span className="wheel-sector-art wheel-sector-art-books" aria-hidden="true">
-            <img src="/sách.GIF" alt="" />
-          </span>
         </div>
         <div className="wheel-spin-controls" aria-label="Xoay vòng">
           <button

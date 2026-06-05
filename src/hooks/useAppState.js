@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { selfHelpBooks } from '../books'
 import { decisionMessages } from '../decisionMessages'
-import { bookTranslations, translations } from '../i18n'
+import { translations } from '../i18n'
 import {
   ambientSoundOptions,
   customShareFramesStorageKey,
@@ -51,8 +50,6 @@ export function useAppState() {
   const [decisionMessage, setDecisionMessage] = useState('')
   const [decisionMotion, setDecisionMotion] = useState('idle')
   const [decisionAnimationKey, setDecisionAnimationKey] = useState(0)
-  const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
-  const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
   const [language, setLanguage] = useState(() => {
     try {
@@ -109,7 +106,6 @@ export function useAppState() {
   const iceDropDepth = `${Math.max(148, 338 - iceCubeCount * 38)}%`
   const iceImpactBottom = `${Math.min(43, 13 + iceCubeCount * 6)}%`
   const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
-  const activeBook = selfHelpBooks.find((book) => book.id === activeBookId) || selfHelpBooks[0]
   const allShareFrames = [...shareFrames, ...customShareFrames]
   const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
   const shareQuoteFontSize = getShareQuoteFontSize(quote)
@@ -131,9 +127,6 @@ export function useAppState() {
         ? copy.timer.ice.full
         : copy.timer.ice.finished
       : copy.timer.ice.ready
-  const activeBookCopy = language === 'vi' ? {} : bookTranslations[language]?.[activeBook.id] || bookTranslations.en[activeBook.id] || {}
-  const localizedActiveBook = { ...activeBook, ...activeBookCopy }
-
   useLayoutEffect(() => {
     const canControlScrollRestoration = 'scrollRestoration' in window.history
     const previousScrollRestoration = canControlScrollRestoration ? window.history.scrollRestoration : null
@@ -424,7 +417,7 @@ export function useAppState() {
     if (!isLanguageMenuOpen) return undefined
 
     const handlePointerDown = (event) => {
-      if (languageSwitcherRef.current?.contains(event.target)) return
+      if (event.target.closest('.language-switcher') || languageSwitcherRef.current?.contains(event.target)) return
       setIsLanguageMenuOpen(false)
     }
 
@@ -762,19 +755,12 @@ export function useAppState() {
     }, 360)
   }
 
-  const handleSelectBook = (bookId) => {
-    setActiveBookId(bookId)
-    setBookAnimationKey((currentKey) => currentKey + 1)
-  }
-
   return {
     activeAmbientSound,
-    activeBookId,
     activeShareFrame,
     activeShareFrameId,
     activeTimerMessage,
     allShareFrames,
-    bookAnimationKey,
     canAddIceCube,
     copy,
     customFrameInputRef,
@@ -796,7 +782,6 @@ export function useAppState() {
     handleNativeShareQuote,
     handleOpenLetter,
     handleResetTimer,
-    handleSelectBook,
     handleSelectShareFrame,
     handleShareInstagramStory,
     handleShareQuote,
@@ -822,7 +807,6 @@ export function useAppState() {
     isTimerRunning,
     language,
     languageSwitcherRef,
-    localizedActiveBook,
     maxSelectableIceCubes,
     openedLetter,
     openedLetterId,

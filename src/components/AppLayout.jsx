@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { languageOptions } from '../i18n'
 import {
   ambientSoundOptions,
@@ -14,12 +15,15 @@ import { AmbientSection } from '../sections/AmbientSection'
 import { DecisionSection } from '../sections/DecisionSection'
 import { EndingSection } from '../sections/EndingSection'
 import { FocusSection } from '../sections/FocusSection'
-import { HeroSection } from '../sections/HeroSection'
+import { IntroVideoSection } from '../sections/IntroVideoSection'
 import { PlaylistSection } from '../sections/PlaylistSection'
 import { QuoteSection } from '../sections/QuoteSection'
 import { WheelNavSection } from '../sections/WheelNavSection'
 
 export function AppLayout({ state }) {
+  const introSectionRef = useRef(null)
+  const [isFloatingHeaderVisible, setIsFloatingHeaderVisible] = useState(false)
+
   const {
     activeAmbientSound,
     activeShareFrame,
@@ -88,6 +92,24 @@ export function AppLayout({ state }) {
     timerPhase,
   } = state
 
+  useEffect(() => {
+    const updateFloatingHeader = () => {
+      const introSection = introSectionRef.current
+      if (!introSection) return
+
+      setIsFloatingHeaderVisible(introSection.getBoundingClientRect().bottom <= 0)
+    }
+
+    updateFloatingHeader()
+    window.addEventListener('scroll', updateFloatingHeader, { passive: true })
+    window.addEventListener('resize', updateFloatingHeader)
+
+    return () => {
+      window.removeEventListener('scroll', updateFloatingHeader)
+      window.removeEventListener('resize', updateFloatingHeader)
+    }
+  }, [])
+
   return (
     <main
       className={`landing-page is-day-mode ${
@@ -105,9 +127,26 @@ export function AppLayout({ state }) {
         languageSwitcherRef={languageSwitcherRef}
         onLanguageChange={handleLanguageChange}
         onLanguageMenuToggle={() => setIsLanguageMenuOpen((current) => !current)}
+        variant="static"
       />
 
-      <HeroSection videoUrl={heroVideoUrl} />
+      <div ref={introSectionRef}>
+        <IntroVideoSection copy={copy} videoUrl={heroVideoUrl} />
+      </div>
+
+      {isFloatingHeaderVisible ? (
+        <SiteHeader
+          copy={copy}
+          isLanguageMenuOpen={isLanguageMenuOpen}
+          language={language}
+          languageOptions={languageOptions}
+          languageSwitcherRef={languageSwitcherRef}
+          onLanguageChange={handleLanguageChange}
+          onLanguageMenuToggle={() => setIsLanguageMenuOpen((current) => !current)}
+          variant="floating"
+        />
+      ) : null}
+
       <WheelNavSection />
 
       <QuoteSection

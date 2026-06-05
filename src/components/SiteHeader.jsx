@@ -1,5 +1,3 @@
-import { HeartIcon } from './icons'
-
 export function SiteHeader({
   copy,
   isLanguageMenuOpen,
@@ -8,12 +6,13 @@ export function SiteHeader({
   languageSwitcherRef,
   onLanguageChange,
   onLanguageMenuToggle,
+  variant = 'sticky',
 }) {
   return (
-    <header className="site-header">
-      <a className="brand" href="/" aria-label="138.LoveYourself">
-        <HeartIcon />
-        <span>138.LoveYourself</span>
+    <header className={`site-header site-header-${variant}`}>
+      <a className="brand" href="/" aria-label="Love Yourself 138knitwear">
+        <span>LOVE YOURSELF</span>
+        <small>138knitwear</small>
       </a>
       <div className="header-actions">
         <div className={`language-switcher ${isLanguageMenuOpen ? 'is-open' : ''}`} ref={languageSwitcherRef}>

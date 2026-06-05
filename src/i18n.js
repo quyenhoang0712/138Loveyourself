@@ -1,1 +1,1 @@
-export { languageOptions, translations, bookTranslations } from './i18n/index'
+export { languageOptions, translations } from './i18n/index'

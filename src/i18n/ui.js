@@ -1,5 +1,3 @@
-import { bookTranslations } from './books'
-
 export const translations = {
   vi: {
     theme: {
@@ -14,9 +12,9 @@ export const translations = {
     hero: {
       eyebrow: 'Không gian chăm sóc bản thân',
       title: 'Chậm lại một chút.',
-      body: 'Một góc nhỏ để bạn thở chậm lại, mở một lá thư cho hôm nay, xin một dấu hiệu, chọn âm thanh nền, đọc vài cuốn sách dịu nhẹ, bật nhạc và quay về tập trung bằng Pomodoro.',
+      body: 'Một góc nhỏ để bạn thở chậm lại, mở một lá thư cho hôm nay, xin một dấu hiệu, chọn âm thanh nền, bật nhạc và quay về tập trung bằng Pomodoro.',
       flowLabel: 'Flow trải nghiệm',
-      flow: ['Mở thư', 'Xin dấu hiệu', 'Phòng âm thanh', 'Sách', 'Spotify', 'Pomodoro', 'Kết thúc'],
+      flow: ['Mở thư', 'Xin dấu hiệu', 'Phòng âm thanh', 'Spotify', 'Pomodoro', 'Kết thúc'],
     },
     quote: {
       eyebrow: 'Mở một lá thư',
@@ -47,13 +45,6 @@ export const translations = {
         waves: 'Tiếng sóng',
         fire: 'Tiếng lửa',
       },
-    },
-    library: {
-      eyebrow: 'Thư viện self-help',
-      title: 'Một kệ sách nhỏ để quay về với mình.',
-      read: 'Đọc sách',
-      shelfLabel: 'Chọn sách self-help',
-      chooseBook: (title) => `Chọn sách ${title}`,
     },
     playlist: {
       eyebrow: 'Playlist dành cho hôm nay',
@@ -171,9 +162,9 @@ export const translations = {
     hero: {
       eyebrow: 'Self-care space',
       title: 'Slow down for a moment.',
-      body: 'A soft corner to breathe slower, open a letter for today, ask for a sign, choose ambient sound, read gentle books, play music, and return to focus with Pomodoro.',
+      body: 'A soft corner to breathe slower, open a letter for today, ask for a sign, choose ambient sound, play music, and return to focus with Pomodoro.',
       flowLabel: 'Experience flow',
-      flow: ['Open letter', 'Ask a sign', 'Sound room', 'Books', 'Spotify', 'Pomodoro', 'Ending'],
+      flow: ['Open letter', 'Ask a sign', 'Sound room', 'Spotify', 'Pomodoro', 'Ending'],
     },
     quote: {
       eyebrow: 'Open a letter',
@@ -204,13 +195,6 @@ export const translations = {
         waves: 'Waves',
         fire: 'Fire',
       },
-    },
-    library: {
-      eyebrow: 'Self-help library',
-      title: 'A small shelf for coming back to yourself.',
-      read: 'Read book',
-      shelfLabel: 'Choose a self-help book',
-      chooseBook: (title) => `Choose ${title}`,
     },
     playlist: {
       eyebrow: 'Playlist for today',
@@ -320,18 +304,18 @@ export const translations = {
 
 
 Object.assign(translations, {
-  zh: bookTranslations.zhUi,
-  ja: bookTranslations.jaUi,
-  es: bookTranslations.esUi,
+  zh: translations.en,
+  ja: translations.en,
+  es: translations.en,
   fr: {
     theme: { toDay: 'Passer au mode clair', toNight: 'Passer au mode sombre' },
     language: { label: 'Choisir la langue', toggle: 'Ouvrir le menu des langues', trigger: 'Langue' },
     hero: {
       eyebrow: 'Espace de soin de soi',
       title: 'Ralentis un instant.',
-      body: 'Un petit coin doux pour respirer plus lentement, ouvrir une lettre pour aujourd’hui, demander un signe, choisir un son d’ambiance, lire quelques livres apaisants, lancer de la musique et revenir au focus avec Pomodoro.',
+      body: 'Un petit coin doux pour respirer plus lentement, ouvrir une lettre pour aujourd’hui, demander un signe, choisir un son d’ambiance, lancer de la musique et revenir au focus avec Pomodoro.',
       flowLabel: 'Parcours',
-      flow: ['Ouvrir une lettre', 'Demander un signe', 'Salle sonore', 'Livres', 'Spotify', 'Pomodoro', 'Fin'],
+      flow: ['Ouvrir une lettre', 'Demander un signe', 'Salle sonore', 'Spotify', 'Pomodoro', 'Fin'],
     },
     quote: {
       eyebrow: 'Ouvrir une lettre',
@@ -358,13 +342,6 @@ Object.assign(translations, {
       eyebrow: 'Salle sonore',
       title: 'Choisis un son pour te relâcher un peu.',
       sounds: { rain: 'Pluie', waves: 'Vagues', fire: 'Feu' },
-    },
-    library: {
-      eyebrow: 'Bibliothèque self-help',
-      title: 'Une petite étagère pour revenir à toi.',
-      read: 'Lire',
-      shelfLabel: 'Choisir un livre self-help',
-      chooseBook: (title) => `Choisir ${title}`,
     },
     playlist: {
       eyebrow: 'Playlist du jour',
@@ -466,9 +443,9 @@ Object.assign(translations, {
     hero: {
       eyebrow: 'Пространство заботы о себе',
       title: 'Замедлись на минуту.',
-      body: 'Мягкое место, чтобы дышать медленнее, открыть письмо на сегодня, попросить знак, выбрать фоновый звук, почитать спокойные книги, включить музыку и вернуться к фокусу с Pomodoro.',
+      body: 'Мягкое место, чтобы дышать медленнее, открыть письмо на сегодня, попросить знак, выбрать фоновый звук, включить музыку и вернуться к фокусу с Pomodoro.',
       flowLabel: 'Путь опыта',
-      flow: ['Открыть письмо', 'Попросить знак', 'Комната звука', 'Книги', 'Spotify', 'Pomodoro', 'Финал'],
+      flow: ['Открыть письмо', 'Попросить знак', 'Комната звука', 'Spotify', 'Pomodoro', 'Финал'],
     },
     quote: {
       eyebrow: 'Открыть письмо',
@@ -495,13 +472,6 @@ Object.assign(translations, {
       eyebrow: 'Комната звука',
       title: 'Выбери звук, чтобы немного расслабиться.',
       sounds: { rain: 'Дождь', waves: 'Волны', fire: 'Огонь' },
-    },
-    library: {
-      eyebrow: 'Библиотека self-help',
-      title: 'Небольшая полка, чтобы вернуться к себе.',
-      read: 'Читать',
-      shelfLabel: 'Выбрать self-help книгу',
-      chooseBook: (title) => `Выбрать ${title}`,
     },
     playlist: {
       eyebrow: 'Плейлист на сегодня',
@@ -603,9 +573,9 @@ Object.assign(translations, {
     hero: {
       eyebrow: 'सेल्फ-केयर स्पेस',
       title: 'थोड़ा धीमे हो जाओ।',
-      body: 'एक नरम-सा कोना जहां आप धीरे सांस लें, आज की एक चिट्ठी खोलें, एक संकेत मांगें, बैकग्राउंड साउंड चुनें, शांत किताबें पढ़ें, संगीत चलाएं और Pomodoro के साथ फिर से फोकस में लौटें।',
+      body: 'एक नरम-सा कोना जहां आप धीरे सांस लें, आज की एक चिट्ठी खोलें, एक संकेत मांगें, बैकग्राउंड साउंड चुनें, संगीत चलाएं और Pomodoro के साथ फिर से फोकस में लौटें।',
       flowLabel: 'अनुभव का क्रम',
-      flow: ['चिट्ठी खोलें', 'संकेत मांगें', 'साउंड रूम', 'किताबें', 'Spotify', 'Pomodoro', 'अंत'],
+      flow: ['चिट्ठी खोलें', 'संकेत मांगें', 'साउंड रूम', 'Spotify', 'Pomodoro', 'अंत'],
     },
     quote: {
       eyebrow: 'एक चिट्ठी खोलें',
@@ -632,13 +602,6 @@ Object.assign(translations, {
       eyebrow: 'साउंड रूम',
       title: 'थोड़ा रिलैक्स करने के लिए एक आवाज़ चुनें।',
       sounds: { rain: 'बारिश', waves: 'लहरें', fire: 'आग' },
-    },
-    library: {
-      eyebrow: 'सेल्फ-हेल्प लाइब्रेरी',
-      title: 'खुद तक लौटने के लिए एक छोटी बुकशेल्फ।',
-      read: 'पढ़ें',
-      shelfLabel: 'सेल्फ-हेल्प किताब चुनें',
-      chooseBook: (title) => `${title} चुनें`,
     },
     playlist: {
       eyebrow: 'आज की प्लेलिस्ट',
@@ -740,9 +703,9 @@ Object.assign(translations, {
     hero: {
       eyebrow: '셀프케어 공간',
       title: '잠깐 천천히 쉬어가요.',
-      body: '조금 더 천천히 숨 쉬고, 오늘의 편지를 열고, 작은 신호를 묻고, 배경음을 고르고, 다정한 책과 음악을 지나 Pomodoro로 다시 집중에 돌아오는 작은 공간이에요.',
+      body: '조금 더 천천히 숨 쉬고, 오늘의 편지를 열고, 작은 신호를 묻고, 배경음을 고르고, 음악을 지나 Pomodoro로 다시 집중에 돌아오는 작은 공간이에요.',
       flowLabel: '경험 흐름',
-      flow: ['편지 열기', '신호 묻기', '사운드 룸', '책', 'Spotify', 'Pomodoro', '마무리'],
+      flow: ['편지 열기', '신호 묻기', '사운드 룸', 'Spotify', 'Pomodoro', '마무리'],
     },
     quote: {
       eyebrow: '편지 열기',
@@ -769,13 +732,6 @@ Object.assign(translations, {
       eyebrow: '사운드 룸',
       title: '조금 힘을 풀 수 있는 소리를 골라 주세요.',
       sounds: { rain: '비', waves: '파도', fire: '불' },
-    },
-    library: {
-      eyebrow: '셀프헬프 라이브러리',
-      title: '나에게 돌아오기 위한 작은 책장.',
-      read: '책 읽기',
-      shelfLabel: '셀프헬프 책 선택',
-      chooseBook: (title) => `${title} 선택`,
     },
     playlist: {
       eyebrow: '오늘의 플레이리스트',
