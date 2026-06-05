@@ -10,9 +10,9 @@ export const translations = {
       trigger: 'Ngôn ngữ',
     },
     hero: {
-      eyebrow: 'Không gian chăm sóc bản thân',
-      title: 'Chậm lại một chút.',
-      body: 'Một góc nhỏ để bạn thở chậm lại, mở một lá thư cho hôm nay, xin một dấu hiệu, chọn âm thanh nền, bật nhạc và quay về tập trung bằng Pomodoro.',
+      eyebrow: 'Love Yourself rooms',
+      title: 'Chọn một phòng cho hôm nay.',
+      body: 'Mỗi phòng là một cách chăm sóc bản thân khác nhau: mở một lá thư, tập trung cùng chiếc ly đá, hoặc bật một playlist để thở chậm lại.',
       flowLabel: 'Flow trải nghiệm',
       flow: ['Mở thư', 'Xin dấu hiệu', 'Phòng âm thanh', 'Spotify', 'Pomodoro', 'Kết thúc'],
     },

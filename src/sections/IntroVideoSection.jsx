@@ -17,6 +17,9 @@ export function IntroVideoSection({ copy, videoUrl }) {
           <span>{copy.hero.body}</span>
         </div>
       </div>
+      <div className="room-choice-prompt scroll-pop">
+        <p>Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm nay.</p>
+      </div>
     </section>
   )
 }

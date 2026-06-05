@@ -748,11 +748,8 @@ export function useAppState() {
   }
 
   const handleChooseAgain = () => {
-    setDecisionMotion('hiding')
     window.clearTimeout(decisionTimeoutRef.current)
-    decisionTimeoutRef.current = window.setTimeout(() => {
-      revealDecisionMessage(decisionMessage)
-    }, 360)
+    setDecisionMotion('idle')
   }
 
   return {

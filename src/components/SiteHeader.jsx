@@ -1,11 +1,5 @@
 export function SiteHeader({
-  copy,
-  isLanguageMenuOpen,
-  language,
-  languageOptions,
-  languageSwitcherRef,
-  onLanguageChange,
-  onLanguageMenuToggle,
+  roomSwitcher,
   variant = 'sticky',
 }) {
   return (
@@ -15,36 +9,7 @@ export function SiteHeader({
         <small>138knitwear</small>
       </a>
       <div className="header-actions">
-        <div className={`language-switcher ${isLanguageMenuOpen ? 'is-open' : ''}`} ref={languageSwitcherRef}>
-          <button
-            className="language-trigger"
-            type="button"
-            aria-label={copy.language.toggle}
-            aria-expanded={isLanguageMenuOpen}
-            aria-haspopup="listbox"
-            onClick={onLanguageMenuToggle}
-          >
-            <span>{copy.language.trigger}</span>
-            <span className="language-trigger-chevron" aria-hidden="true">
-              ⌄
-            </span>
-          </button>
-          <div className="language-menu" role="listbox" aria-label={copy.language.label}>
-            {languageOptions.map((option) => (
-              <button
-                className={language === option.id ? 'is-active' : ''}
-                type="button"
-                key={option.id}
-                role="option"
-                aria-selected={language === option.id}
-                onClick={() => onLanguageChange(option.id)}
-              >
-                <span>{option.label}</span>
-                <small>{option.name}</small>
-              </button>
-            ))}
-          </div>
-        </div>
+        {roomSwitcher}
       </div>
     </header>
   )

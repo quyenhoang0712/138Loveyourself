@@ -1,17 +1,47 @@
 import { useState } from 'react'
 
+const wheelSpinDuration = 760
+
 const wheelLinks = [
-  { href: '#quote', label: 'mở thư', className: 'wheel-link-quote' },
-  { href: '#decision', label: 'xin dấu hiệu', className: 'wheel-link-decision' },
-  { href: '#collection', label: 'spotify', className: 'wheel-link-spotify' },
-  { href: '#focus', label: 'pomodoro', className: 'wheel-link-focus' },
+  { href: '#card-room', label: 'phòng thiệp', className: 'wheel-link-card-room', rotation: -90, color: '#9AB4EE' },
+  { href: '#focus-room', label: 'phòng tập trung', className: 'wheel-link-focus-room', rotation: 180, color: '#F8DB8E' },
+  { href: '#sound-room', label: 'phòng âm thanh', className: 'wheel-link-sound-room', rotation: 90, color: '#EBAAB4' },
 ]
 
-export function WheelNavSection() {
+export function WheelNavSection({ onRoomNavigate }) {
   const [rotation, setRotation] = useState(0)
+  const [pendingHref, setPendingHref] = useState(null)
 
   const rotateWheel = (direction) => {
     setRotation((currentRotation) => currentRotation + direction * 90)
+  }
+
+  const getTargetRotation = (currentRotation, targetRotation) => {
+    const currentTurns = Math.round((currentRotation - targetRotation) / 360)
+    let nextRotation = targetRotation + currentTurns * 360
+
+    if (nextRotation === currentRotation) {
+      nextRotation += 360
+    }
+
+    return nextRotation
+  }
+
+  const handleRoomClick = (event, link) => {
+    event.preventDefault()
+    if (pendingHref) return
+
+    setPendingHref(link.href)
+    setRotation((currentRotation) => getTargetRotation(currentRotation, link.rotation))
+
+    window.setTimeout(() => {
+      if (onRoomNavigate) {
+        onRoomNavigate(link)
+        return
+      }
+
+      window.location.hash = link.href
+    }, wheelSpinDuration)
   }
 
   return (
@@ -48,7 +78,12 @@ export function WheelNavSection() {
         </div>
         <nav className="wheel-nav-links" aria-label="Đi tới các phần">
           {wheelLinks.map((link) => (
-            <a className={`wheel-nav-link ${link.className}`} href={link.href} key={link.href}>
+            <a
+              className={`wheel-nav-link ${link.className} ${pendingHref === link.href ? 'is-pending' : ''}`}
+              href={link.href}
+              key={link.href}
+              onClick={(event) => handleRoomClick(event, link)}
+            >
               {link.label}
             </a>
           ))}
