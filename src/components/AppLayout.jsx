@@ -1,5 +1,4 @@
-import { selfHelpBooks } from '../books'
-import { bookTranslations, languageOptions } from '../i18n'
+import { languageOptions } from '../i18n'
 import {
   ambientSoundOptions,
   heroVideoUrl,
@@ -12,24 +11,21 @@ import { AmbientVisualEffect } from './AmbientVisualEffect'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
-import { BookLibrarySection } from '../sections/BookLibrarySection'
 import { DecisionSection } from '../sections/DecisionSection'
 import { EndingSection } from '../sections/EndingSection'
 import { FocusSection } from '../sections/FocusSection'
 import { HeroSection } from '../sections/HeroSection'
 import { PlaylistSection } from '../sections/PlaylistSection'
 import { QuoteSection } from '../sections/QuoteSection'
-import { SiteFooter } from '../sections/SiteFooter'
+import { WheelNavSection } from '../sections/WheelNavSection'
 
 export function AppLayout({ state }) {
   const {
     activeAmbientSound,
-    activeBookId,
     activeShareFrame,
     activeShareFrameId,
     activeTimerMessage,
     allShareFrames,
-    bookAnimationKey,
     canAddIceCube,
     copy,
     customFrameInputRef,
@@ -51,14 +47,12 @@ export function AppLayout({ state }) {
     handleNativeShareQuote,
     handleOpenLetter,
     handleResetTimer,
-    handleSelectBook,
     handleSelectShareFrame,
     handleShareInstagramStory,
     handleShareQuote,
     handleSkipBreak,
     handleStartBreak,
     handleTimerStartToggle,
-    handleToggleColorMode,
     handleToggleSaveQuote,
     iceCubeCount,
     iceCupRef,
@@ -73,13 +67,11 @@ export function AppLayout({ state }) {
     iceWaterSurface,
     isIceDroppingIntoCup,
     isLanguageMenuOpen,
-    isNightMode,
     isQuoteSaved,
     isShareSheetOpen,
     isTimerRunning,
     language,
     languageSwitcherRef,
-    localizedActiveBook,
     maxSelectableIceCubes,
     openedLetter,
     openedLetterId,
@@ -98,7 +90,7 @@ export function AppLayout({ state }) {
 
   return (
     <main
-      className={`landing-page ${isNightMode ? 'is-night-mode' : 'is-day-mode'} ${
+      className={`landing-page is-day-mode ${
         activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''
       } ${draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''}`}
       onClickCapture={handleInterfaceClick}
@@ -108,16 +100,15 @@ export function AppLayout({ state }) {
       <SiteHeader
         copy={copy}
         isLanguageMenuOpen={isLanguageMenuOpen}
-        isNightMode={isNightMode}
         language={language}
         languageOptions={languageOptions}
         languageSwitcherRef={languageSwitcherRef}
         onLanguageChange={handleLanguageChange}
         onLanguageMenuToggle={() => setIsLanguageMenuOpen((current) => !current)}
-        onToggleColorMode={handleToggleColorMode}
       />
 
-      <HeroSection copy={copy} videoUrl={heroVideoUrl} />
+      <HeroSection videoUrl={heroVideoUrl} />
+      <WheelNavSection />
 
       <QuoteSection
         copy={copy}
@@ -145,17 +136,6 @@ export function AppLayout({ state }) {
         copy={copy}
         onAmbientSoundToggle={handleAmbientSoundToggle}
         soundOptions={ambientSoundOptions}
-      />
-
-      <BookLibrarySection
-        activeBookId={activeBookId}
-        bookAnimationKey={bookAnimationKey}
-        bookTranslations={bookTranslations}
-        copy={copy}
-        language={language}
-        localizedActiveBook={localizedActiveBook}
-        onSelectBook={handleSelectBook}
-        selfHelpBooks={selfHelpBooks}
       />
 
       <PlaylistSection copy={copy} />
@@ -195,7 +175,6 @@ export function AppLayout({ state }) {
       />
 
       <EndingSection copy={copy} />
-      <SiteFooter copy={copy} />
 
       <ShareSheet
         activeShareFrame={activeShareFrame}

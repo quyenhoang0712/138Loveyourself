@@ -4,7 +4,6 @@ import { decisionMessages } from '../decisionMessages'
 import { bookTranslations, translations } from '../i18n'
 import {
   ambientSoundOptions,
-  colorModeOverrideStorageKey,
   customShareFramesStorageKey,
   iceCubeSeconds,
   languageStorageKey,
@@ -15,7 +14,6 @@ import {
 } from '../config/appConfig'
 import { getRandomQuote, getQuoteLetters } from '../utils/quotes'
 import { createShareImageBlob, getShareQuoteFontSize } from '../utils/shareImage'
-import { getNightModeFromPreference, getSavedColorModeOverride } from '../utils/theme'
 import { formatTime } from '../utils/time'
 
 function getNextDecisionMessageForLanguage(language, currentMessage = '') {
@@ -56,8 +54,6 @@ export function useAppState() {
   const [activeBookId, setActiveBookId] = useState(selfHelpBooks[0].id)
   const [bookAnimationKey, setBookAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
-  const [colorModePreference, setColorModePreference] = useState(getSavedColorModeOverride)
-  const [isNightMode, setIsNightMode] = useState(() => getNightModeFromPreference(getSavedColorModeOverride()))
   const [language, setLanguage] = useState(() => {
     try {
       const savedLanguage = localStorage.getItem(languageStorageKey)
@@ -472,33 +468,6 @@ export function useAppState() {
     }
   }, [draggingIcePosition, finishIceDrag])
 
-  useEffect(() => {
-    const updateAutomaticColorMode = () => {
-      setIsNightMode(getNightModeFromPreference(colorModePreference))
-    }
-
-    const colorSchemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)')
-    updateAutomaticColorMode()
-
-    if (colorSchemeQuery?.addEventListener) {
-      colorSchemeQuery.addEventListener('change', updateAutomaticColorMode)
-    } else if (colorSchemeQuery?.addListener) {
-      colorSchemeQuery.addListener(updateAutomaticColorMode)
-    }
-
-    const colorModeTimer = window.setInterval(updateAutomaticColorMode, 60 * 1000)
-
-    return () => {
-      window.clearInterval(colorModeTimer)
-
-      if (colorSchemeQuery?.removeEventListener) {
-        colorSchemeQuery.removeEventListener('change', updateAutomaticColorMode)
-      } else if (colorSchemeQuery?.removeListener) {
-        colorSchemeQuery.removeListener(updateAutomaticColorMode)
-      }
-    }
-  }, [colorModePreference])
-
   useEffect(
     () => () => {
       window.clearTimeout(decisionTimeoutRef.current)
@@ -656,10 +625,10 @@ export function useAppState() {
       const nextFrame = {
         id: `custom-${Date.now()}`,
         label: file.name.replace(/\.[^.]+$/, '') || 'Custom',
-        background: '#fffadc',
+        background: '#EDE5D2',
         card: '#8fc3d4',
-        accent: '#fffef0',
-        text: '#6f9ed8',
+        accent: '#EDE5D2',
+        text: '#4789C8',
         imageUrl: reader.result,
       }
       const nextFrames = [...customShareFrames, nextFrame]
@@ -758,22 +727,6 @@ export function useAppState() {
     setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
   }
 
-  const handleToggleColorMode = () => {
-    setIsNightMode((currentMode) => {
-      const nextMode = currentMode ? 'day' : 'night'
-
-      setColorModePreference(nextMode)
-
-      try {
-        localStorage.setItem(colorModeOverrideStorageKey, nextMode)
-      } catch {
-        // The switch still works for the current session if storage is unavailable.
-      }
-
-      return nextMode === 'night'
-    })
-  }
-
   const handleLanguageChange = (nextLanguage) => {
     setLanguage(nextLanguage)
     setIsLanguageMenuOpen(false)
@@ -850,7 +803,6 @@ export function useAppState() {
     handleSkipBreak,
     handleStartBreak,
     handleTimerStartToggle,
-    handleToggleColorMode,
     handleToggleSaveQuote,
     iceCubeCount,
     iceCupRef,
@@ -865,7 +817,6 @@ export function useAppState() {
     iceWaterSurface,
     isIceDroppingIntoCup,
     isLanguageMenuOpen,
-    isNightMode,
     isQuoteSaved,
     isShareSheetOpen,
     isTimerRunning,

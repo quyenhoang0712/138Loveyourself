@@ -43,9 +43,9 @@ export const translations = {
       eyebrow: 'Phòng âm thanh',
       title: 'Chọn âm thanh để thả lỏng một chút.',
       sounds: {
-        rain: 'Mưa',
-        waves: 'Sóng',
-        fire: 'Lửa',
+        rain: 'Tiếng mưa',
+        waves: 'Tiếng sóng',
+        fire: 'Tiếng lửa',
       },
     },
     library: {

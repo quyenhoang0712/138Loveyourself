@@ -2,7 +2,6 @@ export const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/web
 export const letterCount = 4
 export const lastQuoteStorageKey = 'lastOpenedQuote'
 export const customShareFramesStorageKey = 'customShareFrames'
-export const colorModeOverrideStorageKey = 'colorModeOverride'
 export const languageStorageKey = 'language'
 export const iceCubeSeconds = 30 * 60
 export const shortBreakSeconds = 5 * 60
@@ -10,9 +9,9 @@ export const longBreakSeconds = 15 * 60
 export const maxIceCubes = 6
 
 export const ambientSoundOptions = [
-  { id: 'rain', label: 'Mưa', src: '/liecio-calming-rain-257596.mp3' },
-  { id: 'waves', label: 'Sóng', src: '/freesound_community-waves-at-the-wave-organ-19507.mp3' },
-  { id: 'fire', label: 'Lửa', src: '/soundreality-fire-crackling-sound-499636.mp3' },
+  { id: 'rain', label: 'Tiếng mưa', src: '/tieng-mua.mp3' },
+  { id: 'waves', label: 'Tiếng sóng', src: '/tieng-song.mp3' },
+  { id: 'fire', label: 'Tiếng lửa', src: '/tieng-lua.mp3' },
 ]
 
 export const iceStackLayout = [
@@ -30,32 +29,24 @@ export const shareFrames = [
     label: 'Mint',
     background: '#b7e1cc',
     card: '#8fc3d4',
-    accent: '#fffef0',
-    text: '#6f9ed8',
+    accent: '#EDE5D2',
+    text: '#4789C8',
   },
   {
     id: 'blue',
     label: 'Blue',
-    background: '#b8d8ef',
-    card: '#6f9ed8',
-    accent: '#fffadc',
+    background: '#4789C8',
+    card: '#4789C8',
+    accent: '#EDE5D2',
     text: '#5d92d4',
   },
   {
     id: 'cream',
     label: 'Cream',
-    background: '#fffadc',
+    background: '#EDE5D2',
     card: '#9ed0df',
-    accent: '#fffef0',
-    text: '#6f9ed8',
-  },
-  {
-    id: 'dark',
-    label: 'Dark',
-    background: '#1f1f1f',
-    card: '#32463a',
-    accent: '#f8fff5',
-    text: '#314236',
+    accent: '#EDE5D2',
+    text: '#4789C8',
   },
   {
     id: 'rose',
@@ -70,7 +61,7 @@ export const shareFrames = [
     label: 'Lavender',
     background: '#c3c8ef',
     card: '#7f8cc7',
-    accent: '#fffadc',
+    accent: '#EDE5D2',
     text: '#6f7ec6',
   },
   {
@@ -78,7 +69,7 @@ export const shareFrames = [
     label: 'Sage',
     background: '#cfd7a8',
     card: '#7d9478',
-    accent: '#fffef0',
+    accent: '#EDE5D2',
     text: '#6e8a75',
   },
   {
@@ -86,9 +77,9 @@ export const shareFrames = [
     label: 'Sky',
     background: '#d8eff4',
     card: '#8fc3d4',
-    accent: '#ffffff',
-    text: '#6f9ed8',
+    accent: '#EDE5D2',
+    text: '#4789C8',
   },
 ]
 
-export const shareTextColors = ['#6f9ed8', '#d47496', '#6f7ec6', '#6e8a75', '#314236', '#fffef0', '#ffffff', '#111111']
+export const shareTextColors = ['#4789C8', '#d47496', '#6f7ec6', '#6e8a75', '#314236', '#EDE5D2', '#ffffff', '#111111']

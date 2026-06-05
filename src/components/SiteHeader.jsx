@@ -1,16 +1,13 @@
-import { DayNightSwitch } from './DayNightSwitch'
 import { HeartIcon } from './icons'
 
 export function SiteHeader({
   copy,
   isLanguageMenuOpen,
-  isNightMode,
   language,
   languageOptions,
   languageSwitcherRef,
   onLanguageChange,
   onLanguageMenuToggle,
-  onToggleColorMode,
 }) {
   return (
     <header className="site-header">
@@ -49,7 +46,6 @@ export function SiteHeader({
             ))}
           </div>
         </div>
-        <DayNightSwitch isNightMode={isNightMode} labels={copy.theme} onToggle={onToggleColorMode} />
       </div>
     </header>
   )
