@@ -2,7 +2,6 @@ export const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/web
 export const letterCount = 4
 export const lastQuoteStorageKey = 'lastOpenedQuote'
 export const customShareFramesStorageKey = 'customShareFrames'
-export const languageStorageKey = 'language'
 export const iceCubeSeconds = 30 * 60
 export const shortBreakSeconds = 5 * 60
 export const longBreakSeconds = 15 * 60

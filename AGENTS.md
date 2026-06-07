@@ -34,4 +34,4 @@ Backend:
 Rules:
 - No TypeScript unless requested.
 - No Redux unless requested.
-- Keep folder structure unchanged.![![alt text](image-1.png)](image.png)
+- Keep folder structure unchanged.

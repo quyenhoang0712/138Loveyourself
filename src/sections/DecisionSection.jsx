@@ -1,5 +1,8 @@
-export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, onAskDecision, onChooseAgain }) {
+export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, onAskDecision }) {
   const isRevealed = decisionMotion === 'revealed'
+  const isThinking = decisionMotion === 'thinking'
+  const hasConversation = isThinking || isRevealed
+  const decisionPrompt = 'xin 1 dấu hiệu'
 
   return (
     <section className="decision-section" id="decision">
@@ -7,36 +10,44 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
         <p>{copy.decision.eyebrow}</p>
         <h2>{copy.decision.title}</h2>
 
-        <div className={`decision-chat ${isRevealed ? 'has-response' : ''}`} key={decisionAnimationKey}>
-          {!isRevealed ? (
-            <form className="decision-chat-form" onSubmit={(event) => {
-              event.preventDefault()
-              onAskDecision()
-            }}>
-              <label htmlFor="decision-chat-input">Nhắn cho vị thần</label>
-              <div className="decision-chat-input-row">
-                <input id="decision-chat-input" type="text" value="xin 1 dấu hiệu" readOnly />
-                <button type="submit" aria-label="Gửi câu hỏi">
-                  gửi
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="decision-chat-response" aria-live="polite">
-              <img className="decision-oracle-image is-sm1" src="/sm1.svg" alt="" aria-hidden="true" />
-              <div className="decision-answer-bubble">
-                <img src="/sm2.svg" alt="" aria-hidden="true" />
-                <span>{decisionMessage || copy.decision.idle}</span>
-              </div>
-            </div>
-          )}
-        </div>
+        <div className={`decision-chat ${hasConversation ? 'has-conversation' : ''}`}>
+          <div className={`decision-chat-thread ${hasConversation ? '' : 'is-empty'}`} aria-live="polite" key={decisionAnimationKey}>
+            {hasConversation ? (
+              <>
+                <div className="decision-message decision-message-user">
+                  <span>{decisionPrompt}</span>
+                </div>
 
-        {isRevealed ? (
-          <button className="decision-button is-secondary" type="button" onClick={onChooseAgain}>
-            {copy.decision.again}
-          </button>
-        ) : null}
+                <div className={`decision-message decision-message-oracle ${isThinking ? 'is-typing' : ''}`}>
+                  {isThinking ? (
+                    <span className="decision-typing" aria-label="Đang trả lời">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  ) : (
+                    <span>{decisionMessage || copy.decision.idle}</span>
+                  )}
+                </div>
+              </>
+            ) : null}
+          </div>
+
+          <form className="decision-chat-form" onSubmit={(event) => {
+            event.preventDefault()
+            if (!isThinking) {
+              onAskDecision()
+            }
+          }}>
+            <label htmlFor="decision-chat-input">Nhắn cho vị thần</label>
+            <div className="decision-chat-input-row">
+              <input id="decision-chat-input" type="text" value={decisionPrompt} readOnly />
+              <button type="submit" aria-label="Gửi câu hỏi" disabled={isThinking}>
+                gửi
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
   )

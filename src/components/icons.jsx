@@ -77,11 +77,12 @@ export function AmbientIcon({ type }) {
   return (
     <svg aria-hidden="true" viewBox="0 0 48 48" className="ambient-icon">
       <path
-        d="M25.8 4.5c1.4 8.2-5 10.3-5 16 0 2.2 1.2 3.9 3.2 4.9-.6-5.2 4.2-8.3 4.6-13 6.1 4.5 9.4 10.2 9.4 16.4C38 37 31.9 43 24 43S10 37 10 29.3c0-5.9 3.4-11.4 8.6-15.4-.2 4.4 2.7 7 5.1 7.8-1.7-6.1.3-11.7 2.1-17.2Z"
+        d="M29.1 4.8c-9 4.8-14.2 11-14.4 19l-7.1-2.2c-1.8 4.2-2.6 7.9-2.1 11.7C6.4 40.2 12.4 44 20 44h7.4c8.3 0 15.1-6.7 15.1-15 0-5.4-2.4-9.6-7-13.2-5.4-4.2-7.3-7.4-6.4-11Zm-2.4 20.1c-.5 3.5.4 5.8 3.3 8.2 2.2 1.8 3.3 4 3.3 6.5 0 1.5-.4 3-1.1 4.4H20c-4.8 0-8.6-3.8-8.6-8.6 0-2.3.5-4.6 1.6-7l5.5 1.8c-.1-3.2 2.5-6.1 8.2-9.4v4.1Z"
         fill="none"
         stroke="currentColor"
+        strokeLinecap="square"
         strokeLinejoin="round"
-        strokeWidth="3.4"
+        strokeWidth="3.2"
       />
     </svg>
   )
@@ -113,6 +114,20 @@ export function CloseIcon() {
   return (
     <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function SoundOffIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M11 5 6.8 8.5H3.5v7h3.3L11 19V5Zm4.5 4.5 5 5m0-5-5 5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }

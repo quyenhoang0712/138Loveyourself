@@ -1,16 +1,57 @@
-# React + Vite
+# 138 Love Yourself
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React and Vite experience with three rooms:
 
-Currently, two official plugins are available:
+- Card room for letters and gentle decision prompts
+- Focus room with ambient audio and an ice timer
+- Sound room with a Spotify playlist
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Backend lives in `backend/` and handles analytics with Express, MongoDB, and Mongoose.
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev:api
+npm run dev
+```
 
-## Expanding the ESLint configuration
+The API uses MongoDB. By default it connects to
+`mongodb://127.0.0.1:27017/love-yourself-analytics`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Optional environment variables:
+
+```bash
+MONGO_URI=mongodb://127.0.0.1:27017/love-yourself-analytics
+ANALYTICS_ADMIN_TOKEN=change-me
+PORT=5001
+```
+
+Analytics report:
+
+```text
+http://localhost:5173/#analytics
+```
+
+## Vercel Deploy
+
+Deploy the full app to Vercel from this repo. The Vite frontend builds to `dist/`,
+and `/api/*` is handled by `api/[...path].js`, which runs the Express app from
+`backend/app.js`.
+
+Set these Vercel environment variables before using analytics in production:
+
+```bash
+MONGO_URI=mongodb+srv://...
+ANALYTICS_ADMIN_TOKEN=your-private-token
+```
+
+Vercel runs the backend, but MongoDB stores the analytics data. Use MongoDB Atlas
+or another hosted MongoDB URL so daily and weekly reports persist after deploys.
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```

@@ -1,26 +1,25 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { decisionMessages } from '../decisionMessages'
-import { translations } from '../i18n'
+import { ui } from '../i18n/ui'
 import {
   ambientSoundOptions,
   customShareFramesStorageKey,
   iceCubeSeconds,
-  languageStorageKey,
   longBreakSeconds,
   maxIceCubes,
   shortBreakSeconds,
   shareFrames,
 } from '../config/appConfig'
 import { getRandomQuote, getQuoteLetters } from '../utils/quotes'
+import { trackAnalyticsEvent } from '../utils/analytics'
 import { createShareImageBlob, getShareQuoteFontSize } from '../utils/shareImage'
 import { formatTime } from '../utils/time'
 
-function getNextDecisionMessageForLanguage(language, currentMessage = '') {
-  const activeDecisionMessages = decisionMessages[language] || decisionMessages.vi
+function getNextDecisionMessage(currentMessage = '') {
   const nextOptions =
-    activeDecisionMessages.length > 1
-      ? activeDecisionMessages.filter((message) => message !== currentMessage)
-      : activeDecisionMessages
+    decisionMessages.length > 1
+      ? decisionMessages.filter((message) => message !== currentMessage)
+      : decisionMessages
 
   return nextOptions[Math.floor(Math.random() * nextOptions.length)]
 }
@@ -51,8 +50,6 @@ export function useAppState() {
   const [decisionMotion, setDecisionMotion] = useState('idle')
   const [decisionAnimationKey, setDecisionAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
-  const [language, setLanguage] = useState('vi')
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
   const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
   const [customShareFrames, setCustomShareFrames] = useState(() => {
@@ -70,7 +67,6 @@ export function useAppState() {
   const isIceDragFinishingRef = useRef(false)
   const latestIceDragPositionRef = useRef(null)
   const customFrameInputRef = useRef(null)
-  const languageSwitcherRef = useRef(null)
   const iceCupRef = useRef(null)
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
@@ -102,7 +98,7 @@ export function useAppState() {
   const allShareFrames = [...shareFrames, ...customShareFrames]
   const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
   const shareQuoteFontSize = getShareQuoteFontSize(quote)
-  const copy = translations[language] || translations.vi
+  const copy = ui
   const activeTimerMessage = isTimerRunning
     ? isBreakPhase
       ? copy.timer.ice.runningBreak
@@ -407,29 +403,6 @@ export function useAppState() {
   }, [isShareSheetOpen])
 
   useEffect(() => {
-    if (!isLanguageMenuOpen) return undefined
-
-    const handlePointerDown = (event) => {
-      if (event.target.closest('.language-switcher') || languageSwitcherRef.current?.contains(event.target)) return
-      setIsLanguageMenuOpen(false)
-    }
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsLanguageMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isLanguageMenuOpen])
-
-  useEffect(() => {
     if (!draggingIcePosition || draggingIcePosition.isDropping) return undefined
 
     const handlePointerMove = (event) => {
@@ -474,6 +447,7 @@ export function useAppState() {
   const handleOpenLetter = (letter) => {
     setOpenedLetterId(letter.id)
     setQuote(randomQuote)
+    trackAnalyticsEvent('letter_open', 'card-room', { letterId: letter.id })
   }
 
   const handleToggleSaveQuote = () => {
@@ -485,12 +459,14 @@ export function useAppState() {
 
     setSavedQuotes(nextSavedQuotes)
     localStorage.setItem('savedQuotes', JSON.stringify(nextSavedQuotes))
+    trackAnalyticsEvent('quote_save', 'card-room', { saved: !isQuoteSaved })
     showToast(isQuoteSaved ? copy.toasts.unsaved : copy.toasts.saved)
   }
 
   const handleShareQuote = () => {
     if (!quote) return
     setIsShareSheetOpen(true)
+    trackAnalyticsEvent('quote_share', 'card-room', { method: 'open_sheet' })
   }
 
   const handleSelectShareFrame = (frame) => {
@@ -659,11 +635,13 @@ export function useAppState() {
     setIceCubeCount(0)
     setRetainedWaterCubes(0)
     setSecondsLeft(0)
+    trackAnalyticsEvent('timer_reset', 'focus-room')
   }
 
   const handleTimerStartToggle = () => {
     if (isTimerRunning) {
       setIsTimerRunning(false)
+      trackAnalyticsEvent('timer_pause', 'focus-room', { phase: timerPhase })
       return
     }
 
@@ -671,6 +649,7 @@ export function useAppState() {
       setTimerPhase('shortBreak')
       setSecondsLeft(shortBreakSeconds)
       setIsTimerRunning(true)
+      trackAnalyticsEvent('timer_start', 'focus-room', { phase: 'shortBreak' })
       return
     }
 
@@ -678,11 +657,13 @@ export function useAppState() {
       setTimerPhase('longBreak')
       setSecondsLeft(longBreakSeconds)
       setIsTimerRunning(true)
+      trackAnalyticsEvent('timer_start', 'focus-room', { phase: 'longBreak' })
       return
     }
 
     if (isBreakPhase) {
       setIsTimerRunning(true)
+      trackAnalyticsEvent('timer_start', 'focus-room', { phase: timerPhase })
       return
     }
 
@@ -695,6 +676,7 @@ export function useAppState() {
     }
 
     setIsTimerRunning(true)
+    trackAnalyticsEvent('timer_start', 'focus-room', { phase: 'focus', iceCubeCount })
   }
 
   const handleStartBreak = (breakType) => {
@@ -711,38 +693,23 @@ export function useAppState() {
 
   const handleAmbientSoundToggle = (soundId) => {
     setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
-  }
-
-  const handleLanguageChange = (nextLanguage) => {
-    setLanguage(nextLanguage)
-    setIsLanguageMenuOpen(false)
-
-    if (decisionMotion !== 'idle') {
-      setDecisionMessage(getNextDecisionMessageForLanguage(nextLanguage, decisionMessage))
-      setDecisionAnimationKey((currentKey) => currentKey + 1)
-    }
-
-    try {
-      localStorage.setItem(languageStorageKey, nextLanguage)
-    } catch {
-      // The selector still works if storage is unavailable.
-    }
+    trackAnalyticsEvent('ambient_toggle', 'focus-room', { soundId })
   }
 
   const revealDecisionMessage = (currentMessage = '') => {
-    setDecisionMessage(getNextDecisionMessageForLanguage(language, currentMessage))
+    setDecisionMessage(getNextDecisionMessage(currentMessage))
     setDecisionAnimationKey((currentKey) => currentKey + 1)
     setDecisionMotion('revealed')
   }
 
   const handleAskDecision = () => {
     window.clearTimeout(decisionTimeoutRef.current)
-    revealDecisionMessage(decisionMessage)
-  }
-
-  const handleChooseAgain = () => {
-    window.clearTimeout(decisionTimeoutRef.current)
-    setDecisionMotion('idle')
+    setDecisionMotion('thinking')
+    setDecisionAnimationKey((currentKey) => currentKey + 1)
+    trackAnalyticsEvent('decision_ask', 'card-room')
+    decisionTimeoutRef.current = window.setTimeout(() => {
+      revealDecisionMessage(decisionMessage)
+    }, 2000)
   }
 
   return {
@@ -761,14 +728,12 @@ export function useAppState() {
     handleAddCustomFrame,
     handleAmbientSoundToggle,
     handleAskDecision,
-    handleChooseAgain,
     handleCopyShareQuote,
     handleDownloadShareImage,
     handleIceCubeCountChange,
     handleIceDragEnd,
     handleIceDragStart,
     handleInterfaceClick,
-    handleLanguageChange,
     handleNativeShareQuote,
     handleOpenLetter,
     handleResetTimer,
@@ -791,12 +756,9 @@ export function useAppState() {
     iceWaterProgress,
     iceWaterSurface,
     isIceDroppingIntoCup,
-    isLanguageMenuOpen,
     isQuoteSaved,
     isShareSheetOpen,
     isTimerRunning,
-    language,
-    languageSwitcherRef,
     maxSelectableIceCubes,
     openedLetter,
     openedLetterId,
@@ -804,7 +766,6 @@ export function useAppState() {
     quoteLetters,
     secondsLeft,
     setDraggingIcePosition,
-    setIsLanguageMenuOpen,
     setIsShareSheetOpen,
     setShareTextColor,
     shareQuoteFontSize,

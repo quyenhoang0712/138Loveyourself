@@ -1,6 +1,6 @@
-export function RoomSection({ body, children, eyebrow, id, title, variant = 'light' }) {
+export function RoomSection({ body, children, eyebrow, id, title }) {
   return (
-    <section className={`room-section room-section-${variant}`} id={id}>
+    <section className="room-section" id={id}>
       <div className="room-inner">
         <div className="room-heading scroll-pop">
           <p>{eyebrow}</p>

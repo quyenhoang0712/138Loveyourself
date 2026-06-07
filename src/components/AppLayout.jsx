@@ -8,6 +8,7 @@ import {
   shareTextColors,
 } from '../config/appConfig'
 import { AmbientVisualEffect } from './AmbientVisualEffect'
+import { SoundOffIcon } from './icons'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
@@ -15,9 +16,11 @@ import { DecisionSection } from '../sections/DecisionSection'
 import { FocusSection } from '../sections/FocusSection'
 import { IntroVideoSection } from '../sections/IntroVideoSection'
 import { PlaylistSection } from '../sections/PlaylistSection'
+import { AnalyticsReport } from '../sections/AnalyticsReport'
 import { QuoteSection } from '../sections/QuoteSection'
 import { RoomSection } from '../sections/RoomSection'
 import { WheelNavSection } from '../sections/WheelNavSection'
+import { getAnalyticsIds, identifyVisitor, sendAnalyticsHeartbeat, startAnalyticsSession, trackAnalyticsEvent } from '../utils/analytics'
 
 const roomRoutes = ['card-room', 'focus-room', 'sound-room', 'play-room']
 const roomTransitionDuration = 1300
@@ -36,10 +39,18 @@ function getActiveRoomFromHash() {
   return roomRoutes.includes(hashRoom) ? hashRoom : null
 }
 
+function getIsAnalyticsReportFromHash() {
+  if (typeof window === 'undefined') return false
+
+  return window.location.hash.replace('#', '') === 'analytics'
+}
+
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
+  const hasStartedAnalyticsRef = useRef(false)
   const [isFloatingHeaderVisible, setIsFloatingHeaderVisible] = useState(false)
   const [activeRoom, setActiveRoom] = useState(getActiveRoomFromHash)
+  const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
   const [roomTransitionColor, setRoomTransitionColor] = useState(null)
   const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
   const [visitorAge, setVisitorAge] = useState('')
@@ -67,7 +78,6 @@ export function AppLayout({ state }) {
     handleAddCustomFrame,
     handleAmbientSoundToggle,
     handleAskDecision,
-    handleChooseAgain,
     handleCopyShareQuote,
     handleDownloadShareImage,
     handleIceCubeCountChange,
@@ -113,9 +123,10 @@ export function AppLayout({ state }) {
     toastMessage,
     timerPhase,
   } = state
+  const activeAnalyticsRoom = activeRoom === 'play-room' ? 'sound-room' : activeRoom || 'home'
 
   useEffect(() => {
-    if (activeRoom) {
+    if (activeRoom || isAnalyticsReportOpen) {
       return undefined
     }
 
@@ -134,11 +145,48 @@ export function AppLayout({ state }) {
       window.removeEventListener('scroll', updateFloatingHeader)
       window.removeEventListener('resize', updateFloatingHeader)
     }
-  }, [activeRoom])
+  }, [activeRoom, isAnalyticsReportOpen])
+
+  useEffect(() => {
+    if (isAnalyticsReportOpen) return
+    if (hasStartedAnalyticsRef.current) return
+    hasStartedAnalyticsRef.current = true
+    startAnalyticsSession(activeAnalyticsRoom)
+  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
+
+  useEffect(() => {
+    if (isAnalyticsReportOpen) return
+    trackAnalyticsEvent('room_view', activeAnalyticsRoom)
+
+    if (activeAnalyticsRoom === 'sound-room') {
+      trackAnalyticsEvent('spotify_view', 'sound-room')
+    }
+  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
+
+  useEffect(() => {
+    if (isAnalyticsReportOpen) return undefined
+
+    const heartbeatId = window.setInterval(() => {
+      sendAnalyticsHeartbeat(activeAnalyticsRoom)
+    }, 20000)
+
+    const sendFinalHeartbeat = () => {
+      sendAnalyticsHeartbeat(activeAnalyticsRoom, { beacon: true })
+    }
+
+    window.addEventListener('pagehide', sendFinalHeartbeat)
+
+    return () => {
+      window.clearInterval(heartbeatId)
+      window.removeEventListener('pagehide', sendFinalHeartbeat)
+      sendFinalHeartbeat()
+    }
+  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
 
   useEffect(() => {
     const handleHashChange = () => {
       setActiveRoom(getActiveRoomFromHash())
+      setIsAnalyticsReportOpen(getIsAnalyticsReportFromHash())
       window.scrollTo(0, 0)
     }
 
@@ -190,26 +238,39 @@ export function AppLayout({ state }) {
 
   const roomSwitcher = activeRoom ? (
     <div className={`room-switcher ${isRoomSwitcherOpen ? 'is-open' : ''}`}>
+      {activeAmbientSound ? (
+        <button
+          className="room-sound-stop"
+          type="button"
+          aria-label="Tắt âm thanh nền"
+          title="Tắt âm thanh nền"
+          onClick={() => handleAmbientSoundToggle(activeAmbientSound)}
+        >
+          <SoundOffIcon />
+        </button>
+      ) : null}
+
       <button
         className="room-switcher-trigger"
         type="button"
+        aria-label="Mở menu chuyển phòng"
         aria-expanded={isRoomSwitcherOpen}
-        aria-haspopup="menu"
         onClick={() => setIsRoomSwitcherOpen((current) => !current)}
       >
-        <span>Đổi phòng</span>
-        <span aria-hidden="true">⌄</span>
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
       </button>
-      <div className="room-switcher-menu" role="menu" aria-label="Chuyển phòng">
+
+      <nav className="room-switcher-options" aria-label="Chuyển phòng">
         {roomSwitcherLinks.map((link) => {
           const isActive = link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')
 
           return (
             <button
-              className={isActive ? 'is-active' : ''}
+              className={`room-switcher-option ${isActive ? 'is-active' : ''}`}
               type="button"
               key={link.room}
-              role="menuitem"
               aria-current={isActive ? 'page' : undefined}
               onClick={() => handleRoomNavigate(link)}
             >
@@ -217,7 +278,7 @@ export function AppLayout({ state }) {
             </button>
           )
         })}
-      </div>
+      </nav>
     </div>
   ) : null
 
@@ -235,21 +296,24 @@ export function AppLayout({ state }) {
       return
     }
 
+    const { visitorId } = getAnalyticsIds()
+
     window.localStorage.setItem(
       visitorProfileStorageKey,
       JSON.stringify({
+        visitorId,
         age: normalizedAge,
         gender: visitorGender,
         savedAt: new Date().toISOString(),
       }),
     )
+    identifyVisitor({ age: normalizedAge, gender: visitorGender })
     setVisitorProfileError('')
     setIsVisitorPromptOpen(false)
   }
 
   const header = (
     <SiteHeader
-      roomSwitcher={roomSwitcher}
       variant="static"
     />
   )
@@ -259,7 +323,7 @@ export function AppLayout({ state }) {
       body="Phòng thiệp là nơi dành cho những lúc anh muốn nhận một lời nhắn nhẹ nhàng trước khi bước tiếp trong ngày. Mỗi phong thư giống như một mảnh giấy nhỏ được gửi đến đúng lúc: có thể là một câu an ủi, một lời nhắc để yêu bản thân hơn, hoặc một góc nhìn giúp mình bình tĩnh lại. Sau khi mở thư, nếu trong lòng vẫn còn phân vân, anh có thể kéo xuống hỏi vị thần quyết định để nhận thêm một dấu hiệu nhỏ, như một câu trả lời mềm mại thay vì phải tự ép mình chọn ngay."
       eyebrow="Phòng thiệp"
       id="card-room"
-      title="Mở một phong thư dịu dàng."
+      title="Nhận một lời nhắn dành cho hôm nay."
     >
       <QuoteSection
         copy={copy}
@@ -279,7 +343,6 @@ export function AppLayout({ state }) {
         decisionMessage={decisionMessage}
         decisionMotion={decisionMotion}
         onAskDecision={handleAskDecision}
-        onChooseAgain={handleChooseAgain}
       />
     </RoomSection>
   )
@@ -289,7 +352,7 @@ export function AppLayout({ state }) {
       body="Phòng tập trung được làm cho những lúc anh muốn quay lại với việc cần làm nhưng không muốn cảm giác quá căng thẳng. Anh có thể chọn một âm thanh nền hợp tâm trạng trước, rồi kéo từng viên đá vào ly để bắt đầu một phiên tập trung. Mỗi viên đá tan dần giống như một nhịp thời gian nhìn thấy được: mình học, làm việc, nghỉ ngơi, rồi quay lại tiếp theo cách rõ ràng hơn. Không cần phải hoàn hảo ngay, chỉ cần ở lại với một việc nhỏ đủ lâu."
       eyebrow="Phòng tập trung"
       id="focus-room"
-      title="Ở lại với việc cần làm."
+      title="Bắt đầu một phiên tập trung nhẹ nhàng."
     >
       <AmbientSection
         activeAmbientSound={activeAmbientSound}
@@ -339,7 +402,7 @@ export function AppLayout({ state }) {
       body="Phòng âm thanh là chỗ để anh đổi nhịp thật nhanh khi tâm trạng đang hơi chùng, hơi rối, hoặc đơn giản là muốn có một nền nhạc đi cùng mình. Anh chỉ cần chọn playlist Spotify, bật một bài hợp với khoảnh khắc hiện tại, rồi để âm nhạc mở ra một không khí mới trong vài phút. Phòng này không bắt mình phải làm gì nhiều; nó chỉ giữ một khoảng trống nhỏ để cơ thể thả lỏng, suy nghĩ dịu lại, và cảm xúc có thời gian tự mềm xuống."
       eyebrow="Phòng âm thanh"
       id="sound-room"
-      title="Bật nhạc và thở chậm lại."
+      title="Chọn nhạc cho tâm trạng lúc này."
     >
       <PlaylistSection copy={copy} />
     </RoomSection>
@@ -354,17 +417,25 @@ export function AppLayout({ state }) {
 
   return (
     <main
-      className={`landing-page is-day-mode ${activeRoom ? `landing-page-room landing-page-${activeRoom}` : 'landing-page-home'} ${
-        activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''
-      } ${draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''}`}
+      className={`landing-page ${activeRoom ? `landing-page-room landing-page-${activeRoom}` : ''} ${
+        isAnalyticsReportOpen ? 'landing-page-analytics' : ''
+      } ${
+        draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''
+      }`}
       onClickCapture={handleInterfaceClick}
     >
       <AmbientVisualEffect activeSound={activeAmbientSound} />
 
-      {activeRoom ? (
+      {isAnalyticsReportOpen ? (
+        <>
+          <div className="room-page-header">{header}</div>
+          <AnalyticsReport />
+        </>
+      ) : activeRoom ? (
         <>
           <div className="room-page-header">{header}</div>
           {activeRoomContent}
+          {roomSwitcher}
         </>
       ) : (
         <>
@@ -417,7 +488,7 @@ export function AppLayout({ state }) {
 
       <Toast message={toastMessage} />
 
-      {isVisitorPromptOpen ? (
+      {isVisitorPromptOpen && !isAnalyticsReportOpen ? (
         <div className="visitor-prompt-backdrop">
           <form className="visitor-prompt" aria-label="Thông tin người dùng" onSubmit={handleVisitorProfileSubmit}>
             <div className="visitor-prompt-heading">

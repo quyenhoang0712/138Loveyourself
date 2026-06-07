@@ -45,7 +45,7 @@ export function FocusSection({
       : timerPhase === 'longBreakReady'
         ? copy.timer.actions.longBreak
         : isBreakPhase
-          ? copy.timer.actions.continueStudy
+          ? copy.timer.actions.continueFocus
           : copy.timer.start
   const displayedSeconds =
     timerPhase === 'shortBreakReady' ? shortBreakSeconds : timerPhase === 'longBreakReady' ? longBreakSeconds : secondsLeft
@@ -59,7 +59,7 @@ export function FocusSection({
         </div>
 
         <div className="pomodoro-card">
-          <div className="ice-study-stage">
+          <div className="ice-focus-stage">
             <div
               className={`ice-cup ${isTimerRunning ? 'is-running' : ''} ${
                 secondsLeft === 0 && iceCubeCount > 0 ? 'is-finished' : ''
@@ -236,7 +236,7 @@ export function FocusSection({
             )}
             {isBreakReady && iceCubeCount > 0 && (
               <button className="timer-break-option" type="button" onClick={onSkipBreak}>
-                {copy.timer.actions.continueStudy}
+                {copy.timer.actions.continueFocus}
               </button>
             )}
             <button className="timer-reset" type="button" onClick={onResetTimer}>
