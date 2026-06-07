@@ -21,10 +21,16 @@ export function getDateRange(period = 'day', dateValue) {
   if (period === 'week') {
     const day = start.getUTCDay() || 7
     start.setUTCDate(start.getUTCDate() - day + 1)
+  } else if (period === 'month') {
+    start.setUTCDate(1)
   }
 
   const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + (period === 'week' ? 7 : 1))
+  if (period === 'month') {
+    end.setUTCMonth(end.getUTCMonth() + 1)
+  } else {
+    end.setUTCDate(end.getUTCDate() + (period === 'week' ? 7 : 1))
+  }
 
   return { start, end }
 }

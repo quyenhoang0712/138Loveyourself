@@ -428,7 +428,6 @@ export function AppLayout({ state }) {
 
       {isAnalyticsReportOpen ? (
         <>
-          <div className="room-page-header">{header}</div>
           <AnalyticsReport />
         </>
       ) : activeRoom ? (

@@ -160,7 +160,7 @@ router.post('/heartbeat', async (req, res) => {
 })
 
 router.get('/report', requireAdmin, async (req, res) => {
-  const period = req.query.period === 'week' ? 'week' : 'day'
+  const period = ['day', 'week', 'month'].includes(req.query.period) ? req.query.period : 'day'
   let start
   let end
 
