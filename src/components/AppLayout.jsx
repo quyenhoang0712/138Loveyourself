@@ -256,7 +256,7 @@ export function AppLayout({ state }) {
 
   const cardRoom = (
     <RoomSection
-      body="Một góc nhỏ để rút một lá thư cho hôm nay. Nếu còn phân vân, anh có thể xin thêm một dấu hiệu từ vị thần quyết định."
+      body="Phòng thiệp là nơi dành cho những lúc anh muốn nhận một lời nhắn nhẹ nhàng trước khi bước tiếp trong ngày. Mỗi phong thư giống như một mảnh giấy nhỏ được gửi đến đúng lúc: có thể là một câu an ủi, một lời nhắc để yêu bản thân hơn, hoặc một góc nhìn giúp mình bình tĩnh lại. Sau khi mở thư, nếu trong lòng vẫn còn phân vân, anh có thể kéo xuống hỏi vị thần quyết định để nhận thêm một dấu hiệu nhỏ, như một câu trả lời mềm mại thay vì phải tự ép mình chọn ngay."
       eyebrow="Phòng thiệp"
       id="card-room"
       title="Mở một phong thư dịu dàng."
@@ -286,11 +286,10 @@ export function AppLayout({ state }) {
 
   const focusRoom = (
     <RoomSection
-      body="Chọn âm thanh nền, kéo đá vào ly, rồi để thời gian trôi chậm theo từng viên đá đang tan."
+      body="Phòng tập trung được làm cho những lúc anh muốn quay lại với việc cần làm nhưng không muốn cảm giác quá căng thẳng. Anh có thể chọn một âm thanh nền hợp tâm trạng trước, rồi kéo từng viên đá vào ly để bắt đầu một phiên tập trung. Mỗi viên đá tan dần giống như một nhịp thời gian nhìn thấy được: mình học, làm việc, nghỉ ngơi, rồi quay lại tiếp theo cách rõ ràng hơn. Không cần phải hoàn hảo ngay, chỉ cần ở lại với một việc nhỏ đủ lâu."
       eyebrow="Phòng tập trung"
       id="focus-room"
       title="Ở lại với việc cần làm."
-      variant="blue"
     >
       <AmbientSection
         activeAmbientSound={activeAmbientSound}
@@ -337,7 +336,7 @@ export function AppLayout({ state }) {
 
   const soundRoom = (
     <RoomSection
-      body="Một playlist nhỏ để đổi nhịp trong ngày. Bật một bài nhạc, ngồi lại một chút, rồi để tâm trạng tự mềm ra."
+      body="Phòng âm thanh là chỗ để anh đổi nhịp thật nhanh khi tâm trạng đang hơi chùng, hơi rối, hoặc đơn giản là muốn có một nền nhạc đi cùng mình. Anh chỉ cần chọn playlist Spotify, bật một bài hợp với khoảnh khắc hiện tại, rồi để âm nhạc mở ra một không khí mới trong vài phút. Phòng này không bắt mình phải làm gì nhiều; nó chỉ giữ một khoảng trống nhỏ để cơ thể thả lỏng, suy nghĩ dịu lại, và cảm xúc có thời gian tự mềm xuống."
       eyebrow="Phòng âm thanh"
       id="sound-room"
       title="Bật nhạc và thở chậm lại."
@@ -355,7 +354,7 @@ export function AppLayout({ state }) {
 
   return (
     <main
-      className={`landing-page is-day-mode ${activeRoom ? 'landing-page-room' : 'landing-page-home'} ${
+      className={`landing-page is-day-mode ${activeRoom ? `landing-page-room landing-page-${activeRoom}` : 'landing-page-home'} ${
         activeAmbientSound ? `has-ambient-${activeAmbientSound}` : ''
       } ${draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''}`}
       onClickCapture={handleInterfaceClick}

@@ -12,7 +12,7 @@ export const translations = {
     hero: {
       eyebrow: 'Love Yourself rooms',
       title: 'Chọn một phòng cho hôm nay.',
-      body: 'Mỗi phòng là một cách chăm sóc bản thân khác nhau: mở một lá thư, tập trung cùng chiếc ly đá, hoặc bật một playlist để thở chậm lại.',
+      body: 'Trang này được chia thành ba căn phòng nhỏ: Phòng thiệp để nhận một lời nhắn dịu dàng, Phòng tập trung để ở lại với việc cần làm, và Phòng âm thanh để đổi nhịp bằng một playlist. Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm nay.',
       flowLabel: 'Flow trải nghiệm',
       flow: ['Mở thư', 'Xin dấu hiệu', 'Phòng âm thanh', 'Spotify', 'Pomodoro', 'Kết thúc'],
     },

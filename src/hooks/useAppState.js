@@ -51,14 +51,7 @@ export function useAppState() {
   const [decisionMotion, setDecisionMotion] = useState('idle')
   const [decisionAnimationKey, setDecisionAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
-  const [language, setLanguage] = useState(() => {
-    try {
-      const savedLanguage = localStorage.getItem(languageStorageKey)
-      return translations[savedLanguage] ? savedLanguage : 'vi'
-    } catch {
-      return 'vi'
-    }
-  })
+  const [language, setLanguage] = useState('vi')
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
   const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
