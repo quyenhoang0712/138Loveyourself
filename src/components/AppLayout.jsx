@@ -76,6 +76,7 @@ export function AppLayout({ state }) {
     decisionAnimationKey,
     decisionMessage,
     decisionMotion,
+    decisionThread,
     draggingIcePosition,
     handleAddCustomFrame,
     handleAmbientSoundToggle,
@@ -344,6 +345,7 @@ export function AppLayout({ state }) {
         decisionAnimationKey={decisionAnimationKey}
         decisionMessage={decisionMessage}
         decisionMotion={decisionMotion}
+        decisionThread={decisionThread}
         onAskDecision={handleAskDecision}
       />
     </RoomSection>

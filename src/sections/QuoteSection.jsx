@@ -1,5 +1,8 @@
 import { HeartIcon, ShareIcon } from '../components/icons'
 
+const closedLetterImage = '/thu%CC%9B_.svg'
+const openLetterImage = '/thu%CC%9B%CC%89%20mo%CC%9B%CC%89.svg'
+
 export function QuoteSection({
   copy,
   isQuoteSaved,
@@ -32,11 +35,8 @@ export function QuoteSection({
                 <span className="letter-label">{copy.quote.letterLabel(Number(letter.id.split('-').pop()))}</span>
                 <span className="letter-quote">{quote}</span>
               </span>
-              <span className="envelope-back" />
-              <span className="envelope-flap" />
-              <span className="envelope-left" />
-              <span className="envelope-right" />
-              <span className="envelope-front" />
+              <img className="letter-envelope-image letter-envelope-image-closed" src={closedLetterImage} alt="" aria-hidden="true" />
+              <img className="letter-envelope-image letter-envelope-image-open" src={openLetterImage} alt="" aria-hidden="true" />
             </button>
           ))}
         </div>

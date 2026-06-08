@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 
 const pieceSymbols = {
@@ -7,7 +7,8 @@ const pieceSymbols = {
 }
 const pieceValues = { b: 330, k: 0, n: 320, p: 100, q: 900, r: 500 }
 const centerSquares = new Set(['d4', 'd5', 'e4', 'e5'])
-const botSearchDepth = 3
+const botSearchDepth = 2
+const pieceNames = { b: 'tượng', k: 'vua', n: 'mã', p: 'tốt', q: 'hậu', r: 'xe' }
 const pieceSquareTables = {
   b: [
     -20, -10, -10, -10, -10, -10, -10, -20,
@@ -75,6 +76,15 @@ function getFreshChess() {
   return new Chess()
 }
 
+function FaviconPawnIcon() {
+  return (
+    <svg aria-hidden="true" className="healing-chess-pawn-icon" viewBox="0 0 116 151">
+      <path d="M109.988 151H5.57481C2.25519 151 -0.318739 148.117 0.0320398 144.814C3.11936 115.65 27.797 92.9238 57.7828 92.9238C87.7686 92.9238 112.444 115.65 115.534 144.814C115.884 148.115 113.31 151 109.991 151H109.988Z" />
+      <path d="M18.315 42.598C8.99036 32.869 8.99036 17.0374 18.315 7.30851C25.1401 0.190683 35.3592 -2.09752 45.1601 2.09094C47.3995 3.04803 49.4275 4.47671 51.1396 6.26313L55.7694 11.0951C56.8752 12.2496 58.6871 12.2496 59.7929 11.0951L64.4227 6.26313C66.1348 4.47671 68.1605 3.04803 70.4022 2.09094C80.2054 -2.09752 90.4245 0.190683 97.2472 7.30851C106.572 17.0374 106.572 32.869 97.2472 42.598L61.8046 79.5739C59.5908 81.8831 55.9692 81.8831 53.7576 79.5739L18.315 42.598Z" />
+    </svg>
+  )
+}
+
 function getMovePayload(move) {
   return move.promotion
     ? { from: move.from, promotion: move.promotion, to: move.to }
@@ -86,6 +96,83 @@ function getSquarePosition(square) {
     columnIndex: square.charCodeAt(0) - 97,
     rowIndex: 8 - Number(square[1]),
   }
+}
+
+function getDisplaySquarePosition(square, playerColor) {
+  const { columnIndex, rowIndex } = getSquarePosition(square)
+
+  return playerColor === 'b'
+    ? { columnIndex: 7 - columnIndex, rowIndex: 7 - rowIndex }
+    : { columnIndex, rowIndex }
+}
+
+function getBoardPieces(chess) {
+  return chess.board().flatMap((row, rowIndex) => (
+    row.flatMap((piece, columnIndex) => {
+      if (!piece) return []
+
+      return {
+        piece,
+        square: `${String.fromCharCode(97 + columnIndex)}${8 - rowIndex}`,
+      }
+    })
+  ))
+}
+
+function getPieceDistance(firstSquare, secondSquare, playerColor) {
+  const firstPosition = getDisplaySquarePosition(firstSquare, playerColor)
+  const secondPosition = getDisplaySquarePosition(secondSquare, playerColor)
+
+  return (
+    Math.abs(firstPosition.columnIndex - secondPosition.columnIndex) +
+    Math.abs(firstPosition.rowIndex - secondPosition.rowIndex)
+  )
+}
+
+function getResetReturnStyles(fen, playerColor) {
+  const currentPieces = getBoardPieces(new Chess(fen))
+  const freshPieces = getBoardPieces(getFreshChess())
+  const usedCurrentSquares = new Set()
+  const styles = {}
+
+  freshPieces.forEach(({ piece, square }) => {
+    const sameSquarePiece = currentPieces.find((currentPiece) => (
+      currentPiece.square === square &&
+      currentPiece.piece.color === piece.color &&
+      currentPiece.piece.type === piece.type
+    ))
+
+    if (sameSquarePiece) usedCurrentSquares.add(square)
+  })
+
+  freshPieces.forEach(({ piece, square }) => {
+    if (usedCurrentSquares.has(square)) return
+
+    const returnPiece = currentPieces
+      .filter((currentPiece) => (
+        !usedCurrentSquares.has(currentPiece.square) &&
+        currentPiece.piece.color === piece.color &&
+        currentPiece.piece.type === piece.type
+      ))
+      .sort((firstPiece, secondPiece) => (
+        getPieceDistance(firstPiece.square, square, playerColor) -
+        getPieceDistance(secondPiece.square, square, playerColor)
+      ))[0]
+
+    if (!returnPiece) return
+
+    usedCurrentSquares.add(returnPiece.square)
+    const fromPosition = getDisplaySquarePosition(returnPiece.square, playerColor)
+    const toPosition = getDisplaySquarePosition(square, playerColor)
+
+    styles[square] = {
+      '--reset-move-x': fromPosition.columnIndex - toPosition.columnIndex,
+      '--reset-move-y': fromPosition.rowIndex - toPosition.rowIndex,
+      '--reset-return-delay': `${Math.min(getPieceDistance(returnPiece.square, square, playerColor) * 38, 190)}ms`,
+    }
+  })
+
+  return styles
 }
 
 function getPieceSquareValue(piece, rowIndex, columnIndex) {
@@ -171,13 +258,13 @@ function getBotMove(fen, botColor) {
     chess.move(getMovePayload(move))
     const score = minimax(chess, botSearchDepth - 1, -Infinity, Infinity, botColor)
     chess.undo()
-    const tinyMistake = Math.random() * 16
+    const tinyMistake = Math.random() * 42
 
     return { move, score: score + tinyMistake }
   })
 
   scoredMoves.sort((firstMove, secondMove) => secondMove.score - firstMove.score)
-  const choicePool = Math.random() < 0.08 ? scoredMoves.slice(0, 2) : scoredMoves.slice(0, 1)
+  const choicePool = Math.random() < 0.42 ? scoredMoves.slice(0, 4) : scoredMoves.slice(0, 2)
   return choicePool[Math.floor(Math.random() * choicePool.length)]?.move || scoredMoves[0].move
 }
 
@@ -199,6 +286,9 @@ export function HealingSection() {
   const [selectedSquare, setSelectedSquare] = useState(null)
   const [isBoardSwitching, setIsBoardSwitching] = useState(false)
   const [isPiecesEntering, setIsPiecesEntering] = useState(false)
+  const [pieceEnterMode, setPieceEnterMode] = useState('edge')
+  const [resetReturnStyles, setResetReturnStyles] = useState({})
+  const chessAudioContextRef = useRef(null)
   const chess = useMemo(() => new Chess(gameFen), [gameFen])
   const botColor = playerColor === 'w' ? 'b' : 'w'
   const boardRows = useMemo(() => {
@@ -217,6 +307,53 @@ export function HealingSection() {
   const legalMoveMap = useMemo(() => new Map(legalMoves.map((move) => [move.to, move])), [legalMoves])
   const gameStatus = getGameStatus(chess, isBotThinking, playerColor)
 
+  const getChessAudioContext = useCallback(() => {
+    if (!chessAudioContextRef.current) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext
+      if (!AudioContextClass) return null
+      chessAudioContextRef.current = new AudioContextClass()
+    }
+
+    if (chessAudioContextRef.current.state === 'suspended') {
+      chessAudioContextRef.current.resume()
+    }
+
+    return chessAudioContextRef.current
+  }, [])
+
+  const playChessTone = useCallback(
+    ({ delay = 0, duration = 0.08, frequency = 440, gain = 0.06, type = 'sine' }) => {
+      const audioContext = getChessAudioContext()
+      if (!audioContext) return
+
+      const startTime = audioContext.currentTime + delay
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.type = type
+      oscillator.frequency.setValueAtTime(frequency, startTime)
+      gainNode.gain.setValueAtTime(0.0001, startTime)
+      gainNode.gain.exponentialRampToValueAtTime(gain, startTime + 0.012)
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration)
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      oscillator.start(startTime)
+      oscillator.stop(startTime + duration + 0.03)
+    },
+    [getChessAudioContext],
+  )
+
+  const playChessMoveSound = useCallback(() => {
+    playChessTone({ duration: 0.07, frequency: 190, gain: 0.055, type: 'triangle' })
+    playChessTone({ delay: 0.035, duration: 0.055, frequency: 420, gain: 0.026, type: 'square' })
+  }, [playChessTone])
+
+  const playChessCheckSound = useCallback(() => {
+    playChessTone({ delay: 0.12, duration: 0.1, frequency: 880, gain: 0.045, type: 'triangle' })
+    playChessTone({ delay: 0.22, duration: 0.12, frequency: 1174.66, gain: 0.035, type: 'sine' })
+  }, [playChessTone])
+
   useEffect(() => {
     if (chess.turn() !== botColor || chess.isGameOver() || isBoardSwitching || isPiecesEntering) {
       return undefined
@@ -231,6 +368,8 @@ export function HealingSection() {
 
       const nextChess = new Chess(gameFen)
       nextChess.move(getMovePayload(botMove))
+      playChessMoveSound()
+      if (nextChess.isCheck()) playChessCheckSound()
       setLastMove({ captured: Boolean(botMove.captured), from: botMove.from, to: botMove.to })
       setGameFen(nextChess.fen())
       setSelectedSquare(null)
@@ -238,15 +377,16 @@ export function HealingSection() {
     }, 1200)
 
     return () => window.clearTimeout(botMoveTimer)
-  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering])
+  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering, playChessCheckSound, playChessMoveSound])
 
   useEffect(() => {
     if (!isBoardSwitching) return undefined
 
     const boardSwitchTimer = window.setTimeout(() => {
       setIsBoardSwitching(false)
+      setPieceEnterMode('edge')
       setIsPiecesEntering(true)
-    }, 1050)
+    }, 700)
 
     return () => window.clearTimeout(boardSwitchTimer)
   }, [isBoardSwitching])
@@ -256,10 +396,11 @@ export function HealingSection() {
 
     const piecesEnterTimer = window.setTimeout(() => {
       setIsPiecesEntering(false)
+      if (pieceEnterMode === 'return') setResetReturnStyles({})
     }, 2600)
 
     return () => window.clearTimeout(piecesEnterTimer)
-  }, [isPiecesEntering])
+  }, [isPiecesEntering, pieceEnterMode])
 
   const handleChessSquareClick = (square, piece) => {
     if (
@@ -290,6 +431,8 @@ export function HealingSection() {
 
     const nextChess = new Chess(gameFen)
     nextChess.move(getMovePayload(targetMove))
+    playChessMoveSound()
+    if (nextChess.isCheck()) playChessCheckSound()
     setLastMove({ captured: Boolean(targetMove.captured), from: selectedSquare, to: square })
     setGameFen(nextChess.fen())
     setIsBotThinking(nextChess.turn() === botColor && !nextChess.isGameOver())
@@ -297,12 +440,17 @@ export function HealingSection() {
   }
 
   const resetChessBoard = () => {
+    const returnStyles = getResetReturnStyles(gameFen, playerColor)
+
+    setResetReturnStyles(returnStyles)
     setGameFen(getFreshChess().fen())
     setIsBotThinking(playerColor === 'b')
     setLastMove(null)
     setSelectedSquare(null)
     setIsBoardSwitching(false)
     setIsPiecesEntering(false)
+    setPieceEnterMode('return')
+    window.requestAnimationFrame(() => setIsPiecesEntering(true))
   }
 
   const handlePlayerColorChange = (nextColor) => {
@@ -310,6 +458,8 @@ export function HealingSection() {
 
     setIsBoardSwitching(true)
     setIsPiecesEntering(false)
+    setPieceEnterMode('edge')
+    setResetReturnStyles({})
     setPlayerColor(nextColor)
     setGameFen(getFreshChess().fen())
     setIsBotThinking(nextColor === 'b')
@@ -348,7 +498,7 @@ export function HealingSection() {
           </div>
           <p className="healing-chess-status">{gameStatus}</p>
           <div
-            className={`healing-chess-board ${isBoardSwitching ? 'is-color-switching' : ''} ${isPiecesEntering ? 'is-pieces-entering' : ''}`}
+            className={`healing-chess-board ${isBoardSwitching ? 'is-color-switching' : ''} ${isPiecesEntering ? 'is-pieces-entering' : ''} ${isPiecesEntering && pieceEnterMode === 'return' ? 'is-pieces-returning' : ''}`}
             aria-label="Bàn cờ vua thư giãn"
           >
             {boardRows.map((row, displayRowIndex) =>
@@ -360,6 +510,7 @@ export function HealingSection() {
                 const isLastMoveTo = lastMove?.to === squareName
                 const isCaptureMove = isLastMoveTo && lastMove?.captured
                 const pieceSymbol = piece ? pieceSymbols[piece.color][piece.type] : ''
+                const pieceLabel = piece ? pieceNames[piece.type] : ''
                 const topDistance = displayRowIndex
                 const rightDistance = 7 - displayColumnIndex
                 const bottomDistance = 7 - displayRowIndex
@@ -379,11 +530,17 @@ export function HealingSection() {
                     ? '280px'
                     : `${(displayRowIndex - 3.5) * 22}px`
                 const pieceEnterDelay = `${pieceEnterIndex * 52}ms`
+                const resetMoveStyle = pieceEnterMode === 'return' ? resetReturnStyles[squareName] : undefined
                 const moveStyle = isLastMoveTo
-                  ? {
-                      '--move-x': getSquarePosition(lastMove.from).columnIndex - getSquarePosition(lastMove.to).columnIndex,
-                      '--move-y': getSquarePosition(lastMove.from).rowIndex - getSquarePosition(lastMove.to).rowIndex,
-                    }
+                  ? (() => {
+                      const fromPosition = getDisplaySquarePosition(lastMove.from, playerColor)
+                      const toPosition = getDisplaySquarePosition(lastMove.to, playerColor)
+
+                      return {
+                        '--move-x': fromPosition.columnIndex - toPosition.columnIndex,
+                        '--move-y': fromPosition.rowIndex - toPosition.rowIndex,
+                      }
+                    })()
                   : undefined
 
                 return (
@@ -391,20 +548,21 @@ export function HealingSection() {
                     className={`healing-chess-square ${(rowIndex + columnIndex) % 2 === 0 ? 'is-light' : 'is-dark'} ${isSelected ? 'is-selected' : ''} ${legalMove ? 'is-legal-move' : ''} ${legalMove?.captured ? 'is-capture' : ''} ${isLastMove ? 'is-last-move' : ''} ${isLastMoveTo ? 'is-last-move-to' : ''} ${isCaptureMove ? 'is-capture-move' : ''}`}
                     type="button"
                     key={squareName}
-                    aria-label={pieceSymbol ? `${pieceSymbol} ở ô ${squareName}` : `Ô trống ${squareName}`}
+                    aria-label={piece ? `Quân ${pieceLabel} ở ô ${squareName}` : `Ô trống ${squareName}`}
                     onClick={() => handleChessSquareClick(squareName, piece)}
                   >
                     {pieceSymbol ? (
                       <span
-                        className={`healing-chess-piece piece-${piece.color}`}
+                        className={`healing-chess-piece piece-${piece.color} ${resetMoveStyle ? 'is-reset-return' : ''}`}
                         style={{
                           ...moveStyle,
+                          ...resetMoveStyle,
                           '--piece-enter-delay': pieceEnterDelay,
                           '--piece-enter-x': pieceEnterX,
                           '--piece-enter-y': pieceEnterY,
                         }}
                       >
-                        <span>{pieceSymbol}</span>
+                        <span>{piece.type === 'p' ? <FaviconPawnIcon /> : pieceSymbol}</span>
                       </span>
                     ) : null}
                   </button>

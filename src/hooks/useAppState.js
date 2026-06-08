@@ -47,6 +47,7 @@ export function useAppState() {
   const [timerPhase, setTimerPhase] = useState('focus')
   const [activeAmbientSound, setActiveAmbientSound] = useState(null)
   const [decisionMessage, setDecisionMessage] = useState('')
+  const [decisionThread, setDecisionThread] = useState([])
   const [decisionMotion, setDecisionMotion] = useState('idle')
   const [decisionAnimationKey, setDecisionAnimationKey] = useState(0)
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
@@ -697,7 +698,23 @@ export function useAppState() {
   }
 
   const revealDecisionMessage = (currentMessage = '') => {
-    setDecisionMessage(getNextDecisionMessage(currentMessage))
+    const nextMessage = getNextDecisionMessage(currentMessage)
+
+    setDecisionMessage(nextMessage)
+    setDecisionThread((currentThread) => {
+      const nextThread = [...currentThread]
+      const lastEntry = nextThread[nextThread.length - 1]
+
+      if (!lastEntry || !lastEntry.isThinking) return nextThread
+
+      nextThread[nextThread.length - 1] = {
+        ...lastEntry,
+        isThinking: false,
+        response: nextMessage,
+      }
+
+      return nextThread
+    })
     setDecisionAnimationKey((currentKey) => currentKey + 1)
     setDecisionMotion('revealed')
   }
@@ -705,6 +722,10 @@ export function useAppState() {
   const handleAskDecision = () => {
     window.clearTimeout(decisionTimeoutRef.current)
     setDecisionMotion('thinking')
+    setDecisionThread((currentThread) => [
+      ...currentThread.map((entry) => ({ ...entry, isThinking: false })),
+      { id: `${Date.now()}-${currentThread.length}`, isThinking: true, prompt: 'xin 1 dấu hiệu', response: '' },
+    ])
     setDecisionAnimationKey((currentKey) => currentKey + 1)
     trackAnalyticsEvent('decision_ask', 'card-room')
     decisionTimeoutRef.current = window.setTimeout(() => {
@@ -724,6 +745,7 @@ export function useAppState() {
     decisionAnimationKey,
     decisionMessage,
     decisionMotion,
+    decisionThread,
     draggingIcePosition,
     handleAddCustomFrame,
     handleAmbientSoundToggle,

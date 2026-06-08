@@ -1,8 +1,15 @@
-export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, onAskDecision }) {
-  const isRevealed = decisionMotion === 'revealed'
+import { useEffect, useRef } from 'react'
+
+export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, decisionThread = [], onAskDecision }) {
+  const threadRef = useRef(null)
   const isThinking = decisionMotion === 'thinking'
-  const hasConversation = isThinking || isRevealed
+  const hasConversation = decisionThread.length > 0
   const decisionPrompt = 'xin 1 dấu hiệu'
+
+  useEffect(() => {
+    if (!threadRef.current) return
+    threadRef.current.scrollTop = threadRef.current.scrollHeight
+  }, [decisionAnimationKey, decisionThread])
 
   return (
     <section className="decision-section" id="decision">
@@ -11,25 +18,27 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
         <h2>{copy.decision.title}</h2>
 
         <div className={`decision-chat ${hasConversation ? 'has-conversation' : ''}`}>
-          <div className={`decision-chat-thread ${hasConversation ? '' : 'is-empty'}`} aria-live="polite" key={decisionAnimationKey}>
+          <div className={`decision-chat-thread ${hasConversation ? '' : 'is-empty'}`} aria-live="polite" ref={threadRef}>
             {hasConversation ? (
-              <>
-                <div className="decision-message decision-message-user">
-                  <span>{decisionPrompt}</span>
-                </div>
+              decisionThread.map((entry) => (
+                <div className="decision-chat-exchange" key={entry.id}>
+                  <div className="decision-message decision-message-user">
+                    <span>{entry.prompt}</span>
+                  </div>
 
-                <div className={`decision-message decision-message-oracle ${isThinking ? 'is-typing' : ''}`}>
-                  {isThinking ? (
-                    <span className="decision-typing" aria-label="Đang trả lời">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                  ) : (
-                    <span>{decisionMessage || copy.decision.idle}</span>
-                  )}
+                  <div className={`decision-message decision-message-oracle ${entry.isThinking ? 'is-typing' : ''}`}>
+                    {entry.isThinking ? (
+                      <span className="decision-typing" aria-label="Đang trả lời">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    ) : (
+                      <span>{entry.response || decisionMessage || copy.decision.idle}</span>
+                    )}
+                  </div>
                 </div>
-              </>
+              ))
             ) : null}
           </div>
 
