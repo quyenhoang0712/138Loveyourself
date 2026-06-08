@@ -3433,9 +3433,9 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(860px, 100%);
+  width: min(760px, 100%);
   max-height: calc(100svh - 48px);
-  padding: clamp(22px, 3vw, 34px);
+  padding: clamp(24px, 3vw, 38px);
   overflow-y: auto;
   color: #fff;
   background: #1f1f1f;
@@ -3482,19 +3482,153 @@ input {
 
 .share-preview-letter {
   position: relative;
-  width: min(360px, 68vw, calc((100svh - 260px) * 0.5625));
+  width: min(390px, 72vw, calc((100svh - 270px) * 0.5625));
   min-width: 230px;
   aspect-ratio: 9 / 16;
-  margin-top: 10px;
+  margin: 8px 0 18px;
   overflow: hidden;
-  background: var(--share-bg);
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.52), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 26%),
+    var(--share-bg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 0 0 9px rgba(255, 255, 255, 0.12),
     0 22px 58px rgba(0, 0, 0, 0.3);
+}
+
+.share-preview-letter::before {
+  position: absolute;
+  inset: 16px;
+  border: 2px dashed rgba(71, 137, 200, 0.2);
+  border-radius: 14px;
+  content: "";
+  pointer-events: none;
+}
+
+.share-preview-stickers {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.share-sticker-links {
+  position: absolute;
+  inset: 8%;
+  z-index: 0;
+  width: 84%;
+  height: 84%;
+  overflow: visible;
+  fill: none;
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.share-sticker-links path {
+  stroke: var(--share-text);
+  stroke-dasharray: 5 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+}
+
+.share-preview-sticker {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: 18%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 16px rgba(71, 137, 200, 0.16));
+}
+
+.share-sticker-megaphone {
+  right: 7%;
+  bottom: 8%;
+  width: 34%;
+  transform: rotate(-8deg);
+}
+
+.share-sticker-message {
+  top: 9%;
+  right: 7%;
+  width: 20%;
+  transform: rotate(7deg);
+}
+
+.share-sticker-note {
+  left: 8%;
+  bottom: 9%;
+  width: 26%;
+  transform: rotate(-9deg);
+}
+
+.share-sticker-camera {
+  top: 11%;
+  left: 9%;
+  width: 24%;
+  transform: rotate(-7deg);
+}
+
+.share-sticker-heart {
+  right: 12%;
+  top: 29%;
+  width: 23%;
+  transform: rotate(9deg);
+}
+
+.share-sticker-flower {
+  left: 5%;
+  top: 32%;
+  width: 23%;
+  transform: rotate(-12deg);
+}
+
+.share-sticker-star {
+  right: 8%;
+  top: 45%;
+  width: 17%;
+  transform: rotate(13deg);
+}
+
+.share-sticker-radio {
+  left: 6%;
+  top: 51%;
+  width: 21%;
+  transform: rotate(7deg);
+}
+
+.share-sticker-headphone {
+  right: 7%;
+  top: 60%;
+  width: 23%;
+  transform: rotate(-11deg);
+}
+
+.share-sticker-letter {
+  left: 8%;
+  top: 6%;
+  width: 18%;
+  transform: rotate(-13deg);
+}
+
+.share-sticker-nice-day {
+  left: 31%;
+  bottom: 4%;
+  width: 28%;
+  transform: rotate(4deg);
+}
+
+.share-sticker-ipod {
+  right: 30%;
+  top: 7%;
+  width: 18%;
+  transform: rotate(-5deg);
 }
 
 .share-letter-paper {
@@ -3536,6 +3670,11 @@ input {
   background: transparent;
   border-radius: 0;
   box-shadow: none;
+}
+
+.share-preview-letter.has-custom-frame .share-preview-stickers,
+.share-preview-letter.has-custom-frame::before {
+  display: none;
 }
 
 .share-frame-picker {

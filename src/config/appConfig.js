@@ -32,14 +32,6 @@ export const shareFrames = [
     text: '#4789C8',
   },
   {
-    id: 'blue',
-    label: 'Blue',
-    background: '#4789C8',
-    card: '#4789C8',
-    accent: '#EDE5D2',
-    text: '#5d92d4',
-  },
-  {
     id: 'cream',
     label: 'Cream',
     background: '#EDE5D2',
