@@ -674,7 +674,7 @@ export function HealingSection() {
                   >
                     {piece ? (
                       <span
-                        className={`healing-chess-piece piece-${piece.color} ${resetMoveStyle ? 'is-reset-return' : ''}`}
+                        className={`healing-chess-piece piece-${piece.color} piece-type-${piece.type} ${resetMoveStyle ? 'is-reset-return' : ''}`}
                         style={{
                           ...moveStyle,
                           ...resetMoveStyle,

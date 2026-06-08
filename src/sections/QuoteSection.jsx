@@ -1,7 +1,7 @@
 import { HeartIcon, ShareIcon } from '../components/icons'
 
-const closedLetterImage = '/thu%CC%9B_.svg'
-const openLetterImage = '/thu%CC%9B%CC%89%20mo%CC%9B%CC%89.svg'
+const closedLetterImage = '/letter-closed.svg'
+const openLetterImage = '/letter-open.svg'
 
 export function QuoteSection({
   copy,
