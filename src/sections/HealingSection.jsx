@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 
-const pieceSymbols = {
-  b: { b: '♝', k: '♚', n: '♞', p: '♟', q: '♛', r: '♜' },
-  w: { b: '♗', k: '♔', n: '♘', p: '♙', q: '♕', r: '♖' },
-}
 const pieceValues = { b: 330, k: 0, n: 320, p: 100, q: 900, r: 500 }
+const classicBoardPieceSymbols = {
+  b: { b: '♝', n: '♞', r: '♜' },
+  w: { b: '♗', n: '♘', r: '♖' },
+}
+const capturedPieceSymbols = {
+  b: { b: '♝', n: '♞', p: '♟', q: '♛', r: '♜' },
+  w: { b: '♗', n: '♘', p: '♙', q: '♕', r: '♖' },
+}
+const capturedPieceOrder = { q: 0, r: 1, b: 2, n: 3, p: 4 }
 const centerSquares = new Set(['d4', 'd5', 'e4', 'e5'])
 const botSearchDepth = 2
 const pieceNames = { b: 'tượng', k: 'vua', n: 'mã', p: 'tốt', q: 'hậu', r: 'xe' }
@@ -76,11 +81,60 @@ function getFreshChess() {
   return new Chess()
 }
 
-function FaviconPawnIcon() {
+function HealingChessIcon({ type }) {
   return (
     <svg aria-hidden="true" className="healing-chess-pawn-icon" viewBox="0 0 116 151">
       <path d="M109.988 151H5.57481C2.25519 151 -0.318739 148.117 0.0320398 144.814C3.11936 115.65 27.797 92.9238 57.7828 92.9238C87.7686 92.9238 112.444 115.65 115.534 144.814C115.884 148.115 113.31 151 109.991 151H109.988Z" />
       <path d="M18.315 42.598C8.99036 32.869 8.99036 17.0374 18.315 7.30851C25.1401 0.190683 35.3592 -2.09752 45.1601 2.09094C47.3995 3.04803 49.4275 4.47671 51.1396 6.26313L55.7694 11.0951C56.8752 12.2496 58.6871 12.2496 59.7929 11.0951L64.4227 6.26313C66.1348 4.47671 68.1605 3.04803 70.4022 2.09094C80.2054 -2.09752 90.4245 0.190683 97.2472 7.30851C106.572 17.0374 106.572 32.869 97.2472 42.598L61.8046 79.5739C59.5908 81.8831 55.9692 81.8831 53.7576 79.5739L18.315 42.598Z" />
+      {type === 'q' ? (
+        <>
+          <g className="healing-chess-piece-detail" transform="matrix(0.72 0.16 -0.16 0.72 58 -66)">
+            <path d="M20 44 32 12 47 38 58 6 69 38 84 12 96 44 88 60H28L20 44Z" />
+            <path d="M29 60H87V75H29V60Z" />
+            <path d="M32 12H32.8M58 6H58.8M84 12H84.8" />
+          </g>
+          <g className="healing-chess-piece-detail healing-chess-robe">
+            <path d="M35 98C44 111 72 111 81 98" />
+            <path d="M23 139C35 126 42 113 45 99" />
+            <path d="M93 139C81 126 74 113 71 99" />
+            <path d="M58 101V139" />
+          </g>
+        </>
+      ) : null}
+      {type === 'k' ? (
+        <>
+          <g className="healing-chess-piece-detail" transform="translate(16 -65) scale(0.74)">
+            <path d="M24 60C30 37 43 22 58 22C73 22 86 37 92 60L82 70H34L24 60Z" />
+            <path d="M58 4V30M47 17H69" />
+            <path d="M38 70H78" />
+          </g>
+          <g className="healing-chess-piece-detail healing-chess-king-regalia">
+            <path d="M20 141C26 119 36 101 49 90" />
+            <path d="M96 141C90 119 80 101 67 90" />
+            <path d="M29 108C40 119 76 119 87 108" />
+            <path d="M108 66V139" />
+            <path d="M98 82H114M108 66H108.8" />
+          </g>
+        </>
+      ) : null}
+      {type === 'r' ? (
+        <g className="healing-chess-piece-detail" transform="matrix(0.62 0.16 -0.16 0.62 62 -54)">
+          <path d="M24 36V16H38V28H50V16H66V28H78V16H92V36L84 55H32L24 36Z" />
+          <path d="M32 55H84V68H32V55Z" />
+        </g>
+      ) : null}
+      {type === 'b' ? (
+        <g className="healing-chess-piece-detail" transform="matrix(0.62 0.16 -0.16 0.62 62 -54)">
+          <path d="M58 4C70 16 75 28 72 42C70 52 64 58 58 65C52 58 46 52 44 42C41 28 46 16 58 4Z" />
+          <path d="M58 15V48" />
+        </g>
+      ) : null}
+      {type === 'n' ? (
+        <g className="healing-chess-piece-detail" transform="matrix(0.62 0.16 -0.16 0.62 62 -54)">
+          <path d="M34 62C34 40 45 19 69 9C75 24 83 31 93 38C89 50 79 60 66 66L34 62Z" />
+          <path d="M55 30 45 41M68 27H68.8" />
+        </g>
+      ) : null}
     </svg>
   )
 }
@@ -278,11 +332,46 @@ function getGameStatus(chess, isBotThinking, playerColor) {
   return 'Đến lượt bạn.'
 }
 
+function getCapturedScore(pieces) {
+  return pieces.reduce((score, piece) => score + (pieceValues[piece.type] || 0), 0)
+}
+
+function getDisplayMaterialLead(score, otherScore) {
+  const lead = Math.round((score - otherScore) / 100)
+  return lead > 0 ? `+${lead}` : ''
+}
+
+function sortCapturedPieces(pieces) {
+  return [...pieces].sort((firstPiece, secondPiece) => (
+    (capturedPieceOrder[firstPiece.type] ?? 9) - (capturedPieceOrder[secondPiece.type] ?? 9)
+  ))
+}
+
+function CapturedPiecesRow({ label, pieces, score, otherScore }) {
+  const materialLead = getDisplayMaterialLead(score, otherScore)
+  const sortedPieces = sortCapturedPieces(pieces)
+
+  return (
+    <div className="healing-captured-row">
+      <span className="healing-captured-label">{label}</span>
+      <span className="healing-captured-pieces" aria-label={sortedPieces.length ? `Quân ${label} đã ăn` : `${label} chưa ăn quân`}>
+        {sortedPieces.length ? sortedPieces.map((piece, index) => (
+          <span className={`healing-captured-piece piece-${piece.color}`} key={`${piece.type}-${index}`}>
+            {capturedPieceSymbols[piece.color]?.[piece.type] || ''}
+          </span>
+        )) : <span className="healing-captured-empty">Chưa ăn quân</span>}
+      </span>
+      {materialLead ? <strong>{materialLead}</strong> : null}
+    </div>
+  )
+}
+
 export function HealingSection() {
   const [gameFen, setGameFen] = useState(() => getFreshChess().fen())
   const [playerColor, setPlayerColor] = useState('w')
   const [isBotThinking, setIsBotThinking] = useState(false)
   const [lastMove, setLastMove] = useState(null)
+  const [capturedPieces, setCapturedPieces] = useState({ b: [], w: [] })
   const [selectedSquare, setSelectedSquare] = useState(null)
   const [isBoardSwitching, setIsBoardSwitching] = useState(false)
   const [isPiecesEntering, setIsPiecesEntering] = useState(false)
@@ -306,6 +395,10 @@ export function HealingSection() {
   )
   const legalMoveMap = useMemo(() => new Map(legalMoves.map((move) => [move.to, move])), [legalMoves])
   const gameStatus = getGameStatus(chess, isBotThinking, playerColor)
+  const playerCapturedPieces = capturedPieces[playerColor]
+  const botCapturedPieces = capturedPieces[botColor]
+  const playerCapturedScore = getCapturedScore(playerCapturedPieces)
+  const botCapturedScore = getCapturedScore(botCapturedPieces)
 
   const getChessAudioContext = useCallback(() => {
     if (!chessAudioContextRef.current) {
@@ -371,13 +464,22 @@ export function HealingSection() {
       playChessMoveSound()
       if (nextChess.isCheck()) playChessCheckSound()
       setLastMove({ captured: Boolean(botMove.captured), from: botMove.from, to: botMove.to })
+      if (botMove.captured) {
+        setCapturedPieces((currentPieces) => ({
+          ...currentPieces,
+          [botColor]: [
+            ...currentPieces[botColor],
+            { color: playerColor, type: botMove.captured },
+          ],
+        }))
+      }
       setGameFen(nextChess.fen())
       setSelectedSquare(null)
       setIsBotThinking(false)
     }, 1200)
 
     return () => window.clearTimeout(botMoveTimer)
-  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering, playChessCheckSound, playChessMoveSound])
+  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering, playChessCheckSound, playChessMoveSound, playerColor])
 
   useEffect(() => {
     if (!isBoardSwitching) return undefined
@@ -434,6 +536,15 @@ export function HealingSection() {
     playChessMoveSound()
     if (nextChess.isCheck()) playChessCheckSound()
     setLastMove({ captured: Boolean(targetMove.captured), from: selectedSquare, to: square })
+    if (targetMove.captured) {
+      setCapturedPieces((currentPieces) => ({
+        ...currentPieces,
+        [playerColor]: [
+          ...currentPieces[playerColor],
+          { color: botColor, type: targetMove.captured },
+        ],
+      }))
+    }
     setGameFen(nextChess.fen())
     setIsBotThinking(nextChess.turn() === botColor && !nextChess.isGameOver())
     setSelectedSquare(null)
@@ -444,6 +555,7 @@ export function HealingSection() {
 
     setResetReturnStyles(returnStyles)
     setGameFen(getFreshChess().fen())
+    setCapturedPieces({ b: [], w: [] })
     setIsBotThinking(playerColor === 'b')
     setLastMove(null)
     setSelectedSquare(null)
@@ -462,6 +574,7 @@ export function HealingSection() {
     setResetReturnStyles({})
     setPlayerColor(nextColor)
     setGameFen(getFreshChess().fen())
+    setCapturedPieces({ b: [], w: [] })
     setIsBotThinking(nextColor === 'b')
     setLastMove(null)
     setSelectedSquare(null)
@@ -497,6 +610,14 @@ export function HealingSection() {
             </div>
           </div>
           <p className="healing-chess-status">{gameStatus}</p>
+          <div className="healing-captured-scoreboard healing-captured-scoreboard-top" aria-label="Quân bot đã ăn">
+            <CapturedPiecesRow
+              label="Bot"
+              pieces={botCapturedPieces}
+              score={botCapturedScore}
+              otherScore={playerCapturedScore}
+            />
+          </div>
           <div
             className={`healing-chess-board ${isBoardSwitching ? 'is-color-switching' : ''} ${isPiecesEntering ? 'is-pieces-entering' : ''} ${isPiecesEntering && pieceEnterMode === 'return' ? 'is-pieces-returning' : ''}`}
             aria-label="Bàn cờ vua thư giãn"
@@ -509,8 +630,8 @@ export function HealingSection() {
                 const isLastMove = lastMove?.from === squareName || lastMove?.to === squareName
                 const isLastMoveTo = lastMove?.to === squareName
                 const isCaptureMove = isLastMoveTo && lastMove?.captured
-                const pieceSymbol = piece ? pieceSymbols[piece.color][piece.type] : ''
                 const pieceLabel = piece ? pieceNames[piece.type] : ''
+                const classicPieceSymbol = piece ? classicBoardPieceSymbols[piece.color]?.[piece.type] : ''
                 const topDistance = displayRowIndex
                 const rightDistance = 7 - displayColumnIndex
                 const bottomDistance = 7 - displayRowIndex
@@ -551,7 +672,7 @@ export function HealingSection() {
                     aria-label={piece ? `Quân ${pieceLabel} ở ô ${squareName}` : `Ô trống ${squareName}`}
                     onClick={() => handleChessSquareClick(squareName, piece)}
                   >
-                    {pieceSymbol ? (
+                    {piece ? (
                       <span
                         className={`healing-chess-piece piece-${piece.color} ${resetMoveStyle ? 'is-reset-return' : ''}`}
                         style={{
@@ -562,13 +683,21 @@ export function HealingSection() {
                           '--piece-enter-y': pieceEnterY,
                         }}
                       >
-                        <span>{piece.type === 'p' ? <FaviconPawnIcon /> : pieceSymbol}</span>
+                        <span>{classicPieceSymbol || <HealingChessIcon type={piece.type} />}</span>
                       </span>
                     ) : null}
                   </button>
                 )
               }),
             )}
+          </div>
+          <div className="healing-captured-scoreboard healing-captured-scoreboard-bottom" aria-label="Quân bạn đã ăn">
+            <CapturedPiecesRow
+              label="Bạn"
+              pieces={playerCapturedPieces}
+              score={playerCapturedScore}
+              otherScore={botCapturedScore}
+            />
           </div>
         </div>
       </div>

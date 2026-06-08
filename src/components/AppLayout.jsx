@@ -27,6 +27,58 @@ const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'pl
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
+const transitionMascotSrc = '/PNG/tay%20tra%CC%81i%20tim.png'
+const quickSpotifyButtonSrc = '/PNG/%C4%91i%CC%83a%20than.png'
+const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0'
+const roomSwitcherIconSrc = '/PNG/mascot%20o%CC%82%CC%81ng%20nho%CC%80m.png'
+const homePngIcons = [
+  '/PNG/mascot%20nha%CC%89y.png',
+  '/PNG/gia%CC%82%CC%81y%202.png',
+  '/PNG/ma%CC%81y%20a%CC%89nh.png',
+  '/PNG/gia%CC%82%CC%81y%203.png',
+  '/PNG/mascot%20khie%CC%82n%20%C4%91o%CC%82%CC%80.png',
+  '/PNG/sofa%202.png',
+  '/PNG/ngo%CC%82i%20sao.png',
+  '/PNG/sofa%203.png',
+  '/PNG/tay%20tra%CC%81i%20tim.png',
+  '/PNG/mascot%20%C4%91a%CC%81%20cha%CC%82n.png',
+  '/PNG/hoa%20ly.png',
+  '/PNG/ba%CC%81nh%20co%CC%81%20to%CC%9B%CC%80%20gia%CC%82%CC%81y.png',
+  '/PNG/headphone.png',
+  '/PNG/thu%CC%9B%20tay.png',
+  '/PNG/ly%20bu%CC%81t.png',
+  '/PNG/a%CC%81o%20kha%CC%86n%20len.png',
+  '/PNG/ngu%CC%83%20co%CC%82%CC%81c.png',
+  '/PNG/%C4%91i%CC%83a%20than.png',
+  '/PNG/messenger.png',
+  '/PNG/mascot%20ngu%CC%89.png',
+  '/PNG/ho%CC%A3%CC%82p%20nha%CC%A3c.png',
+  '/PNG/ho%CC%A3%CC%82p.png',
+  '/PNG/cuo%CC%A3%CC%82n%20len.png',
+  '/PNG/sofa.png',
+  '/PNG/xe%20%C4%91a%CC%A3p%203.png',
+  '/PNG/nha%CC%82%CC%81n%20nu%CC%81t%20warning.png',
+  '/PNG/bo%CC%81%20hoa.png',
+  '/PNG/xe%20%C4%91a%CC%A3p%202.png',
+  '/PNG/ro%CC%82%CC%81i%20nu%CC%80i.png',
+  '/PNG/go%CC%82%CC%81i.png',
+  '/PNG/cu%CC%9B%CC%89a%20so%CC%82%CC%89.png',
+  '/PNG/xe%20%C4%91a%CC%A3p%201.png',
+  '/PNG/ho%CC%A3%CC%82p%20tim.png',
+  '/PNG/have%20a%20nice%20day.png',
+  '/PNG/xe%20%C4%91a%CC%A3p%204.png',
+  '/PNG/vo%CC%80ng%20xoay.png',
+  '/PNG/%C4%91o%CC%82%CC%80ng%20ho%CC%82%CC%80.png',
+  '/PNG/ho%CC%A3%CC%82p%20mascot.png',
+  '/PNG/brush.png',
+  '/PNG/mascot%20o%CC%82%CC%81ng%20nho%CC%80m.png',
+  '/PNG/khung%20nha%CC%A3c%20.png',
+  '/PNG/note.png',
+  '/PNG/radio.png',
+  '/PNG/gia%CC%82%CC%81y.png',
+  '/PNG/mascot%20ca%CC%82%CC%80m%20loa.png',
+  '/PNG/ipod.png',
+]
 const roomSwitcherLinks = [
   { href: '#card-room', label: 'Thiệp', room: 'card-room', color: '#9AB4EE' },
   { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
@@ -47,6 +99,28 @@ function getIsAnalyticsReportFromHash() {
   return window.location.hash.replace('#', '') === 'analytics'
 }
 
+function HomePngShelf() {
+  return (
+    <section className="home-png-shelf" aria-label="Trang trí">
+      <div className="home-png-cloud" aria-hidden="true">
+        {homePngIcons.map((src, index) => (
+          <img
+            className="home-png-icon"
+            src={src}
+            alt=""
+            key={src}
+            style={{
+              '--icon-y': `${(index % 5) * -3}px`,
+              '--icon-hover-y': `${(index % 5) * -3 - 6}px`,
+              '--icon-rotate': `${((index % 7) - 3) * 2}deg`,
+            }}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
   const hasStartedAnalyticsRef = useRef(false)
@@ -55,6 +129,8 @@ export function AppLayout({ state }) {
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
   const [roomTransitionColor, setRoomTransitionColor] = useState(null)
   const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
+  const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
+  const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
   const [visitorAge, setVisitorAge] = useState('')
   const [visitorGender, setVisitorGender] = useState('')
   const [visitorProfileError, setVisitorProfileError] = useState('')
@@ -239,6 +315,44 @@ export function AppLayout({ state }) {
     }, roomTransitionDuration)
   }
 
+  const handleQuickSpotifyToggle = () => {
+    if (quickSpotifySrc) {
+      setIsQuickSpotifyOpen((isOpen) => !isOpen)
+      return
+    }
+
+    setQuickSpotifySrc(quickSpotifyEmbed)
+    setIsQuickSpotifyOpen(true)
+  }
+
+  const quickSpotifyControl = activeRoom ? (
+    <div className={`quick-spotify ${quickSpotifySrc ? 'is-playing' : ''} ${isQuickSpotifyOpen ? 'is-open' : ''}`}>
+      {quickSpotifySrc ? (
+        <div className="quick-spotify-player-shell">
+          <iframe
+            className="quick-spotify-player"
+            title="Spotify ngẫu nhiên"
+            src={quickSpotifySrc}
+            width="100%"
+            height="86"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+
+      <button
+        className="quick-spotify-button"
+        type="button"
+        aria-label={quickSpotifySrc && isQuickSpotifyOpen ? 'Thu gọn Spotify' : 'Mở Spotify'}
+        aria-pressed={Boolean(quickSpotifySrc && isQuickSpotifyOpen)}
+        onClick={handleQuickSpotifyToggle}
+      >
+        <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
+      </button>
+    </div>
+  ) : null
+
   const roomSwitcher = activeRoom ? (
     <div className={`room-switcher ${isRoomSwitcherOpen ? 'is-open' : ''}`}>
       {activeAmbientSound ? (
@@ -260,13 +374,13 @@ export function AppLayout({ state }) {
         aria-expanded={isRoomSwitcherOpen}
         onClick={() => setIsRoomSwitcherOpen((current) => !current)}
       >
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
+        <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
       </button>
 
       <nav className="room-switcher-options" aria-label="Chuyển phòng">
-        {roomSwitcherLinks.map((link) => {
+        {roomSwitcherLinks.filter((link) => (
+          !(link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'))
+        )).map((link) => {
           const isActive = link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')
 
           return (
@@ -450,6 +564,7 @@ export function AppLayout({ state }) {
         <>
           <div className="room-page-header">{header}</div>
           {activeRoomContent}
+          {quickSpotifyControl}
           {roomSwitcher}
         </>
       ) : (
@@ -469,6 +584,7 @@ export function AppLayout({ state }) {
           ) : null}
 
           <WheelNavSection onRoomNavigate={handleRoomNavigate} />
+          <HomePngShelf />
         </>
       )}
 
@@ -477,7 +593,9 @@ export function AppLayout({ state }) {
           className="room-transition-overlay"
           style={{ '--room-transition-color': roomTransitionColor }}
           aria-hidden="true"
-        />
+        >
+          <img className="room-transition-mascot" src={transitionMascotSrc} alt="" />
+        </div>
       ) : null}
 
       <ShareSheet
