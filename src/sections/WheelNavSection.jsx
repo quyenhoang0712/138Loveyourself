@@ -5,6 +5,7 @@ const wheelSpinDuration = 760
 const wheelLinks = [
   { href: '#card-room', label: 'phòng thiệp', className: 'wheel-link-card-room', rotation: -90, color: '#9AB4EE' },
   { href: '#focus-room', label: 'phòng tập trung', className: 'wheel-link-focus-room', rotation: 180, color: '#F8DB8E' },
+  { href: '#healing-room', label: 'phòng chữa lành', className: 'wheel-link-healing-room', rotation: 0, color: '#4789C8' },
   { href: '#sound-room', label: 'phòng âm thanh', className: 'wheel-link-sound-room', rotation: 90, color: '#EBAAB4' },
 ]
 

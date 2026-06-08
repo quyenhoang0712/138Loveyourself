@@ -6,7 +6,7 @@ import { applySessionActivity, getAgeGroup, getDateRange } from '../utils/analyt
 
 const router = Router()
 
-const allowedRooms = new Set(['home', 'card-room', 'focus-room', 'sound-room', 'play-room'])
+const allowedRooms = new Set(['home', 'card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room'])
 const allowedEvents = new Set([
   'profile_saved',
   'session_start',

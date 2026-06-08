@@ -32,6 +32,7 @@ const genderLabels = {
 const roomLabels = {
   'card-room': 'Phòng thiệp',
   'focus-room': 'Phòng tập trung',
+  'healing-room': 'Phòng chữa lành',
   home: 'Trang chính',
   'play-room': 'Phòng âm thanh',
   'sound-room': 'Phòng âm thanh',

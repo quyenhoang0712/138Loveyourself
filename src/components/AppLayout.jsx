@@ -14,6 +14,7 @@ import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
 import { DecisionSection } from '../sections/DecisionSection'
 import { FocusSection } from '../sections/FocusSection'
+import { HealingSection } from '../sections/HealingSection'
 import { IntroVideoSection } from '../sections/IntroVideoSection'
 import { PlaylistSection } from '../sections/PlaylistSection'
 import { AnalyticsReport } from '../sections/AnalyticsReport'
@@ -22,13 +23,14 @@ import { RoomSection } from '../sections/RoomSection'
 import { WheelNavSection } from '../sections/WheelNavSection'
 import { getAnalyticsIds, identifyVisitor, sendAnalyticsHeartbeat, startAnalyticsSession, trackAnalyticsEvent } from '../utils/analytics'
 
-const roomRoutes = ['card-room', 'focus-room', 'sound-room', 'play-room']
+const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room']
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const roomSwitcherLinks = [
   { href: '#card-room', label: 'Thiệp', room: 'card-room', color: '#9AB4EE' },
   { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
+  { href: '#healing-room', label: 'Chữa lành', room: 'healing-room', color: '#4789C8' },
   { href: '#sound-room', label: 'Âm thanh', room: 'sound-room', color: '#EBAAB4' },
 ]
 
@@ -408,9 +410,21 @@ export function AppLayout({ state }) {
     </RoomSection>
   )
 
+  const healingRoom = (
+    <RoomSection
+      body="Phòng chữa lành là nơi để anh đặt cảm xúc xuống một chút khi trong lòng đang rối, mệt, buồn, hoặc thấy mình bị áp lực kéo đi quá xa. Phòng này không bắt anh phải vui lên ngay; nó chỉ đưa anh quay lại với cơ thể, với hơi thở, với vài điều đang có thật quanh mình. Từ đó mình có thể mềm hơn với bản thân, rồi chọn bước tiếp theo bằng một nhịp bình tĩnh hơn."
+      eyebrow="Phòng chữa lành"
+      id="healing-room"
+      title="Quay lại với mình bằng một nhịp dịu hơn."
+    >
+      <HealingSection />
+    </RoomSection>
+  )
+
   const activeRoomContent = {
     'card-room': cardRoom,
     'focus-room': focusRoom,
+    'healing-room': healingRoom,
     'sound-room': soundRoom,
     'play-room': soundRoom,
   }[activeRoom]
