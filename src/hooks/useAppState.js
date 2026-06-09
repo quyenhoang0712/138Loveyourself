@@ -53,6 +53,8 @@ export function useAppState() {
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false)
   const [activeShareFrameId, setActiveShareFrameId] = useState(shareFrames[0].id)
   const [shareTextColor, setShareTextColor] = useState(shareFrames[0].text)
+  const [placedShareStickers, setPlacedShareStickers] = useState([])
+  const [shareStickerHistoryCount, setShareStickerHistoryCount] = useState(0)
   const [customShareFrames, setCustomShareFrames] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(customShareFramesStorageKey) || '[]')
@@ -68,6 +70,8 @@ export function useAppState() {
   const isIceDragFinishingRef = useRef(false)
   const latestIceDragPositionRef = useRef(null)
   const customFrameInputRef = useRef(null)
+  const shareStickerIdRef = useRef(0)
+  const shareStickerHistoryRef = useRef([])
   const iceCupRef = useRef(null)
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
@@ -475,6 +479,95 @@ export function useAppState() {
     setShareTextColor(frame.text)
   }
 
+  const saveShareStickerSnapshot = (stickers) => {
+    shareStickerHistoryRef.current = [...shareStickerHistoryRef.current.slice(-19), stickers.map((sticker) => ({ ...sticker }))]
+    setShareStickerHistoryCount(shareStickerHistoryRef.current.length)
+  }
+
+  const handlePlaceShareSticker = (sticker) => {
+    shareStickerIdRef.current += 1
+    const rotation = ((shareStickerIdRef.current % 7) - 3) * 4
+
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) => [
+      ...currentStickers,
+      {
+        alt: sticker.alt,
+        color: sticker.color || shareTextColor,
+        flipped: false,
+        id: `share-sticker-${Date.now()}-${shareStickerIdRef.current}`,
+        rotation,
+        size: 22,
+        src: sticker.src,
+        x: sticker.x,
+        y: sticker.y,
+      },
+    ])
+  }
+
+  const handleBeginMoveShareSticker = () => {
+    saveShareStickerSnapshot(placedShareStickers)
+  }
+
+  const handleMoveShareSticker = (stickerId, point) => {
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) => (sticker.id === stickerId ? { ...sticker, ...point } : sticker)),
+    )
+  }
+
+  const handleResizeShareSticker = (stickerId, size) => {
+    const nextSize = Math.min(38, Math.max(10, Number(size)))
+
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) => (sticker.id === stickerId ? { ...sticker, size: nextSize } : sticker)),
+    )
+  }
+
+  const handleColorShareSticker = (stickerId, color) => {
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) => (sticker.id === stickerId ? { ...sticker, color } : sticker)),
+    )
+  }
+
+  const handleRotateShareSticker = (stickerId) => {
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) =>
+        sticker.id === stickerId ? { ...sticker, rotation: (sticker.rotation + 45) % 360 } : sticker,
+      ),
+    )
+  }
+
+  const handleFlipShareSticker = (stickerId) => {
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) => (sticker.id === stickerId ? { ...sticker, flipped: !sticker.flipped } : sticker)),
+    )
+  }
+
+  const handleRemoveShareSticker = (stickerId) => {
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers((currentStickers) => currentStickers.filter((sticker) => sticker.id !== stickerId))
+  }
+
+  const handleResetShareStickers = () => {
+    if (!placedShareStickers.length) return
+
+    saveShareStickerSnapshot(placedShareStickers)
+    setPlacedShareStickers([])
+  }
+
+  const handleUndoShareSticker = () => {
+    const previousStickers = shareStickerHistoryRef.current.at(-1)
+    if (!previousStickers) return
+
+    shareStickerHistoryRef.current = shareStickerHistoryRef.current.slice(0, -1)
+    setShareStickerHistoryCount(shareStickerHistoryRef.current.length)
+    setPlacedShareStickers(previousStickers)
+  }
+
   const handleNativeShareQuote = async () => {
     if (!quote) return
 
@@ -485,7 +578,7 @@ export function useAppState() {
     }
 
     try {
-      const imageBlob = await createShareImageBlob({ activeShareFrame, quote, shareTextColor })
+      const imageBlob = await createShareImageBlob({ activeShareFrame, placedShareStickers, quote, shareTextColor })
       const imageFile = new File([imageBlob], '138-love-yourself-quote.png', { type: 'image/png' })
 
       if (navigator.canShare?.({ files: [imageFile] })) {
@@ -529,7 +622,7 @@ export function useAppState() {
     if (!quote) return
 
     try {
-      const imageBlob = await createShareImageBlob({ activeShareFrame, quote, shareTextColor })
+      const imageBlob = await createShareImageBlob({ activeShareFrame, placedShareStickers, quote, shareTextColor })
       const imageUrl = URL.createObjectURL(imageBlob)
       const link = document.createElement('a')
       link.href = imageUrl
@@ -546,7 +639,7 @@ export function useAppState() {
     if (!quote) return
 
     try {
-      const imageBlob = await createShareImageBlob({ activeShareFrame, quote, shareTextColor })
+      const imageBlob = await createShareImageBlob({ activeShareFrame, placedShareStickers, quote, shareTextColor })
       const imageFile = new File([imageBlob], '138-love-yourself-story.png', { type: 'image/png' })
 
       if (navigator.canShare?.({ files: [imageFile] })) {
@@ -752,12 +845,21 @@ export function useAppState() {
     handleAskDecision,
     handleCopyShareQuote,
     handleDownloadShareImage,
+    handleFlipShareSticker,
     handleIceCubeCountChange,
     handleIceDragEnd,
     handleIceDragStart,
     handleInterfaceClick,
+    handleBeginMoveShareSticker,
+    handleColorShareSticker,
     handleNativeShareQuote,
     handleOpenLetter,
+    handleMoveShareSticker,
+    handlePlaceShareSticker,
+    handleResizeShareSticker,
+    handleRemoveShareSticker,
+    handleResetShareStickers,
+    handleRotateShareSticker,
     handleResetTimer,
     handleSelectShareFrame,
     handleShareInstagramStory,
@@ -766,6 +868,7 @@ export function useAppState() {
     handleStartBreak,
     handleTimerStartToggle,
     handleToggleSaveQuote,
+    handleUndoShareSticker,
     iceCubeCount,
     iceCupRef,
     iceDropAnimationKey,
@@ -784,6 +887,7 @@ export function useAppState() {
     maxSelectableIceCubes,
     openedLetter,
     openedLetterId,
+    placedShareStickers,
     quote,
     quoteLetters,
     secondsLeft,
@@ -791,6 +895,7 @@ export function useAppState() {
     setIsShareSheetOpen,
     setShareTextColor,
     shareQuoteFontSize,
+    shareStickerHistoryCount,
     shareTextColor,
     toastMessage,
     timerPhase,

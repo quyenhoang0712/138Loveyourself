@@ -27,6 +27,99 @@ export function ShareIcon() {
   )
 }
 
+export function UndoIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 48 48" fill="none">
+      <path
+        d="M20 11 8 23l12 12"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11 23h18c7 0 11 4.4 11 10.2 0 5.5-4.1 9.8-10 9.8h-7"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function ResetIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 48 48" fill="none">
+      <path
+        d="M9 21c2-9 10-15 19-14 9.8 1.1 16.8 10 15.6 19.8C42.4 36.5 33.6 43.4 24 42c-4.1-.6-7.7-2.5-10.4-5.3"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 21 4 9m3 12 12-4"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function RotateIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 48 48" fill="none">
+      <path
+        d="M37 18A15 15 0 1 0 38 31"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M37 18h-10m10 0V8"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function FlipIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 48 48" fill="none">
+      <path
+        d="M7 10v28"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M20 12 8 24l12 12V12Z"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M28 12 40 24 28 36V12Z"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M41 10v28"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 export function InstagramIcon() {
   return (
     <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">

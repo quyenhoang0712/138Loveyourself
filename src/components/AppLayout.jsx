@@ -27,6 +27,7 @@ import { getAnalyticsIds, identifyVisitor, sendAnalyticsHeartbeat, startAnalytic
 const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room']
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
+const roomTransitionColor = '#F8DB8E'
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
 const quickSpotifyButtonSrc = '/PNG/dia-than.png'
@@ -128,7 +129,7 @@ export function AppLayout({ state }) {
   const [isFloatingHeaderVisible, setIsFloatingHeaderVisible] = useState(false)
   const [activeRoom, setActiveRoom] = useState(getActiveRoomFromHash)
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
-  const [roomTransitionColor, setRoomTransitionColor] = useState(null)
+  const [activeRoomTransitionColor, setActiveRoomTransitionColor] = useState(null)
   const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
   const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
   const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
@@ -158,14 +159,23 @@ export function AppLayout({ state }) {
     handleAddCustomFrame,
     handleAmbientSoundToggle,
     handleAskDecision,
+    handleBeginMoveShareSticker,
+    handleColorShareSticker,
     handleCopyShareQuote,
     handleDownloadShareImage,
+    handleFlipShareSticker,
     handleIceCubeCountChange,
     handleIceDragEnd,
     handleIceDragStart,
     handleInterfaceClick,
     handleNativeShareQuote,
     handleOpenLetter,
+    handleMoveShareSticker,
+    handlePlaceShareSticker,
+    handleResizeShareSticker,
+    handleRemoveShareSticker,
+    handleResetShareStickers,
+    handleRotateShareSticker,
     handleResetTimer,
     handleSelectShareFrame,
     handleShareInstagramStory,
@@ -174,6 +184,7 @@ export function AppLayout({ state }) {
     handleStartBreak,
     handleTimerStartToggle,
     handleToggleSaveQuote,
+    handleUndoShareSticker,
     iceCubeCount,
     iceCupRef,
     iceDropAnimationKey,
@@ -192,6 +203,7 @@ export function AppLayout({ state }) {
     maxSelectableIceCubes,
     openedLetter,
     openedLetterId,
+    placedShareStickers,
     quote,
     quoteLetters,
     secondsLeft,
@@ -199,6 +211,7 @@ export function AppLayout({ state }) {
     setIsShareSheetOpen,
     setShareTextColor,
     shareQuoteFontSize,
+    shareStickerHistoryCount,
     shareTextColor,
     toastMessage,
     timerPhase,
@@ -305,14 +318,14 @@ export function AppLayout({ state }) {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
     setIsRoomSwitcherOpen(false)
-    setRoomTransitionColor(link.color)
+    setActiveRoomTransitionColor(roomTransitionColor)
 
     window.setTimeout(() => {
       window.location.hash = link.href
     }, roomTransitionRouteDelay)
 
     window.setTimeout(() => {
-      setRoomTransitionColor(null)
+      setActiveRoomTransitionColor(null)
     }, roomTransitionDuration)
   }
 
@@ -589,10 +602,10 @@ export function AppLayout({ state }) {
         </>
       )}
 
-      {roomTransitionColor ? (
+      {activeRoomTransitionColor ? (
         <div
           className="room-transition-overlay"
-          style={{ '--room-transition-color': roomTransitionColor }}
+          style={{ '--room-transition-color': activeRoomTransitionColor }}
           aria-hidden="true"
         >
           <img className="room-transition-mascot" src={transitionMascotSrc} alt="" />
@@ -607,15 +620,27 @@ export function AppLayout({ state }) {
         customFrameInputRef={customFrameInputRef}
         isOpen={isShareSheetOpen}
         onAddCustomFrame={handleAddCustomFrame}
+        onBeginMoveShareSticker={handleBeginMoveShareSticker}
+        onColorShareSticker={handleColorShareSticker}
         onClose={() => setIsShareSheetOpen(false)}
         onCopyShareQuote={handleCopyShareQuote}
         onDownloadShareImage={handleDownloadShareImage}
+        onFlipShareSticker={handleFlipShareSticker}
         onNativeShareQuote={handleNativeShareQuote}
+        onMoveShareSticker={handleMoveShareSticker}
+        onPlaceShareSticker={handlePlaceShareSticker}
+        onResizeShareSticker={handleResizeShareSticker}
+        onRemoveShareSticker={handleRemoveShareSticker}
+        onResetShareStickers={handleResetShareStickers}
+        onRotateShareSticker={handleRotateShareSticker}
         onSelectShareFrame={handleSelectShareFrame}
         onShareInstagramStory={handleShareInstagramStory}
         onTextColorChange={setShareTextColor}
+        onUndoShareSticker={handleUndoShareSticker}
+        placedShareStickers={placedShareStickers}
         quote={quote}
         shareQuoteFontSize={shareQuoteFontSize}
+        shareStickerHistoryCount={shareStickerHistoryCount}
         shareTextColor={shareTextColor}
         shareTextColors={shareTextColors}
       />
