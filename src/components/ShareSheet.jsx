@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { CloseIcon, CopyIcon, DownloadIcon, FlipIcon, InstagramIcon, ResetIcon, RotateIcon, ShareIcon, UndoIcon } from './icons'
+import { CloseIcon, CopyIcon, DownloadIcon, FlipIcon, ResetIcon, RotateIcon, ShareIcon, UndoIcon } from './icons'
 
 const shareStickerOptions = [
   { alt: 'Hộp', src: '/PNG/hop.png' },
@@ -70,7 +70,6 @@ export function ShareSheet({
   onResetShareStickers,
   onRotateShareSticker,
   onSelectShareFrame,
-  onShareInstagramStory,
   onTextColorChange,
   onUndoShareSticker,
   placedShareStickers,
@@ -359,12 +358,6 @@ export function ShareSheet({
               <ShareIcon />
             </span>
             <p>{copy.shareSheet.share}</p>
-          </button>
-          <button type="button" onClick={onShareInstagramStory}>
-            <span>
-              <InstagramIcon />
-            </span>
-            <p>{copy.shareSheet.instagram}</p>
           </button>
           <button type="button" onClick={onDownloadShareImage}>
             <span>
