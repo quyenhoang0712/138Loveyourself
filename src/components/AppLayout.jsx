@@ -13,6 +13,7 @@ import { SoundOffIcon } from './icons'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
+import { CommunitySection } from '../sections/CommunitySection'
 import { DecisionSection } from '../sections/DecisionSection'
 import { FocusSection } from '../sections/FocusSection'
 import { HealingSection } from '../sections/HealingSection'
@@ -24,10 +25,9 @@ import { RoomSection } from '../sections/RoomSection'
 import { WheelNavSection } from '../sections/WheelNavSection'
 import { getAnalyticsIds, identifyVisitor, sendAnalyticsHeartbeat, startAnalyticsSession, trackAnalyticsEvent } from '../utils/analytics'
 
-const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room']
+const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
-const roomTransitionColor = '#F8DB8E'
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
 const quickSpotifyButtonSrc = '/PNG/dia-than.png'
@@ -52,7 +52,6 @@ const homePngIcons = [
   '/PNG/ao-khan-len.png',
   '/PNG/ngu-coc.png',
   '/PNG/dia-than.png',
-  '/PNG/messenger.png',
   '/PNG/mascot-ngu.png',
   '/PNG/hop-nhac.png',
   '/PNG/hop.png',
@@ -86,6 +85,15 @@ const roomSwitcherLinks = [
   { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
   { href: '#healing-room', label: 'Chữa lành', room: 'healing-room', color: '#4789C8' },
   { href: '#sound-room', label: 'Âm thanh', room: 'sound-room', color: '#EBAAB4' },
+  { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' },
+]
+const homePriorityAssets = [
+  '/Vector.gif',
+  '/PNG/hop-mascot.png',
+  '/PNG/ao-khan-len.png',
+  transitionMascotSrc,
+  quickSpotifyButtonSrc,
+  roomSwitcherIconSrc,
 ]
 
 function getActiveRoomFromHash() {
@@ -101,6 +109,12 @@ function getIsAnalyticsReportFromHash() {
   return window.location.hash.replace('#', '') === 'analytics'
 }
 
+function preloadImage(src) {
+  const image = new Image()
+  image.decoding = 'async'
+  image.src = src
+}
+
 function HomePngShelf() {
   return (
     <section className="home-png-shelf" aria-label="Trang trí">
@@ -112,12 +126,56 @@ function HomePngShelf() {
             alt=""
             key={src}
             style={{
+              '--icon-delay': `${520 + index * 28}ms`,
+              '--icon-index': index,
               '--icon-y': `${(index % 5) * -3}px`,
               '--icon-hover-y': `${(index % 5) * -3 - 6}px`,
               '--icon-rotate': `${((index % 7) - 3) * 2}deg`,
             }}
           />
         ))}
+      </div>
+    </section>
+  )
+}
+
+function CommunityIntroSection({ onCommunityNavigate }) {
+  const communityLink = { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' }
+
+  return (
+    <section className="home-community-intro scroll-pop" aria-labelledby="home-community-title">
+      <div className="home-community-copy">
+        <p>Trang cộng đồng</p>
+        <h2 id="home-community-title">Một góc để mọi người cùng ở lại với nhau.</h2>
+        <span>
+          Đây sẽ là nơi gom những chia sẻ nhẹ nhàng, lời nhắn và câu chuyện từ cộng đồng Love Yourself.
+          Trước mắt mình mở sẵn cánh cửa, phần nội dung sẽ được thêm sau.
+        </span>
+        <button type="button" onClick={() => onCommunityNavigate(communityLink)}>
+          Vào trang cộng đồng
+        </button>
+      </div>
+      <img className="home-community-icon" src="/PNG/hop-mascot.png" alt="" aria-hidden="true" />
+    </section>
+  )
+}
+
+function OfficialSiteIntroSection() {
+  return (
+    <section className="community-official-site scroll-pop" aria-labelledby="official-site-title">
+      <img className="official-site-art" src="/PNG/ao-khan-len.png" alt="" aria-hidden="true" />
+      <div className="official-site-copy">
+        <p>Web chính của 138knitwear</p>
+        <h2 id="official-site-title">Ghé 138knitwear để xem những collection mới nhất.</h2>
+        <span>
+          Ở đó người tình có thể xem các sản phẩm knitwear, phụ kiện, lookbook và những tin tức mới từ 138.
+          Còn góc Love Yourself này là nơi mình ở lại lâu hơn với cảm xúc, lời nhắn và cộng đồng.
+        </span>
+        <div className="official-site-actions">
+          <a className="official-site-link" href="https://138knitwear.com/" target="_blank" rel="noreferrer">
+            Mở 138knitwear.com
+          </a>
+        </div>
       </div>
     </section>
   )
@@ -241,6 +299,30 @@ export function AppLayout({ state }) {
   }, [activeRoom, isAnalyticsReportOpen])
 
   useEffect(() => {
+    if (activeRoom || isAnalyticsReportOpen) return undefined
+
+    const priorityAssets = [...new Set(homePriorityAssets)]
+    const idleAssets = [...new Set(homePngIcons.filter((src) => !priorityAssets.includes(src)))]
+    priorityAssets.forEach(preloadImage)
+
+    const preloadIdleAssets = () => {
+      idleAssets.forEach(preloadImage)
+    }
+    const idleId = window.requestIdleCallback
+      ? window.requestIdleCallback(preloadIdleAssets, { timeout: 1800 })
+      : window.setTimeout(preloadIdleAssets, 600)
+
+    return () => {
+      if (window.cancelIdleCallback && typeof idleId === 'number') {
+        window.cancelIdleCallback(idleId)
+        return
+      }
+
+      window.clearTimeout(idleId)
+    }
+  }, [activeRoom, isAnalyticsReportOpen])
+
+  useEffect(() => {
     if (isAnalyticsReportOpen) return
     if (hasStartedAnalyticsRef.current) return
     hasStartedAnalyticsRef.current = true
@@ -318,7 +400,7 @@ export function AppLayout({ state }) {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
     setIsRoomSwitcherOpen(false)
-    setActiveRoomTransitionColor(roomTransitionColor)
+    setActiveRoomTransitionColor(link.color || '#F8DB8E')
 
     window.setTimeout(() => {
       window.location.hash = link.href
@@ -557,6 +639,7 @@ export function AppLayout({ state }) {
     'healing-room': healingRoom,
     'sound-room': soundRoom,
     'play-room': soundRoom,
+    community: <CommunitySection />,
   }[activeRoom]
 
   return (
@@ -597,8 +680,12 @@ export function AppLayout({ state }) {
             />
           ) : null}
 
-          <WheelNavSection onRoomNavigate={handleRoomNavigate} />
-          <HomePngShelf />
+          <div className="home-roll-stack">
+            <WheelNavSection onRoomNavigate={handleRoomNavigate} />
+            <CommunityIntroSection onCommunityNavigate={handleRoomNavigate} />
+            <OfficialSiteIntroSection />
+            <HomePngShelf />
+          </div>
         </>
       )}
 
