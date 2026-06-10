@@ -1,8 +1,8 @@
 export const ui = {
   hero: {
     eyebrow: 'Love Yourself rooms',
-    title: 'Chọn một phòng cho hôm nay.',
-    body: 'Trang này được chia thành ba căn phòng nhỏ: Phòng thiệp để nhận một lời nhắn dịu dàng, Phòng tập trung để ở lại với việc cần làm, và Phòng âm thanh để đổi nhịp bằng một playlist. Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm nay.',
+    title: 'Chọn một phòng cho hôm\u00A0nay.',
+    body: 'Trang này được chia thành ba căn phòng nhỏ: Phòng thiệp để nhận một lời nhắn dịu dàng, Phòng tập trung để ở lại với việc cần làm, và Phòng âm thanh để đổi nhịp bằng một playlist. Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm\u00A0nay.',
   },
   quote: {
     eyebrow: 'Lời nhắn cho bạn',

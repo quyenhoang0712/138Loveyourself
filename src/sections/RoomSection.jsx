@@ -1,6 +1,6 @@
 export function RoomSection({ body, children, eyebrow, id, title }) {
   let characterIndex = 0
-  const titleWords = title.split(' ')
+  const titleWords = title.replaceAll('hôm nay', 'hôm\u00A0nay').split(' ')
 
   return (
     <section className="room-section" id={id}>

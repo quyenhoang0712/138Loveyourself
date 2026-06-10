@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/index.js",
     "dev:api": "node backend/index.js",
-    "dev": "vite",
+    "dev:front": "vite",
+    "dev": "node scripts/dev.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

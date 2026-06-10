@@ -18,7 +18,7 @@ export function IntroVideoSection({ copy, videoUrl }) {
         </div>
       </div>
       <div className="room-choice-prompt scroll-pop">
-        <p>Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm nay.</p>
+        <p>Lướt xuống vòng xoay và chọn căn phòng hợp với mình hôm&nbsp;nay.</p>
       </div>
     </section>
   )
