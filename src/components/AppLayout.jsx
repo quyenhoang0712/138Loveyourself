@@ -9,7 +9,7 @@ import {
   shareTextColors,
 } from '../config/appConfig'
 import { AmbientVisualEffect } from './AmbientVisualEffect'
-import { SoundOffIcon } from './icons'
+import { CloseIcon, SoundOffIcon } from './icons'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
@@ -23,63 +23,25 @@ import { AnalyticsReport } from '../sections/AnalyticsReport'
 import { QuoteSection } from '../sections/QuoteSection'
 import { RoomSection } from '../sections/RoomSection'
 import { WheelNavSection } from '../sections/WheelNavSection'
-import { getAnalyticsIds, identifyVisitor, sendAnalyticsHeartbeat, startAnalyticsSession, trackAnalyticsEvent } from '../utils/analytics'
+import {
+  getVisitorProfile,
+  getAnalyticsIds,
+  identifyVisitor,
+  sendAnalyticsHeartbeat,
+  startAnalyticsSession,
+  trackAnalyticsEvent,
+} from '../utils/analytics'
 
 const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
+const welcomeGuideLastSeenStorageKey = 'love-yourself-guide-last-seen'
+const welcomeGuideReminderDelay = 12 * 60 * 60 * 1000
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
 const quickSpotifyButtonSrc = '/PNG/dia-than.png'
 const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0'
 const roomSwitcherIconSrc = '/PNG/mascot-ong-nhom.png'
-const homePngIcons = [
-  '/PNG/mascot-nhay.png',
-  '/PNG/giay-2.png',
-  '/PNG/may-anh.png',
-  '/PNG/giay-3.png',
-  '/PNG/mascot-khien-do.png',
-  '/PNG/sofa-2.png',
-  '/PNG/ngoi-sao.png',
-  '/PNG/sofa-3.png',
-  '/PNG/tay-trai-tim.png',
-  '/PNG/mascot-da-chan.png',
-  '/PNG/hoa-ly.png',
-  '/PNG/banh-co-to-giay.png',
-  '/PNG/headphone.png',
-  '/PNG/thu-tay.png',
-  '/PNG/ly-but.png',
-  '/PNG/ao-khan-len.png',
-  '/PNG/ngu-coc.png',
-  '/PNG/dia-than.png',
-  '/PNG/mascot-ngu.png',
-  '/PNG/hop-nhac.png',
-  '/PNG/hop.png',
-  '/PNG/cuon-len.png',
-  '/PNG/sofa.png',
-  '/PNG/xe-dap-3.png',
-  '/PNG/nhan-nut-warning.png',
-  '/PNG/bo-hoa.png',
-  '/PNG/xe-dap-2.png',
-  '/PNG/roi-nui.png',
-  '/PNG/goi.png',
-  '/PNG/cua-so.png',
-  '/PNG/xe-dap-1.png',
-  '/PNG/hop-tim.png',
-  '/PNG/have-a-nice-day.png',
-  '/PNG/xe-dap-4.png',
-  '/PNG/vong-xoay.png',
-  '/PNG/dong-ho.png',
-  '/PNG/hop-mascot.png',
-  '/PNG/brush.png',
-  '/PNG/mascot-ong-nhom.png',
-  '/PNG/khung-nhac.png',
-  '/PNG/note.png',
-  '/PNG/radio.png',
-  '/PNG/giay.png',
-  '/PNG/mascot-cam-loa.png',
-  '/PNG/ipod.png',
-]
 const roomSwitcherLinks = [
   { href: '#card-room', label: 'Thiệp', room: 'card-room', color: '#9AB4EE' },
   { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
@@ -89,12 +51,47 @@ const roomSwitcherLinks = [
 ]
 const homePriorityAssets = [
   '/Vector.gif',
-  '/PNG/hop-mascot.png',
+  '/PNG/giay.png',
   '/PNG/ao-khan-len.png',
   transitionMascotSrc,
   quickSpotifyButtonSrc,
   roomSwitcherIconSrc,
 ]
+
+function getStoredVisitorProfile() {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const profile = JSON.parse(window.localStorage.getItem(visitorProfileStorageKey) || 'null')
+    const age = Number(profile?.age)
+    const gender = profile?.gender
+
+    if (!Number.isInteger(age) || age < 1 || age > 120) return null
+    if (!['male', 'female', 'other'].includes(gender)) return null
+
+    return { age, gender }
+  } catch {
+    return null
+  }
+}
+
+function storeVisitorProfile(profile) {
+  try {
+    window.localStorage.setItem(
+      visitorProfileStorageKey,
+      JSON.stringify({ age: profile.age, gender: profile.gender }),
+    )
+  } catch {
+    // Continue with the database when browser storage is unavailable.
+  }
+}
+
+function shouldShowWelcomeGuide() {
+  if (typeof window === 'undefined') return false
+
+  const lastSeenAt = Number(window.localStorage.getItem(welcomeGuideLastSeenStorageKey))
+  return !lastSeenAt || Date.now() - lastSeenAt >= welcomeGuideReminderDelay
+}
 
 function getActiveRoomFromHash() {
   if (typeof window === 'undefined') return null
@@ -115,30 +112,6 @@ function preloadImage(src) {
   image.src = src
 }
 
-function HomePngShelf() {
-  return (
-    <section className="home-png-shelf" aria-label="Trang trí">
-      <div className="home-png-cloud" aria-hidden="true">
-        {homePngIcons.map((src, index) => (
-          <img
-            className="home-png-icon"
-            src={src}
-            alt=""
-            key={src}
-            style={{
-              '--icon-delay': `${520 + index * 28}ms`,
-              '--icon-index': index,
-              '--icon-y': `${(index % 5) * -3}px`,
-              '--icon-hover-y': `${(index % 5) * -3 - 6}px`,
-              '--icon-rotate': `${((index % 7) - 3) * 2}deg`,
-            }}
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
 function CommunityIntroSection({ onCommunityNavigate }) {
   const communityLink = { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' }
 
@@ -155,7 +128,7 @@ function CommunityIntroSection({ onCommunityNavigate }) {
           Vào trang cộng đồng
         </button>
       </div>
-      <img className="home-community-icon" src="/PNG/hop-mascot.png" alt="" aria-hidden="true" />
+      <img className="home-community-icon" src="/PNG/giay.png" alt="" aria-hidden="true" />
     </section>
   )
 }
@@ -181,6 +154,133 @@ function OfficialSiteIntroSection() {
   )
 }
 
+function FeedbackPopup({ isOpen, onClose }) {
+  const [message, setMessage] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setIsSubmitting(true)
+    setStatus(null)
+
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...getAnalyticsIds(),
+          name,
+          email,
+          message,
+        }),
+      })
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Chưa gửi được góp ý. Bạn thử lại giúp mình nha.')
+      }
+
+      setMessage('')
+      setName('')
+      setEmail('')
+      setStatus({ type: 'success', text: data?.message || 'Cảm ơn bạn đã góp ý!' })
+    } catch (error) {
+      setStatus({
+        type: 'error',
+        text: error.message === 'Failed to fetch'
+          ? 'Không kết nối được máy chủ. Bạn thử lại sau nha.'
+          : error.message,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="home-feedback-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="home-feedback-section home-feedback-popup"
+        aria-labelledby="home-feedback-title"
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="home-feedback-close" type="button" aria-label="Đóng góp ý" onClick={onClose}>
+          <CloseIcon />
+        </button>
+
+        <div className="home-feedback-copy">
+          <p>Đóng góp ý kiến</p>
+          <h2 id="home-feedback-title">Bạn muốn Love Yourself dịu hơn ở chỗ nào?</h2>
+          <span>
+            Gửi tụi mình một lời nhắn nhỏ: điều bạn thích, điều còn khó dùng, hoặc một căn phòng bạn muốn có thêm.
+            Mỗi góp ý sẽ giúp góc này lớn lên đúng cách hơn.
+          </span>
+        </div>
+
+        <form className="home-feedback-form" onSubmit={handleSubmit}>
+          <label>
+            <span>Lời góp ý</span>
+            <textarea
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              placeholder="Bạn muốn nhắn gì cho tụi mình?"
+              minLength="6"
+              maxLength="1200"
+              required
+            />
+          </label>
+
+          <div className="home-feedback-fields">
+            <label>
+              <span>Tên của bạn</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Không bắt buộc"
+                maxLength="80"
+              />
+            </label>
+            <label>
+              <span>Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="Để tụi mình phản hồi nếu cần"
+                maxLength="160"
+              />
+            </label>
+          </div>
+
+          {status ? <p className={`home-feedback-message is-${status.type}`}>{status.text}</p> : null}
+
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang gửi...' : 'Gửi góp ý'}
+          </button>
+        </form>
+      </section>
+    </div>
+  )
+}
+
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
   const hasStartedAnalyticsRef = useRef(false)
@@ -194,11 +294,12 @@ export function AppLayout({ state }) {
   const [visitorAge, setVisitorAge] = useState('')
   const [visitorGender, setVisitorGender] = useState('')
   const [visitorProfileError, setVisitorProfileError] = useState('')
-  const [isVisitorPromptOpen, setIsVisitorPromptOpen] = useState(() => {
-    if (typeof window === 'undefined') return false
-
-    return !window.localStorage.getItem(visitorProfileStorageKey)
-  })
+  const [isVisitorProfileSaving, setIsVisitorProfileSaving] = useState(false)
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  const [isWelcomeGuideOpen, setIsWelcomeGuideOpen] = useState(
+    () => Boolean(getStoredVisitorProfile()) && shouldShowWelcomeGuide(),
+  )
+  const [isVisitorPromptOpen, setIsVisitorPromptOpen] = useState(() => !getStoredVisitorProfile())
 
   const {
     activeAmbientSound,
@@ -302,25 +403,44 @@ export function AppLayout({ state }) {
     if (activeRoom || isAnalyticsReportOpen) return undefined
 
     const priorityAssets = [...new Set(homePriorityAssets)]
-    const idleAssets = [...new Set(homePngIcons.filter((src) => !priorityAssets.includes(src)))]
     priorityAssets.forEach(preloadImage)
+    return undefined
+  }, [activeRoom, isAnalyticsReportOpen])
 
-    const preloadIdleAssets = () => {
-      idleAssets.forEach(preloadImage)
+  useEffect(() => {
+    if (isAnalyticsReportOpen) return undefined
+
+    let isCancelled = false
+    const storedProfile = getStoredVisitorProfile()
+
+    if (storedProfile) {
+      identifyVisitor(storedProfile).catch(() => undefined)
+
+      return () => {
+        isCancelled = true
+      }
     }
-    const idleId = window.requestIdleCallback
-      ? window.requestIdleCallback(preloadIdleAssets, { timeout: 1800 })
-      : window.setTimeout(preloadIdleAssets, 600)
+
+    getVisitorProfile()
+      .then((profile) => {
+        if (isCancelled) return
+
+        const hasCompleteProfile = Number.isInteger(profile?.age) && Boolean(profile?.gender)
+        setIsVisitorPromptOpen(!hasCompleteProfile)
+
+        if (hasCompleteProfile) {
+          storeVisitorProfile(profile)
+          setIsWelcomeGuideOpen(shouldShowWelcomeGuide())
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) setIsVisitorPromptOpen(true)
+      })
 
     return () => {
-      if (window.cancelIdleCallback && typeof idleId === 'number') {
-        window.cancelIdleCallback(idleId)
-        return
-      }
-
-      window.clearTimeout(idleId)
+      isCancelled = true
     }
-  }, [activeRoom, isAnalyticsReportOpen])
+  }, [isAnalyticsReportOpen])
 
   useEffect(() => {
     if (isAnalyticsReportOpen) return
@@ -495,7 +615,7 @@ export function AppLayout({ state }) {
     </div>
   ) : null
 
-  const handleVisitorProfileSubmit = (event) => {
+  const handleVisitorProfileSubmit = async (event) => {
     event.preventDefault()
 
     const normalizedAge = Number(visitorAge)
@@ -509,25 +629,33 @@ export function AppLayout({ state }) {
       return
     }
 
-    const { visitorId } = getAnalyticsIds()
-
-    window.localStorage.setItem(
-      visitorProfileStorageKey,
-      JSON.stringify({
-        visitorId,
-        age: normalizedAge,
-        gender: visitorGender,
-        savedAt: new Date().toISOString(),
-      }),
-    )
-    identifyVisitor({ age: normalizedAge, gender: visitorGender })
+    setIsVisitorProfileSaving(true)
     setVisitorProfileError('')
-    setIsVisitorPromptOpen(false)
+
+    const localProfile = { age: normalizedAge, gender: visitorGender }
+    storeVisitorProfile(localProfile)
+
+    try {
+      await identifyVisitor(localProfile)
+      setIsVisitorPromptOpen(false)
+      setIsWelcomeGuideOpen(true)
+    } catch {
+      setIsVisitorPromptOpen(false)
+      setIsWelcomeGuideOpen(true)
+    } finally {
+      setIsVisitorProfileSaving(false)
+    }
+  }
+
+  const handleWelcomeGuideClose = () => {
+    window.localStorage.setItem(welcomeGuideLastSeenStorageKey, String(Date.now()))
+    setIsWelcomeGuideOpen(false)
   }
 
   const header = (
     <SiteHeader
       variant="static"
+      onFeedbackOpen={() => setIsFeedbackOpen(true)}
     />
   )
 
@@ -677,6 +805,7 @@ export function AppLayout({ state }) {
           {isFloatingHeaderVisible ? (
             <SiteHeader
               variant="floating"
+              onFeedbackOpen={() => setIsFeedbackOpen(true)}
             />
           ) : null}
 
@@ -684,7 +813,6 @@ export function AppLayout({ state }) {
             <WheelNavSection onRoomNavigate={handleRoomNavigate} />
             <CommunityIntroSection onCommunityNavigate={handleRoomNavigate} />
             <OfficialSiteIntroSection />
-            <HomePngShelf />
           </div>
         </>
       )}
@@ -734,6 +862,8 @@ export function AppLayout({ state }) {
 
       <Toast message={toastMessage} />
 
+      <FeedbackPopup isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+
       {isVisitorPromptOpen && !isAnalyticsReportOpen ? (
         <div className="visitor-prompt-backdrop">
           <form className="visitor-prompt" aria-label="Thông tin người dùng" onSubmit={handleVisitorProfileSubmit}>
@@ -779,12 +909,62 @@ export function AppLayout({ state }) {
 
             {visitorProfileError ? <p className="visitor-prompt-error">{visitorProfileError}</p> : null}
 
-            <button className="visitor-prompt-submit" type="submit">
-              Bắt đầu
+            <button className="visitor-prompt-submit" type="submit" disabled={isVisitorProfileSaving}>
+              {isVisitorProfileSaving ? 'Đang lưu...' : 'Bắt đầu'}
             </button>
           </form>
         </div>
       ) : null}
+
+      {isWelcomeGuideOpen && !isAnalyticsReportOpen ? (
+        <div className="visitor-prompt-backdrop welcome-guide-backdrop">
+          <section className="welcome-guide" aria-labelledby="welcome-guide-title">
+            <div className="welcome-guide-heading">
+              <p>Một chút bí kíp nè</p>
+              <h2 id="welcome-guide-title">Mình đi một vòng nha!</h2>
+              <span>Trang chủ dẫn bạn tới các căn phòng, còn hai nút nhỏ sẽ luôn đi cùng bạn.</span>
+            </div>
+
+            <article className="welcome-guide-home">
+              <img src="/PNG/vong-xoay.png" alt="" aria-hidden="true" />
+              <div>
+                <strong>Bắt đầu từ trang chủ</strong>
+                <p>Lướt xuống vòng xoay, chạm hai mũi tên để đổi hướng, rồi chọn tên căn phòng bạn muốn ghé.</p>
+              </div>
+              <span className="welcome-guide-steps" aria-hidden="true">
+                <b>1. Lướt xuống</b>
+                <b>2. Xoay vòng</b>
+                <b>3. Chọn phòng</b>
+              </span>
+            </article>
+
+            <p className="welcome-guide-section-label">Khi đã vào một căn phòng</p>
+
+            <div className="welcome-guide-items">
+              <article className="welcome-guide-item welcome-guide-spotify">
+                <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
+                <div>
+                  <strong>Nút nghe nhạc</strong>
+                  <p>Chạm vào đĩa nhạc để mở hoặc thu gọn Spotify thật nhanh.</p>
+                </div>
+              </article>
+
+              <article className="welcome-guide-item welcome-guide-rooms">
+                <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
+                <div>
+                  <strong>Nút chuyển phòng</strong>
+                  <p>Chạm vào mascos này để ghé sang căn phòng khác bất cứ lúc nào.</p>
+                </div>
+              </article>
+            </div>
+
+            <button className="welcome-guide-submit" type="button" onClick={handleWelcomeGuideClose}>
+              Mình hiểu rồi, đi thôi!
+            </button>
+          </section>
+        </div>
+      ) : null}
+
     </main>
   )
 }

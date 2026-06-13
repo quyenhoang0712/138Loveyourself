@@ -69,6 +69,7 @@ router.post('/identify', async (req, res) => {
     { visitorId },
     {
       $set: {
+        age: normalizedAge,
         gender,
         ageGroup: getAgeGroup(normalizedAge),
         lastSeenAt: new Date(),
@@ -80,6 +81,17 @@ router.post('/identify', async (req, res) => {
 
   if (sessionId) {
     await recordEvent({ visitorId, sessionId, type: 'profile_saved', room: 'home', metadata: { gender, ageGroup: visitor.ageGroup } })
+  }
+
+  res.json({ visitor })
+})
+
+router.get('/profile/:visitorId', async (req, res) => {
+  const visitor = await Visitor.findOne({ visitorId: req.params.visitorId }).lean()
+
+  if (!visitor) {
+    res.status(404).json({ visitor: null })
+    return
   }
 
   res.json({ visitor })

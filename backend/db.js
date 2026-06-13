@@ -9,6 +9,9 @@ export function connectDatabase() {
 
   connectionPromise = mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 5000,
+  }).catch((error) => {
+    connectionPromise = null
+    throw error
   })
 
   return connectionPromise

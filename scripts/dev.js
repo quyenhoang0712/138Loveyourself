@@ -1,17 +1,52 @@
 import { spawn } from 'node:child_process'
+import { existsSync, mkdirSync } from 'node:fs'
+import net from 'node:net'
 
-const commands = [
+const commands = []
+const defaultMongoDataPath = process.platform === 'darwin'
+  ? '/opt/homebrew/var/mongodb'
+  : 'data/mongodb'
+
+function isPortOpen(port, host = '127.0.0.1') {
+  return new Promise((resolve) => {
+    const socket = net.createConnection({ host, port })
+
+    socket.setTimeout(500)
+    socket.once('connect', () => {
+      socket.destroy()
+      resolve(true)
+    })
+    socket.once('timeout', () => {
+      socket.destroy()
+      resolve(false)
+    })
+    socket.once('error', () => resolve(false))
+  })
+}
+
+if (!(await isPortOpen(27017))) {
+  const mongoDataPath = process.env.MONGODB_DB_PATH || defaultMongoDataPath
+  if (!existsSync(mongoDataPath)) mkdirSync(mongoDataPath, { recursive: true })
+
+  commands.push({
+    name: 'mongodb',
+    command: 'mongod',
+    args: ['--dbpath', mongoDataPath, '--bind_ip', '127.0.0.1', '--port', '27017', '--quiet'],
+  })
+}
+
+commands.push(
   {
     name: 'api',
     command: process.execPath,
-    args: ['backend/index.js'],
+    args: ['--env-file-if-exists=.env', 'backend/index.js'],
   },
   {
     name: 'web',
     command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
     args: ['run', 'dev:front'],
   },
-]
+)
 
 const children = new Set()
 let isShuttingDown = false

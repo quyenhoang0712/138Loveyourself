@@ -3,6 +3,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { connectDatabase } from './db.js'
 import analyticsRouter from './routes/analytics.js'
+import authRouter from './routes/auth.js'
+import feedbackRouter from './routes/feedback.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -29,6 +31,8 @@ export function createApp({ serveStatic = false } = {}) {
   })
 
   app.use(['/api/analytics', '/analytics'], ensureDatabase, analyticsRouter)
+  app.use('/api/auth', ensureDatabase, authRouter)
+  app.use('/api/feedback', ensureDatabase, feedbackRouter)
 
   if (serveStatic) {
     const distPath = path.resolve(__dirname, '../dist')

@@ -211,6 +211,20 @@ export function CloseIcon() {
   )
 }
 
+export function LogoutIcon() {
+  return (
+    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10M14 8l4 4-4 4m4-4H9"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function SoundOffIcon() {
   return (
     <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">

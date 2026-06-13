@@ -168,7 +168,6 @@ export async function createShareImageBlob({ activeShareFrame, placedShareSticke
     drawRoundRect(context, 48, 48, width - 96, height - 96, 42)
     context.stroke()
     context.restore()
-
   }
 
   await drawSharePreviewStickers(context, placedShareStickers, width, height)

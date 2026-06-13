@@ -22,7 +22,15 @@ The API uses MongoDB. By default it connects to
 Optional environment variables:
 
 ```bash
+cp .env.example .env
+```
+
+Then fill in the values in `.env`:
+
+```bash
 MONGO_URI=mongodb://127.0.0.1:27017/love-yourself-analytics
+MONGODB_DB_PATH=/opt/homebrew/var/mongodb
+AUTH_SESSION_SECRET=replace-with-a-long-random-secret
 ANALYTICS_ADMIN_TOKEN=change-me
 PORT=5001
 ```
@@ -43,6 +51,7 @@ Set these Vercel environment variables before using analytics in production:
 
 ```bash
 MONGO_URI=mongodb+srv://...
+AUTH_SESSION_SECRET=your-long-random-secret
 ANALYTICS_ADMIN_TOKEN=your-private-token
 ```
 
