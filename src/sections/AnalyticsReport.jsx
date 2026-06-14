@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-const adminTokenStorageKey = 'love-yourself-admin-token'
 const ageGroupLabels = {
   'under-13': 'Dưới 13',
   '13-17': '13-17',
@@ -183,24 +182,27 @@ function DonutChart({
 export function AnalyticsReport() {
   const [period, setPeriod] = useState('day')
   const [date, setDate] = useState(getTodayKey)
-  const [token, setToken] = useState(() => localStorage.getItem(adminTokenStorageKey) || '')
+  const [user, setUser] = useState(null)
   const [report, setReport] = useState(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
+  const isAdmin = user?.role === 'admin'
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     setIsLoading(true)
     setError('')
 
     try {
-      localStorage.setItem(adminTokenStorageKey, token)
       const params = new URLSearchParams({ period, date })
-      const response = await fetch(`/api/analytics/report?${params}`, {
-        headers: { 'x-admin-token': token },
-      })
+      const response = await fetch(`/api/analytics/report?${params}`)
 
       if (!response.ok) {
-        throw new Error(response.status === 401 ? 'Token quản trị chưa đúng.' : 'Chưa tải được báo cáo.')
+        throw new Error(
+          response.status === 401 || response.status === 403
+            ? 'Chỉ tài khoản admin mới xem được báo cáo.'
+            : 'Chưa tải được báo cáo.',
+        )
       }
 
       setReport(await response.json())
@@ -210,15 +212,42 @@ export function AnalyticsReport() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [date, period])
+
+  useEffect(() => {
+    let ignore = false
+
+    async function checkAdmin() {
+      setIsCheckingAdmin(true)
+      setError('')
+
+      try {
+        const response = await fetch('/api/auth/me')
+        const data = await response.json()
+        if (ignore) return
+
+        setUser(data.user || null)
+        if (data.user?.role !== 'admin') {
+          setReport(null)
+          setError('Chỉ tài khoản admin mới xem được báo cáo.')
+        }
+      } catch {
+        if (!ignore) setError('Chưa kiểm tra được tài khoản admin.')
+      } finally {
+        if (!ignore) setIsCheckingAdmin(false)
+      }
+    }
+
+    checkAdmin()
+
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   return (
     <section className="analytics-report">
       <div className="analytics-controls">
-        <label>
-          <span>Token</span>
-          <input type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="Nhập token quản trị" />
-        </label>
         <label>
           <span>Chế độ</span>
           <select value={period} onChange={(event) => setPeriod(event.target.value)}>
@@ -238,12 +267,17 @@ export function AnalyticsReport() {
             }}
           />
         </label>
-        <button type="button" onClick={loadReport} disabled={isLoading || !token}>
-          {isLoading ? 'Đang tải' : 'Xem báo cáo'}
+        <button type="button" onClick={loadReport} disabled={isCheckingAdmin || isLoading || !isAdmin}>
+          {isCheckingAdmin || isLoading ? 'Đang tải' : 'Xem báo cáo'}
         </button>
       </div>
 
       {error ? <p className="analytics-error">{error}</p> : null}
+      {!isCheckingAdmin && !isAdmin ? (
+        <p className="analytics-empty">
+          Bạn cần đăng nhập bằng tài khoản admin tại <a href="/auth">trang tài khoản</a> rồi quay lại báo cáo.
+        </p>
+      ) : null}
 
       {report ? (
         <>

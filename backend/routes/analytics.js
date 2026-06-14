@@ -1,6 +1,8 @@
+import crypto from 'crypto'
 import { Router } from 'express'
 import { AnalyticsEvent } from '../models/AnalyticsEvent.js'
 import { Session } from '../models/Session.js'
+import { User } from '../models/User.js'
 import { Visitor } from '../models/Visitor.js'
 import { applySessionActivity, getAgeGroup, getDateRange } from '../utils/analytics.js'
 
@@ -26,12 +28,58 @@ function normalizeRoom(room) {
   return allowedRooms.has(room) ? room : 'home'
 }
 
-function requireAdmin(req, res, next) {
-  const expectedToken = process.env.ANALYTICS_ADMIN_TOKEN || 'change-me'
-  const providedToken = req.get('x-admin-token') || req.query.token
+function getCookie(req, name) {
+  const cookies = req.get('cookie') || ''
 
-  if (providedToken !== expectedToken) {
+  return cookies.split(';').reduce((value, cookie) => {
+    const [cookieName, ...cookieValue] = cookie.trim().split('=')
+    return cookieName === name ? decodeURIComponent(cookieValue.join('=')) : value
+  }, '')
+}
+
+function getSessionSecret() {
+  return process.env.AUTH_SESSION_SECRET || 'development-only-change-me'
+}
+
+function sign(value) {
+  const signature = crypto.createHmac('sha256', getSessionSecret()).update(value).digest('base64url')
+  return `${value}.${signature}`
+}
+
+function verify(signedValue) {
+  const separatorIndex = signedValue.lastIndexOf('.')
+  if (separatorIndex < 1) return null
+
+  const value = signedValue.slice(0, separatorIndex)
+  const signature = signedValue.slice(separatorIndex + 1)
+  const expected = sign(value).slice(value.length + 1)
+
+  if (signature.length !== expected.length) return null
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? value : null
+}
+
+function readSession(req) {
+  try {
+    const payload = verify(getCookie(req, 'love_yourself_session'))
+    if (!payload) return null
+
+    const session = JSON.parse(Buffer.from(payload, 'base64url').toString())
+    return session.expiresAt > Date.now() ? session : null
+  } catch {
+    return null
+  }
+}
+
+async function requireAdmin(req, res, next) {
+  const session = readSession(req)
+  if (!session) {
     res.status(401).json({ error: 'Unauthorized' })
+    return
+  }
+
+  const user = await User.findById(session.userId).lean()
+  if (user?.role !== 'admin') {
+    res.status(403).json({ error: 'Admin only' })
     return
   }
 

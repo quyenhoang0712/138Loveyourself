@@ -549,7 +549,7 @@
 
 .analytics-controls {
   display: grid;
-  grid-template-columns: minmax(180px, 1.5fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr) auto;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) auto;
   gap: 14px;
   align-items: end;
   padding: clamp(16px, 2.5vw, 24px);
