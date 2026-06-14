@@ -1,11 +1,29 @@
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import net from 'node:net'
 
 const commands = []
 const defaultMongoDataPath = process.platform === 'darwin'
   ? '/opt/homebrew/var/mongodb'
   : 'data/mongodb'
+
+function loadEnvFile(filePath = '.env') {
+  if (!existsSync(filePath)) return
+
+  const lines = readFileSync(filePath, 'utf8').split(/\r?\n/)
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (!trimmedLine || trimmedLine.startsWith('#')) continue
+
+    const separatorIndex = trimmedLine.indexOf('=')
+    if (separatorIndex === -1) continue
+
+    const key = trimmedLine.slice(0, separatorIndex).trim()
+    const value = trimmedLine.slice(separatorIndex + 1).trim()
+    if (key && !process.env[key]) process.env[key] = value
+  }
+}
 
 function isPortOpen(port, host = '127.0.0.1') {
   return new Promise((resolve) => {
@@ -24,14 +42,30 @@ function isPortOpen(port, host = '127.0.0.1') {
   })
 }
 
-if (!(await isPortOpen(27017))) {
+loadEnvFile()
+
+const mongoUri = process.env.MONGO_URI || ''
+const usesLocalMongo = !mongoUri || mongoUri.includes('127.0.0.1') || mongoUri.includes('localhost')
+
+if (usesLocalMongo && !(await isPortOpen(27017))) {
   const mongoDataPath = process.env.MONGODB_DB_PATH || defaultMongoDataPath
   if (!existsSync(mongoDataPath)) mkdirSync(mongoDataPath, { recursive: true })
 
   commands.push({
     name: 'mongodb',
     command: 'mongod',
-    args: ['--dbpath', mongoDataPath, '--bind_ip', '127.0.0.1', '--port', '27017', '--quiet'],
+    args: [
+      '--dbpath',
+      mongoDataPath,
+      '--bind_ip',
+      '127.0.0.1',
+      '--port',
+      '27017',
+      '--quiet',
+      '--logpath',
+      path.join(mongoDataPath, 'mongod.log'),
+      '--logappend',
+    ],
   })
 }
 
