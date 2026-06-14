@@ -608,6 +608,9 @@ export function CommunitySection() {
               </>
             ) : null}
           </form>
+          <div className="community-letter-table" aria-hidden="true">
+            <span className="community-letter-table-top" />
+          </div>
         </div>
       </div>
 
