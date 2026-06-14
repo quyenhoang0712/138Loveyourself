@@ -63,6 +63,11 @@ function readSession(req) {
   }
 }
 
+export async function getAuthenticatedUser(req) {
+  const session = readSession(req)
+  return session ? User.findById(session.userId) : null
+}
+
 function setSessionCookie(req, res, userId) {
   const isSecure = process.env.NODE_ENV === 'production' || req.get('x-forwarded-proto') === 'https'
   res.cookie(sessionCookieName, createSession(userId), {
@@ -153,13 +158,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/me', async (req, res) => {
-  const session = readSession(req)
-  if (!session) {
-    res.json({ user: null })
-    return
-  }
-
-  const user = await User.findById(session.userId)
+  const user = await getAuthenticatedUser(req)
   res.json({ user: user ? publicUser(user) : null })
 })
 

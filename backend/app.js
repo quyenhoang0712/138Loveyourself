@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import { connectDatabase } from './db.js'
 import analyticsRouter from './routes/analytics.js'
 import authRouter from './routes/auth.js'
+import communityLettersRouter from './routes/communityLetters.js'
 import feedbackRouter from './routes/feedback.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -32,6 +33,7 @@ export function createApp({ serveStatic = false } = {}) {
 
   app.use(['/api/analytics', '/analytics'], ensureDatabase, analyticsRouter)
   app.use('/api/auth', ensureDatabase, authRouter)
+  app.use('/api/community-letters', ensureDatabase, communityLettersRouter)
   app.use('/api/feedback', ensureDatabase, feedbackRouter)
 
   if (serveStatic) {
