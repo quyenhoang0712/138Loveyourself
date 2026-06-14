@@ -20,7 +20,6 @@ function storeLetters(letters) {
 
 export function CommunitySection() {
   const [letters, setLetters] = useState(getStoredLetters)
-  const [openLetterId, setOpenLetterId] = useState(() => getStoredLetters()[0]?.id || '')
   const [recipient, setRecipient] = useState('')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -39,15 +38,14 @@ export function CommunitySection() {
 
     const nextLetter = {
       id: `letter-${Date.now()}`,
-        recipient: normalizedRecipient,
-        title: normalizedTitle,
-        body: normalizedBody,
-        createdAt: new Date().toISOString(),
+      recipient: normalizedRecipient,
+      title: normalizedTitle,
+      body: normalizedBody,
+      createdAt: new Date().toISOString(),
     }
     const nextLetters = [nextLetter, ...letters].slice(0, 6)
 
     setLetters(nextLetters)
-    setOpenLetterId('')
     storeLetters(nextLetters)
     setRecipient('')
     setTitle('')
@@ -107,32 +105,6 @@ export function CommunitySection() {
 
             <button type="submit">Gửi lá thư</button>
           </form>
-        </div>
-
-        <div className="community-letter-board" aria-label="Những lá thư cộng đồng">
-          {letters.length ? (
-            letters.map((letter) => {
-              const isOpen = openLetterId === letter.id
-
-              return (
-                <article className={`community-letter-card ${isOpen ? 'is-open' : ''}`} key={letter.id}>
-                  <button
-                    className="community-letter-card-trigger"
-                    type="button"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpenLetterId(isOpen ? '' : letter.id)}
-                  >
-                    <p>{letter.recipient ? `Gửi ${letter.recipient}` : 'Lá thư cộng đồng'}</p>
-                    <h2>{letter.title}</h2>
-                    <small>{isOpen ? 'Thu lá thư lại' : 'Rê chuột để xem'}</small>
-                  </button>
-                  <span>{letter.body}</span>
-                </article>
-              )
-            })
-          ) : (
-            <p className="community-letter-empty-note">Chưa có thư nào. Viết xong thư sẽ nằm ở đây.</p>
-          )}
         </div>
       </div>
     </section>
