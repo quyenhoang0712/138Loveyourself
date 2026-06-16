@@ -15,9 +15,19 @@ const sealColorOptions = [
   { id: 'mint', label: 'Bạc hà', color: '#b9ddc9' },
   { id: 'lavender', label: 'Oải hương', color: '#cbc2eb' },
 ]
+const stampOptions = [
+  { id: 'letter-12', label: 'Tem thư mẫu 1', image: '/tem/Letter%20138knitwear-12.svg' },
+  { id: 'letter-14', label: 'Tem thư mẫu 2', image: '/tem/Letter%20138knitwear-14.svg' },
+]
+const sentLettersPerPage = 10
+const defaultStampId = stampOptions[0].id
 
 function getEnvelopeFilter(colorId) {
   return envelopeColorOptions.find((option) => option.id === colorId)?.filter || 'none'
+}
+
+function getStampImage(stampId) {
+  return stampOptions.find((option) => option.id === stampId)?.image || stampOptions[0].image
 }
 
 async function readApiResponse(response) {
@@ -43,7 +53,11 @@ export function CommunitySection() {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [envelopeColor, setEnvelopeColor] = useState('blue')
   const [sealColor, setSealColor] = useState('cream')
+  const [stampId, setStampId] = useState(defaultStampId)
+  const [isStampMenuOpen, setIsStampMenuOpen] = useState(false)
   const [message, setMessage] = useState('')
+  const [isSentLettersPopupOpen, setIsSentLettersPopupOpen] = useState(false)
+  const [sentLettersPage, setSentLettersPage] = useState(1)
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false)
   const [isSubmittingLetter, setIsSubmittingLetter] = useState(false)
   const [isSendingLetter, setIsSendingLetter] = useState(false)
@@ -55,11 +69,18 @@ export function CommunitySection() {
   const sendAnimationTimeoutRef = useRef(null)
   const openLetterTimeoutRef = useRef(null)
   const letterFormRef = useRef(null)
+  const stampMenuRef = useRef(null)
   const titleInputRef = useRef(null)
   const trashDropRef = useRef(null)
   const draggingLetterRef = useRef(null)
   const draggedLetterRef = useRef(false)
   const canWriteLetter = Boolean(user)
+  const sentLettersPageCount = Math.max(1, Math.ceil(letters.length / sentLettersPerPage))
+  const activeSentLettersPage = Math.min(sentLettersPage, sentLettersPageCount)
+  const paginatedSentLetters = letters.slice(
+    (activeSentLettersPage - 1) * sentLettersPerPage,
+    activeSentLettersPage * sentLettersPerPage,
+  )
 
   useEffect(() => {
     let ignore = false
@@ -136,6 +157,28 @@ export function CommunitySection() {
     if (openLetterTimeoutRef.current) clearTimeout(openLetterTimeoutRef.current)
   }, [])
 
+  useEffect(() => {
+    if (!isStampMenuOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (!stampMenuRef.current?.contains(event.target)) setIsStampMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [isStampMenuOpen])
+
+  useEffect(() => {
+    if (!isSentLettersPopupOpen) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsSentLettersPopupOpen(false)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isSentLettersPopupOpen])
+
   const handleSubmit = (event) => {
     event.preventDefault()
 
@@ -157,6 +200,7 @@ export function CommunitySection() {
       body: body.trim(),
       envelopeColor,
       sealColor,
+      stampId,
     }
 
     setSendingLetter(packagedLetter)
@@ -192,6 +236,7 @@ export function CommunitySection() {
           isAnonymous,
           envelopeColor,
           sealColor,
+          stampId,
         }),
       })
       const data = await readApiResponse(response)
@@ -222,6 +267,7 @@ export function CommunitySection() {
       setPopupMessage('')
       setEnvelopeColor('blue')
       setSealColor('cream')
+      setStampId(defaultStampId)
       requestAnimationFrame(() => {
         letterFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         titleInputRef.current?.focus({ preventScroll: true })
@@ -274,6 +320,7 @@ export function CommunitySection() {
       x: targetCenterX - sourceCenterX,
       y: targetCenterY - sourceCenterY,
     })
+    if (stackId.startsWith('sent-')) setIsSentLettersPopupOpen(false)
 
     openLetterTimeoutRef.current = setTimeout(() => {
       setSendingLetter(letter)
@@ -311,6 +358,7 @@ export function CommunitySection() {
     setMessage('')
     setEnvelopeColor('blue')
     setSealColor('cream')
+    setStampId(defaultStampId)
     requestAnimationFrame(() => {
       letterFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       titleInputRef.current?.focus({ preventScroll: true })
@@ -381,6 +429,10 @@ export function CommunitySection() {
 
       const nextLetters = letters.filter((storedLetter) => storedLetter.id !== letter.id)
       setLetters(nextLetters)
+      setSentLettersPage((currentPage) => Math.min(
+        currentPage,
+        Math.max(1, Math.ceil(nextLetters.length / sentLettersPerPage)),
+      ))
 
       if (sendingLetter?.id === letter.id) {
         setSendingLetter(null)
@@ -396,81 +448,148 @@ export function CommunitySection() {
       return <p className="community-sent-letter-empty">{emptyText}</p>
     }
 
+    const visibleLetters = stackLetters
+    const hiddenLetterCount = Math.max(0, stackLetters.length - visibleLetters.length)
+    const displayedLetters = stackId === 'sent'
+      ? visibleLetters
+      : [...visibleLetters, ...visibleLetters]
+
     return (
       <div
-        className="community-sent-letter-stack"
-        style={{ '--sent-letter-tail': `${Math.max(0, stackLetters.length - 1) * 24}px` }}
+        className={`community-sent-letter-list is-${stackId}`}
+        style={{
+          '--sent-letter-track-duration': `${Math.max(24, visibleLetters.length * 2.8)}s`,
+        }}
       >
-        {[...stackLetters].reverse().map((letter, index) => (
-          <button
-            className={`community-sent-letter-sheet ${sendingLetter?.id === letter.id ? 'is-selected' : ''} ${
-              flyingLetter?.id === letter.id && flyingLetter.stackId === stackId ? 'is-flying' : ''
-            } ${draggingLetter?.id === letter.id && draggingLetter.stackId === stackId ? 'is-dragging' : ''}`}
-            style={{
-              '--sent-letter-angle': '0deg',
-              '--sent-letter-drag-x': `${draggingLetter?.id === letter.id && draggingLetter.stackId === stackId ? draggingLetter.x : 0}px`,
-              '--sent-letter-drag-y': `${draggingLetter?.id === letter.id && draggingLetter.stackId === stackId ? draggingLetter.y : 0}px`,
-              '--sent-letter-fly-x': `${flyingLetter?.id === letter.id && flyingLetter.stackId === stackId ? flyingLetter.x : 0}px`,
-              '--sent-letter-fly-y': `${flyingLetter?.id === letter.id && flyingLetter.stackId === stackId ? flyingLetter.y : 0}px`,
-              '--sent-letter-layer': index + 1,
-              '--sent-letter-top': `${index * 24}px`,
-            }}
-            type="button"
-            key={letter.id}
-            disabled={isSendingLetter || Boolean(flyingLetter)}
-            onClick={(event) => handleOpenStoredLetter(letter, stackId, event)}
-            onPointerCancel={canDelete ? (event) => handleLetterDragEnd(letter, event) : undefined}
-            onPointerDown={canDelete ? (event) => handleLetterDragStart(letter, stackId, event) : undefined}
-            onPointerMove={canDelete ? handleLetterDragMove : undefined}
-            onPointerUp={canDelete ? (event) => handleLetterDragEnd(letter, event) : undefined}
-          >
-            <img
-              src={closedLetterImage}
-              alt=""
-              aria-hidden="true"
-              style={{ filter: getEnvelopeFilter(letter.envelopeColor) }}
-            />
-            <span
-              className="community-sent-letter-seal"
-              style={{
-                '--community-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
-              }}
-              aria-hidden="true"
-            >
-              ♥
-            </span>
-            <span className="community-sent-letter-label">
-              <small>Gửi {letter.recipient}</small>
-              <strong>{letter.title}</strong>
-              <em>{Number(letter.votes || 0)} vote</em>
-            </span>
-          </button>
-        ))}
+        {hiddenLetterCount ? <span className="community-sent-letter-count">+{hiddenLetterCount} thư</span> : null}
+        <div className="community-sent-letter-track">
+          {displayedLetters.map((letter, index) => {
+            const trackStackId = `${stackId}-${index < visibleLetters.length ? 'first' : 'second'}`
+            const isFlying = flyingLetter?.id === letter.id && flyingLetter.stackId === trackStackId
+            const isDragging = draggingLetter?.id === letter.id && draggingLetter.stackId === trackStackId
+
+            return (
+              <button
+                className={`community-sent-letter-row ${sendingLetter?.id === letter.id ? 'is-selected' : ''} ${
+                  isFlying ? 'is-flying' : ''
+                } ${isDragging ? 'is-dragging' : ''}`}
+                style={{
+                  '--sent-letter-drag-x': `${isDragging ? draggingLetter.x : 0}px`,
+                  '--sent-letter-drag-y': `${isDragging ? draggingLetter.y : 0}px`,
+                  '--sent-letter-fly-x': `${isFlying ? flyingLetter.x : 0}px`,
+                  '--sent-letter-fly-y': `${isFlying ? flyingLetter.y : 0}px`,
+                  '--sent-letter-stack-index': index,
+                }}
+                type="button"
+                key={`${index < visibleLetters.length ? 'first' : 'second'}-${letter.id}`}
+                aria-label={`${letter.title}. Gửi ${letter.recipient}. ${Number(letter.votes || 0)} vote.`}
+                disabled={isSendingLetter || Boolean(flyingLetter)}
+                onClick={(event) => handleOpenStoredLetter(letter, trackStackId, event)}
+                onPointerCancel={canDelete ? (event) => handleLetterDragEnd(letter, event) : undefined}
+                onPointerDown={canDelete ? (event) => handleLetterDragStart(letter, trackStackId, event) : undefined}
+                onPointerMove={canDelete ? handleLetterDragMove : undefined}
+                onPointerUp={canDelete ? (event) => handleLetterDragEnd(letter, event) : undefined}
+              >
+                <span className="community-sent-letter-thumb" aria-hidden="true">
+                  <img
+                    src={closedLetterImage}
+                    alt=""
+                    style={{ filter: getEnvelopeFilter(letter.envelopeColor) }}
+                  />
+                  <span
+                    className="community-sent-letter-seal"
+                    style={{
+                      '--community-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
+                    }}
+                  >
+                    ♥
+                  </span>
+                </span>
+                <span className="community-sent-letter-meta">
+                  <strong>{letter.title}</strong>
+                  <em>{Number(letter.votes || 0)} vote</em>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
     )
   }
 
   return (
     <section className="community-section" id="community" aria-labelledby="community-title">
-      <div className="community-letter-heading">
-        <p>Phòng cộng đồng</p>
-        <h1 id="community-title">Viết một lá thư nhỏ để ở lại cùng mọi người.</h1>
-        <span>
-          Đây là góc để anh gửi lại một lời nhắn dịu dàng cho ai đó, hoặc cho chính mình.
-          Mỗi lá thư có người nhận, tiêu đề và nội dung riêng; mình giữ chúng như một khoảng nhỏ
-          để cộng đồng có thể chậm lại, lắng nghe nhau và ở cạnh nhau nhẹ hơn.
-        </span>
-      </div>
+      <section className="community-letter-heading">
+        <div className="community-letter-heading-copy">
+          <p>Phòng cộng đồng</p>
+          <h1 id="community-title">Viết một lá thư nhỏ để ở lại cùng mọi người.</h1>
+          <span>
+            Đây là góc để anh gửi lại một lời nhắn dịu dàng cho ai đó, hoặc cho chính mình.
+            Mỗi lá thư có người nhận, tiêu đề và nội dung riêng; mình giữ chúng như một khoảng nhỏ
+            để cộng đồng có thể chậm lại, lắng nghe nhau và ở cạnh nhau nhẹ hơn.
+          </span>
+        </div>
 
-      <div className="community-letter-room">
+        <div
+          className="community-sent-letters community-community-letters"
+          aria-labelledby="community-sent-stack-title"
+        >
+          <div className="community-sent-letter-boxes">
+            <section className="community-sent-letter-box community-sent-letter-box-community">
+              <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
+              {renderLetterStack(
+                communityLetters,
+                isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.',
+                { canDelete: false, stackId: 'community' }
+              )}
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div className={`community-letter-room ${isSentLetterOpen ? 'is-reading-letter' : ''}`}>
         <div className="community-letter-compose">
           <form
             ref={letterFormRef}
             className={`community-letter-form ${canWriteLetter ? '' : 'is-locked'} ${isSendingLetter ? 'is-folding-letter' : ''} ${
               sendingLetter && !isSendingLetter ? 'has-sent-letter' : ''
-            }`}
+            } ${isSentLetterOpen ? 'is-reading-letter' : ''}`}
             onSubmit={handleSubmit}
           >
+            {!sendingLetter ? (
+              <div className="community-letter-stamp-picker" ref={stampMenuRef}>
+                <button
+                  className="community-letter-stamp-preview"
+                  type="button"
+                  aria-label="Đổi tem thư"
+                  aria-expanded={isStampMenuOpen}
+                  disabled={!canWriteLetter || isSendingLetter}
+                  onClick={() => setIsStampMenuOpen((isOpen) => !isOpen)}
+                >
+                  <img src={getStampImage(stampId)} alt="" />
+                </button>
+                {isStampMenuOpen ? (
+                  <div className="community-letter-stamp-options" aria-label="Chọn tem thư">
+                    {stampOptions.map((option) => (
+                      <button
+                        className={stampId === option.id ? 'is-active' : ''}
+                        type="button"
+                        key={option.id}
+                        aria-label={option.label}
+                        aria-pressed={stampId === option.id}
+                        title={option.label}
+                        onClick={() => {
+                          setStampId(option.id)
+                          setIsStampMenuOpen(false)
+                        }}
+                      >
+                        <img src={option.image} alt="" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             {!canWriteLetter ? (
               <div className="community-letter-login-overlay">
                 <p>{isCheckingUser ? 'Đang kiểm tra tài khoản...' : 'Đăng nhập / Đăng ký để viết thư'}</p>
@@ -480,13 +599,23 @@ export function CommunitySection() {
             {sendingLetter ? (
               <div className={`community-letter-fold-overlay ${
                 isSentLetterOpen || (sendingLetter.isDraft && !isSendingLetter) ? 'is-interactive' : ''
-              }`}>
+              } ${isSentLetterOpen ? 'is-reading-letter' : ''}`}>
                 {isSentLetterOpen ? (
-                  <article className="community-letter-reader" key={`reader-${sendingLetter.id}`}>
+                  <article
+                    className="community-letter-reader"
+                    key={`reader-${sendingLetter.id}`}
+                  >
+                    <img
+                      className="community-letter-reader-stamp"
+                      src={getStampImage(sendingLetter.stampId)}
+                      alt=""
+                      aria-hidden="true"
+                    />
                     <header>
-                      <small>Gửi {sendingLetter.recipient || 'Cộng đồng'}</small>
+                      <small>Tiêu đề lá thư</small>
                       <h2>{sendingLetter.title}</h2>
                     </header>
+                    <span className="community-letter-reader-label">Nội dung</span>
                     <div className="community-letter-reader-body">{sendingLetter.body}</div>
                     <footer>
                       <span>
@@ -608,39 +737,22 @@ export function CommunitySection() {
               </>
             ) : null}
           </form>
-          <div className="community-letter-table" aria-hidden="true">
-            <span className="community-letter-table-top" />
-          </div>
         </div>
       </div>
 
-      <section className="community-sent-letters" aria-labelledby="community-sent-letters-title">
-        <div className="community-sent-letters-heading">
-          <p>Hộp thư đã gửi</p>
-          <h2 id="community-sent-letters-title">Những lá thư bạn đã để lại.</h2>
-        </div>
-
-        <div className="community-sent-letter-boxes">
-          <section className="community-sent-letter-box" aria-labelledby="personal-sent-letters-title">
-            <h3 id="personal-sent-letters-title">Thư bạn đã gửi</h3>
-            {renderLetterStack(
-              user ? letters : [],
-              user
-                ? (isLoadingSentLetters ? 'Đang mở hộp thư của bạn...' : 'Bạn chưa gửi lá thư nào.')
-                : 'Đăng nhập để xem thư bạn đã gửi.',
-              { canDelete: true, stackId: 'sent' }
-            )}
-          </section>
-
-          <section className="community-sent-letter-box" aria-labelledby="community-sent-stack-title">
-            <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
-            {renderLetterStack(
-              communityLetters,
-              isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.',
-              { canDelete: false, stackId: 'community' }
-            )}
-          </section>
-        </div>
+      <section className="community-personal-letters" aria-label="Hộp thư đã gửi">
+        <button
+          className="community-sent-letters-popup-trigger"
+          type="button"
+          aria-haspopup="dialog"
+          onClick={() => {
+            setSentLettersPage(1)
+            setIsSentLettersPopupOpen(true)
+          }}
+        >
+          <span>Thư bạn đã gửi</span>
+          <strong>{user ? letters.length : 0} thư</strong>
+        </button>
 
         {draggingLetter ? (
           <div
@@ -653,6 +765,78 @@ export function CommunitySection() {
           </div>
         ) : null}
       </section>
+
+      {isSentLettersPopupOpen ? (
+        <div
+          className="community-letter-popup-backdrop"
+          role="presentation"
+          onClick={() => setIsSentLettersPopupOpen(false)}
+        >
+          <section
+            className="community-sent-letters-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="personal-sent-letters-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <h2 id="personal-sent-letters-title">Thư bạn đã gửi</h2>
+                <p>Trang {activeSentLettersPage} / {sentLettersPageCount}</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Đóng hộp thư"
+                title="Đóng"
+                onClick={() => setIsSentLettersPopupOpen(false)}
+              >
+                ×
+              </button>
+            </header>
+            {renderLetterStack(
+              user ? paginatedSentLetters : [],
+              user
+                ? (isLoadingSentLetters ? 'Đang mở hộp thư của bạn...' : 'Bạn chưa gửi lá thư nào.')
+                : 'Đăng nhập để xem thư bạn đã gửi.',
+              { canDelete: true, stackId: 'sent' }
+            )}
+            {user && letters.length > sentLettersPerPage ? (
+              <nav className="community-sent-letters-pagination" aria-label="Chuyển trang thư đã gửi">
+                <button
+                  type="button"
+                  aria-label="Trang trước"
+                  title="Trang trước"
+                  disabled={activeSentLettersPage === 1}
+                  onClick={() => setSentLettersPage((page) => Math.max(1, page - 1))}
+                >
+                  ‹
+                </button>
+                {Array.from({ length: sentLettersPageCount }, (_, index) => index + 1).map((page) => (
+                  <button
+                    className={activeSentLettersPage === page ? 'is-active' : ''}
+                    type="button"
+                    key={page}
+                    aria-label={`Trang ${page}`}
+                    aria-current={activeSentLettersPage === page ? 'page' : undefined}
+                    onClick={() => setSentLettersPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  aria-label="Trang sau"
+                  title="Trang sau"
+                  disabled={activeSentLettersPage === sentLettersPageCount}
+                  onClick={() => setSentLettersPage((page) => Math.min(sentLettersPageCount, page + 1))}
+                >
+                  ›
+                </button>
+              </nav>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
 
       {isSendPopupOpen ? (
         <div className="community-letter-popup-backdrop" role="presentation" onClick={handleCancelSend}>

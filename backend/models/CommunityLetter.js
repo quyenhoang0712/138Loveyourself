@@ -47,6 +47,11 @@ const communityLetterSchema = new mongoose.Schema({
     enum: ['cream', 'pink', 'mint', 'lavender'],
     default: 'cream',
   },
+  stampId: {
+    type: String,
+    enum: ['letter-12', 'letter-14'],
+    default: 'letter-12',
+  },
   votes: {
     type: Number,
     min: 0,

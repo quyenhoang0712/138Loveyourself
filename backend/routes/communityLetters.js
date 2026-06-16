@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from './auth.js'
 const router = Router()
 const envelopeColors = new Set(['blue', 'pink', 'green', 'violet'])
 const sealColors = new Set(['cream', 'pink', 'mint', 'lavender'])
+const stampIds = new Set(['letter-12', 'letter-14'])
 
 function publicLetter(letter) {
   return {
@@ -18,6 +19,7 @@ function publicLetter(letter) {
     votes: Number(letter.votes || 0),
     envelopeColor: letter.envelopeColor,
     sealColor: letter.sealColor,
+    stampId: stampIds.has(letter.stampId) ? letter.stampId : 'letter-12',
     createdAt: letter.createdAt,
     isPublic: true,
   }
@@ -65,6 +67,7 @@ router.post('/', async (req, res) => {
   const isAnonymous = Boolean(req.body.isAnonymous)
   const envelopeColor = envelopeColors.has(req.body.envelopeColor) ? req.body.envelopeColor : 'blue'
   const sealColor = sealColors.has(req.body.sealColor) ? req.body.sealColor : 'cream'
+  const stampId = stampIds.has(req.body.stampId) ? req.body.stampId : 'letter-12'
 
   if (
     recipient.length > 90 ||
@@ -86,6 +89,7 @@ router.post('/', async (req, res) => {
     isAnonymous,
     envelopeColor,
     sealColor,
+    stampId,
   })
 
   res.status(201).json({ letter: publicLetter(letter) })

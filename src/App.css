@@ -2853,13 +2853,15 @@ input {
 }
 
 .community-letter-heading {
-  width: min(1320px, 100%);
-  min-height: clamp(520px, 58vw, 760px);
-  margin: 0 auto clamp(28px, 4vw, 52px);
-  display: grid;
-  place-content: center;
-  justify-items: center;
+  position: relative;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 0;
+  margin: calc(clamp(44px, 7vw, 92px) * -1) 0 0;
   text-align: center;
+  transform: translateX(-50%);
 }
 
 .community-letter-room {
@@ -2868,88 +2870,24 @@ input {
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
   width: min(1320px, 100%);
-  margin: 0 auto;
-  padding: clamp(34px, 5vw, 64px) 0 0;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 4%, rgba(255, 253, 246, 0.58), transparent 34%),
-    linear-gradient(180deg, rgba(255, 253, 246, 0.34), rgba(237, 229, 210, 0.2));
+  margin: clamp(56px, 8vw, 110px) auto 0;
+}
+
+.community-letter-room.is-reading-letter {
+  margin-top: clamp(72px, 10vw, 132px);
 }
 
 .community-letter-compose {
-  position: relative;
   display: grid;
   justify-items: center;
-  gap: clamp(42px, 5.4vw, 78px);
-}
-
-.community-letter-table {
-  position: relative;
-  display: block;
-  width: min(1320px, 100%);
-  height: clamp(230px, 23vw, 330px);
-  margin: 0 auto;
-  pointer-events: none;
-}
-
-.community-letter-table::before,
-.community-letter-table::after {
-  position: absolute;
-  content: "";
-  pointer-events: none;
-}
-
-.community-letter-table::before {
-  left: 8%;
-  right: 8%;
-  bottom: clamp(18px, 2vw, 30px);
-  height: clamp(34px, 4vw, 54px);
-  background: rgba(82, 49, 30, 0.14);
-  border-radius: 50%;
-  filter: blur(18px);
-}
-
-.community-letter-table::after {
-  left: 4%;
-  right: 4%;
-  top: clamp(150px, 14vw, 204px);
-  height: clamp(54px, 6vw, 80px);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(71, 137, 200, 0.1)),
-    #f1eadf;
-  clip-path: polygon(0 0, 100% 0, 94% 100%, 6% 100%);
-  box-shadow:
-    7px 8px 0 rgba(235, 170, 180, 0.42),
-    inset 0 3px 0 rgba(255, 255, 255, 0.88);
-}
-
-.community-letter-table-top {
-  position: absolute;
-  left: 2%;
-  right: 2%;
-  top: 0;
-  height: clamp(190px, 18vw, 260px);
-  background:
-    radial-gradient(ellipse at 22% 16%, rgba(255, 255, 255, 0.86), transparent 36%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.42), transparent 18% 82%, rgba(71, 137, 200, 0.08)),
-    repeating-linear-gradient(
-      0deg,
-      rgba(71, 137, 200, 0.045) 0 2px,
-      transparent 2px 38px
-    ),
-    #fffdf6;
-  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
-  box-shadow:
-    inset 0 0 0 5px rgba(255, 255, 255, 0.9),
-    inset 0 -14px 28px rgba(71, 137, 200, 0.06),
-    9px 10px 0 rgba(235, 170, 180, 0.62),
-    0 24px 52px rgba(82, 49, 30, 0.16);
+  gap: clamp(18px, 2.6vw, 28px);
+  width: 100%;
 }
 
 .community-letter-heading,
 .community-letter-form {
   color: #4789C8;
-  background: rgba(255, 253, 246, 0.82);
+  background: #fffdf6;
   border: 2px solid rgba(255, 255, 255, 0.82);
   box-shadow:
     8px 9px 0 rgba(235, 170, 180, 0.68),
@@ -2957,8 +2895,21 @@ input {
 }
 
 .community-letter-heading {
-  padding: clamp(42px, 7vw, 96px);
-  border-radius: clamp(22px, 2.8vw, 34px);
+  padding: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.community-letter-heading-copy {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  width: 100%;
+  min-height: 0;
+  padding: clamp(72px, 11vh, 120px) clamp(42px, 7vw, 96px) clamp(20px, 3vh, 36px);
 }
 
 .community-letter-heading p {
@@ -3000,58 +2951,56 @@ input {
 .community-letter-form {
   position: relative;
   display: grid;
-  gap: 18px;
+  justify-self: center;
+  gap: clamp(18px, 2.2vw, 24px);
   width: min(980px, 100%);
   min-height: clamp(620px, 74vw, 840px);
   padding: clamp(54px, 6vw, 78px) clamp(30px, 4.5vw, 62px) clamp(28px, 4vw, 46px);
   overflow: hidden;
   background:
-    radial-gradient(circle at 18% 12%, rgba(248, 219, 142, 0.18), transparent 28%),
-    rgba(255, 252, 241, 0.94);
+    radial-gradient(circle at 18% 12%, rgba(248, 219, 142, 0.12), transparent 28%),
+    #fffaf0;
   border: 3px solid rgba(255, 255, 255, 0.86);
   border-radius: 30px;
   box-shadow:
     9px 10px 0 rgba(235, 170, 180, 0.68),
     0 34px 56px rgba(91, 60, 40, 0.24),
     0 8px 18px rgba(71, 137, 200, 0.1);
-  transform: rotate(-0.8deg);
-  transform-origin: center 30%;
+  transform: none;
 }
 
-.community-letter-form::before {
+.community-letter-stamp-picker,
+.community-letter-reader-stamp {
   position: absolute;
-  top: 42px;
+  top: 34px;
   right: 70px;
-  width: 70px;
-  height: 86px;
-  border: 3px solid rgba(48, 55, 63, 0.38);
-  border-radius: 8px;
-  box-shadow:
-    inset 0 0 0 6px rgba(255, 252, 241, 0.78),
-    0 0 0 2px rgba(48, 55, 63, 0.08);
-  content: "";
-  opacity: 0.78;
-  transform: rotate(-3deg);
-  pointer-events: none;
+  z-index: 2;
+  width: 82px;
+  height: auto;
 }
 
-.community-letter-form::after {
-  position: absolute;
-  top: 72px;
-  right: 34px;
-  width: 150px;
-  height: 76px;
-  color: rgba(48, 55, 63, 0.54);
-  border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  border-radius: 50%;
-  content: "AIR MAIL";
-  font: 900 0.72rem/76px var(--font-bold);
-  letter-spacing: 0.14em;
-  text-align: center;
-  opacity: 0.7;
-  transform: rotate(8deg);
+.community-letter-stamp-preview {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.community-letter-stamp-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
   pointer-events: none;
+  user-select: none;
+}
+
+.community-letter-stamp-preview:hover,
+.community-letter-stamp-preview:focus-visible {
+  outline: none;
+  filter: drop-shadow(3px 4px 0 rgba(235, 170, 180, 0.68));
+  transform: translateY(-2px);
 }
 
 .community-letter-form.is-locked label,
@@ -3060,8 +3009,7 @@ input {
   pointer-events: none;
 }
 
-.community-letter-form.is-locked::before,
-.community-letter-form.is-locked::after {
+.community-letter-form.is-locked .community-letter-stamp-picker {
   opacity: 0.32;
 }
 
@@ -3090,49 +3038,56 @@ input {
 }
 
 .community-letter-fold-overlay.is-interactive {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(22px, 3vw, 34px);
+  padding: clamp(28px, 4vw, 48px) 18px;
   pointer-events: auto;
 }
 
+.community-letter-fold-overlay.is-reading-letter {
+  display: block;
+  padding: 0;
+}
+
 .community-packaged-letter-send {
-  position: absolute;
-  bottom: clamp(38px, 7vw, 72px);
-  left: 50%;
+  position: relative;
   z-index: 12;
-  min-height: 52px;
-  padding: 0 30px;
+  min-height: 64px;
+  padding: 0 42px;
   color: #ffffff;
   background: #4789C8;
   border: 0;
   border-radius: 999px;
   box-shadow: 7px 7px 0 rgba(235, 170, 180, 0.78);
   cursor: pointer;
-  font: 900 1rem var(--font-bold);
-  transform: translateX(-50%);
+  font: 900 1.16rem var(--font-bold);
+  transform: none;
 }
 
 .community-packaged-letter-controls {
-  position: absolute;
-  bottom: clamp(104px, 14vw, 142px);
-  left: 50%;
+  position: relative;
   z-index: 12;
   display: flex;
   align-items: end;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 18px;
-  width: min(520px, calc(100% - 32px));
-  padding: 14px 18px;
+  gap: 28px;
+  width: min(680px, calc(100% - 32px));
+  padding: 0;
   color: #315f91;
-  background: rgba(255, 250, 240, 0.94);
-  border: 2px solid rgba(255, 255, 255, 0.88);
-  border-radius: 8px;
-  box-shadow: 0 12px 28px rgba(45, 75, 105, 0.14);
-  transform: translateX(-50%);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
 }
 
 .community-packaged-letter-controls fieldset {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -3140,17 +3095,17 @@ input {
 
 .community-packaged-letter-controls legend {
   padding: 0;
-  font: 850 0.78rem var(--font-bold);
+  font: 850 0.96rem var(--font-bold);
 }
 
 .community-packaged-letter-controls fieldset > div {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .community-packaged-letter-controls button {
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   background: var(--swatch-color);
   border: 3px solid #ffffff;
@@ -3169,13 +3124,13 @@ input {
 .community-packaged-letter-send:focus-visible {
   box-shadow: 4px 4px 0 rgba(235, 170, 180, 0.88);
   outline: none;
-  transform: translate(-50%, 3px);
+  transform: translate(3px, 3px);
 }
 
 .community-letter-send-card {
   position: relative;
   flex: 0 0 auto;
-  width: clamp(180px, 22vw, 300px);
+  width: clamp(210px, 24vw, 330px);
   aspect-ratio: 569 / 630;
   padding: 0;
   background: transparent;
@@ -3357,69 +3312,95 @@ input {
 
 .community-letter-reader {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  width: min(1080px, calc(100% - 32px));
-  min-height: calc(100% - 28px);
-  max-height: calc(100% - 28px);
-  padding: clamp(28px, 4vw, 48px) clamp(34px, 6vw, 82px);
-  overflow: auto;
+  display: grid;
+  gap: clamp(18px, 2.2vw, 24px);
+  width: 100%;
+  min-height: 0;
+  padding: clamp(54px, 6vw, 78px) clamp(30px, 4.5vw, 62px) clamp(28px, 4vw, 46px);
+  overflow: visible;
   color: #315f91;
-  background: #fffaf0;
-  border: 2px solid rgba(255, 255, 255, 0.92);
-  border-radius: 6px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(248, 219, 142, 0.12), transparent 28%),
+    #fffaf0;
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  border-radius: 30px;
   box-shadow:
-    8px 9px 0 rgba(235, 170, 180, 0.62),
-    0 28px 58px rgba(71, 137, 200, 0.18);
+    9px 10px 0 rgba(235, 170, 180, 0.68),
+    0 34px 56px rgba(91, 60, 40, 0.24),
+    0 8px 18px rgba(71, 137, 200, 0.1);
   text-align: left;
   animation: communityLetterReaderArrive 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .community-letter-reader > header {
-  flex: 0 0 auto;
-  padding: 4px 0 clamp(20px, 3vw, 34px);
-  border-bottom: 2px solid rgba(71, 137, 200, 0.16);
-  background: #fffaf0;
+  position: relative;
+  z-index: 1;
+  width: min(72%, 660px);
+  padding: 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.community-letter-reader > header small,
+.community-letter-reader-label {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 10px;
+  color: #ffffff;
+  background: rgba(71, 137, 200, 0.88);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 rgba(235, 170, 180, 0.54);
+  font: 900 0.92rem var(--font-bold);
 }
 
 .community-letter-reader > header small {
-  color: rgba(71, 137, 200, 0.66);
-  font: 850 clamp(0.82rem, 1.1vw, 1rem) var(--font-bold);
-  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.community-letter-reader-label {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 -14px;
 }
 
 .community-letter-reader > header h2 {
-  margin: 10px 0 0;
-  font: 900 clamp(2.2rem, 4.8vw, 4.6rem)/1.04 var(--font-bold);
+  min-height: 46px;
+  margin: 0;
+  padding: 0 0 4px;
+  border-bottom: 3px solid rgba(49, 95, 145, 0.38);
+  font: 820 clamp(1.08rem, 1.35vw, 1.26rem)/1.55 var(--font-bold);
   overflow-wrap: anywhere;
 }
 
 .community-letter-reader-body {
-  flex: 1 1 auto;
-  min-height: 260px;
-  margin: clamp(22px, 3vw, 36px) 0 0;
-  padding: 8px 0 34px;
+  position: relative;
+  z-index: 1;
+  min-height: 80px;
+  margin: 0;
+  padding: 8px 0 0;
+  overflow: visible;
   color: rgba(49, 95, 145, 0.84);
   background:
     repeating-linear-gradient(
-      transparent 0 37px,
-      rgba(71, 137, 200, 0.14) 37px 39px,
-      transparent 39px 42px
+      transparent 0 35px,
+      rgba(49, 95, 145, 0.22) 35px 38px,
+      transparent 38px 40px
     );
-  font: 700 clamp(1.12rem, 1.9vw, 1.5rem)/1.7 var(--font-bold);
+  font: 820 clamp(1.08rem, 1.35vw, 1.26rem)/40px var(--font-bold);
   white-space: pre-wrap;
 }
 
 .community-letter-reader footer {
-  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 14px;
   margin-top: 0;
-  padding: 24px 4px 4px;
-  border-top: 2px solid rgba(71, 137, 200, 0.14);
-  background: #fffaf0;
+  padding: 0;
+  border-top: 0;
+  background: transparent;
 }
 
 .community-letter-reader footer > span {
@@ -3468,6 +3449,116 @@ input {
   border-color: #4789C8;
 }
 
+@media (max-width: 760px) {
+  .community-letter-reader {
+    min-height: 100%;
+    padding: 64px 18px 24px;
+    border-radius: 24px;
+    box-shadow:
+      6px 7px 0 rgba(235, 170, 180, 0.66),
+      0 22px 34px rgba(91, 60, 40, 0.2);
+  }
+
+  .community-letter-reader-stamp {
+    top: 24px;
+    right: 38px;
+    width: 58px;
+  }
+
+  .community-letter-reader > header {
+    width: 66%;
+  }
+
+  .community-letter-reader-body {
+    min-height: 300px;
+    line-height: 34px;
+    background:
+      repeating-linear-gradient(
+        transparent 0 30px,
+        rgba(49, 95, 145, 0.2) 30px 33px,
+        transparent 33px 34px
+      );
+  }
+
+  .community-letter-reader footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .community-letter-reader-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 360px), (max-width: 420px) and (max-height: 520px) {
+  .community-letter-reader {
+    min-height: 100%;
+    padding: 42px 10px 14px;
+    border-width: 2px;
+    border-radius: 18px;
+    box-shadow:
+      4px 5px 0 rgba(235, 170, 180, 0.62),
+      0 14px 24px rgba(91, 60, 40, 0.16);
+  }
+
+  .community-letter-reader-stamp {
+    top: 12px;
+    right: 20px;
+    width: 40px;
+  }
+
+  .community-letter-reader > header {
+    width: 100%;
+  }
+
+  .community-letter-reader > header small {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    box-shadow: 2px 2px 0 rgba(235, 170, 180, 0.5);
+  }
+
+  .community-letter-reader > header h2 {
+    min-height: 30px;
+    font-size: 0.86rem;
+  }
+
+  .community-letter-reader-body {
+    min-height: 150px;
+    font-size: 0.86rem;
+    line-height: 29px;
+    background:
+      repeating-linear-gradient(
+        transparent 0 25px,
+        rgba(49, 95, 145, 0.2) 25px 27px,
+        transparent 27px 29px
+      );
+  }
+
+  .community-letter-reader footer {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .community-letter-reader footer > span {
+    font-size: 0.7rem;
+  }
+
+  .community-letter-reader-actions {
+    gap: 8px;
+  }
+
+  .community-letter-reader-actions button {
+    min-width: 54px;
+    min-height: 38px;
+    font-size: 0.78rem;
+  }
+
+  .community-letter-reader-actions .community-letter-write-new {
+    padding: 0 12px;
+  }
+}
+
 @keyframes communityLetterReaderArrive {
   from {
     opacity: 0;
@@ -3486,9 +3577,30 @@ input {
 }
 
 .community-letter-form.has-sent-letter {
+  min-height: clamp(500px, 54vw, 660px);
+  padding: 0;
   background: transparent;
   border-color: transparent;
   box-shadow: none;
+}
+
+.community-letter-form.has-sent-letter.is-reading-letter {
+  min-height: 0;
+  overflow: visible;
+}
+
+.community-letter-form.has-sent-letter.is-reading-letter .community-letter-fold-overlay {
+  position: relative;
+  inset: auto;
+  min-height: 0;
+}
+
+.community-letter-form.has-sent-letter.is-reading-letter .community-letter-reader {
+  min-height: 0;
+}
+
+.community-letter-form.has-sent-letter.is-reading-letter .community-letter-reader-body {
+  min-height: 80px;
 }
 
 .community-letter-form.has-sent-letter::before,
@@ -3501,45 +3613,216 @@ input {
 }
 
 .community-sent-letters {
-  width: min(1040px, 100%);
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  max-width: none;
   margin: clamp(56px, 8vw, 104px) auto 0;
   color: #4789C8;
   text-align: center;
+  transform: translateX(-50%);
 }
 
-.community-sent-letters-heading p {
-  margin: 0 0 8px;
-  color: rgba(71, 137, 200, 0.68);
-  font: 900 0.82rem var(--font-bold);
-  text-transform: uppercase;
+.community-community-letters {
+  left: 0;
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  transform: none;
 }
 
-.community-sent-letters-heading h2 {
-  margin: 0;
-  font: 900 clamp(2rem, 4vw, 3.8rem)/1.05 var(--font-bold);
+.community-letter-heading .community-sent-letter-box {
+  min-height: 0;
+}
+
+.community-personal-letters {
+  display: grid;
+  justify-items: center;
+  margin: clamp(36px, 5vw, 64px) auto 0;
 }
 
 .community-sent-letter-boxes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: clamp(24px, 5vw, 64px);
-  margin-top: clamp(34px, 5vw, 60px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(22px, 4vw, 38px);
+  margin-top: 0;
+}
+
+.community-sent-letters-popup-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  margin: 0 auto clamp(20px, 3vw, 34px);
+  padding: 0 22px;
+  color: #ffffff;
+  background: #4789C8;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  box-shadow: 7px 7px 0 rgba(235, 170, 180, 0.72);
+  cursor: pointer;
+  font: 900 1rem var(--font-bold);
+}
+
+.community-sent-letters-popup-trigger:hover,
+.community-sent-letters-popup-trigger:focus-visible {
+  outline: none;
+  box-shadow: 4px 4px 0 rgba(235, 170, 180, 0.82);
+  transform: translate(3px, 3px);
+}
+
+.community-sent-letters-popup-trigger strong {
+  padding-left: 12px;
+  border-left: 2px solid rgba(255, 255, 255, 0.42);
+  font: inherit;
+}
+
+.community-sent-letters-popup {
+  width: min(1100px, calc(100vw - 28px));
+  max-height: min(760px, calc(100svh - 28px));
+  padding: clamp(22px, 3vw, 36px) 0 clamp(18px, 3vw, 30px);
+  overflow: hidden;
+  color: #4789C8;
+  background: #fffaf0;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  box-shadow:
+    9px 10px 0 rgba(235, 170, 180, 0.68),
+    0 28px 64px rgba(45, 75, 105, 0.24);
+  text-align: center;
+}
+
+.community-sent-letters-popup > header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 24px;
+}
+
+.community-sent-letters-popup > header > div {
+  display: grid;
+  gap: 6px;
+}
+
+.community-sent-letters-popup h2 {
+  margin: 0;
+  font: 900 clamp(1.65rem, 3vw, 2.6rem)/1.1 var(--font-bold);
+}
+
+.community-sent-letters-popup > header p {
+  margin: 0;
+  color: rgba(71, 137, 200, 0.72);
+  font: 850 0.9rem var(--font-bold);
+}
+
+.community-sent-letters-popup > header button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: #4789C8;
+  background: #ffffff;
+  border: 2px solid rgba(71, 137, 200, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  font: 900 1.5rem/1 sans-serif;
+}
+
+.community-sent-letters-popup .community-sent-letter-list {
+  margin-top: 12px;
+}
+
+.community-sent-letters-pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.community-sent-letters-pagination button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: #4789C8;
+  background: #ffffff;
+  border: 2px solid rgba(71, 137, 200, 0.18);
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 rgba(235, 170, 180, 0.46);
+  cursor: pointer;
+  font: 900 0.92rem/1 var(--font-bold);
+}
+
+.community-sent-letters-pagination button:first-child,
+.community-sent-letters-pagination button:last-child {
+  font-size: 1.55rem;
+}
+
+.community-sent-letters-pagination button:hover,
+.community-sent-letters-pagination button:focus-visible,
+.community-sent-letters-pagination button.is-active {
+  color: #ffffff;
+  background: #4789C8;
+  outline: none;
+}
+
+.community-sent-letters-pagination button:disabled {
+  color: rgba(71, 137, 200, 0.34);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: none;
+  cursor: default;
 }
 
 .community-sent-letter-box {
-  min-height: 360px;
-  padding: clamp(24px, 3vw, 36px);
+  min-height: 290px;
+  padding: clamp(18px, 2.4vw, 26px) 0 clamp(16px, 2vw, 22px);
+  overflow: hidden;
   background: rgba(255, 250, 240, 0.66);
   border: 2px solid rgba(255, 255, 255, 0.82);
   border-radius: 8px;
   box-shadow: 7px 8px 0 rgba(235, 170, 180, 0.36);
 }
 
+.community-sent-letter-box-community {
+  justify-self: center;
+  width: 100vw;
+  background: #fffdf6;
+  border: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 0;
+  box-shadow: 0 8px 0 rgba(235, 170, 180, 0.24);
+}
+
+.community-sent-letter-box-community .community-sent-letter-list {
+  height: 286px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 clamp(48px, 6vw, 110px),
+    #000 calc(100% - clamp(48px, 6vw, 110px)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 clamp(48px, 6vw, 110px),
+    #000 calc(100% - clamp(48px, 6vw, 110px)),
+    transparent 100%
+  );
+}
+
+.community-sent-letter-list.is-community .community-sent-letter-track {
+  top: 52px;
+}
+
 .community-sent-letter-box h3 {
   margin: 0;
   color: #4789C8;
-  font: 900 clamp(1.35rem, 2.3vw, 2rem)/1.1 var(--font-bold);
+  font: 900 clamp(1.65rem, 2.8vw, 2.5rem)/1.1 var(--font-bold);
 }
 
 .community-sent-letter-empty {
@@ -3548,168 +3831,312 @@ input {
   font: 750 0.96rem var(--font-bold);
 }
 
-.community-sent-letter-stack {
+.community-sent-letter-list {
   position: relative;
-  width: min(420px, 76vw);
-  height: calc(190px + var(--sent-letter-tail));
-  margin: 28px auto 0;
+  height: 250px;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
-.community-sent-letter-sheet {
+.community-sent-letter-count {
   position: absolute;
-  top: var(--sent-letter-top);
-  left: 50%;
-  z-index: var(--sent-letter-layer);
-  width: min(300px, 62vw);
-  aspect-ratio: 567 / 411;
+  top: 4px;
+  right: 18px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  color: #ffffff;
+  background: #4789C8;
+  border: 2px solid rgba(255, 255, 255, 0.84);
+  border-radius: 999px;
+  box-shadow: 4px 4px 0 rgba(235, 170, 180, 0.68);
+  font: 900 0.8rem var(--font-bold);
+  pointer-events: none;
+}
+
+.community-sent-letter-track {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: max-content;
+  padding-right: 4px;
+  animation: communitySentLetterConveyor var(--sent-letter-track-duration, 24s) linear infinite;
+  will-change: transform;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-track {
+  position: static;
+  display: grid;
+  width: min(820px, calc(100% - 40px));
+  height: auto;
+  margin: 0 auto;
+  padding: 4px;
+  gap: 10px;
+  animation: none;
+  transform: none;
+}
+
+.community-sent-letter-list.is-sent {
+  height: auto;
+  max-height: min(540px, calc(100svh - 240px));
+  padding: 8px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(71, 137, 200, 0.48) transparent;
+  scrollbar-width: thin;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-row {
+  position: relative;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  height: 92px;
+  margin: 0;
+  padding: 8px 18px 8px 10px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 3px 4px 0 rgba(235, 170, 180, 0.3);
+  text-align: left;
+  transform: none;
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-row:hover,
+.community-sent-letter-list.is-sent .community-sent-letter-row:focus-visible {
+  top: 0;
+  z-index: 2;
+  box-shadow: 2px 3px 0 rgba(235, 170, 180, 0.5);
+  transform: none;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-thumb {
+  width: 108px;
+  margin: 0;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-row:hover .community-sent-letter-thumb,
+.community-sent-letter-list.is-sent .community-sent-letter-row:focus-visible .community-sent-letter-thumb {
+  transform: none;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-meta {
+  position: static;
+  display: grid;
+  gap: 6px;
+  width: auto;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+  pointer-events: none;
+  transform: none;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-row:hover .community-sent-letter-meta,
+.community-sent-letter-list.is-sent .community-sent-letter-row:focus-visible .community-sent-letter-meta {
+  opacity: 1;
+  transform: none;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-meta strong {
+  font-size: clamp(0.94rem, 1.5vw, 1.14rem);
+  text-align: left;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-meta em {
+  margin: 0;
+  text-align: left;
+}
+
+.community-sent-letter-list:hover .community-sent-letter-track,
+.community-sent-letter-list:focus-within .community-sent-letter-track {
+  animation-play-state: paused;
+}
+
+.community-sent-letter-row {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 340px;
+  display: block;
+  width: 340px;
+  height: 270px;
   padding: 0;
   overflow: visible;
   color: #315f91;
   background: transparent;
   border: 0;
+  border-radius: 0;
   box-shadow: none;
   cursor: pointer;
   touch-action: none;
   user-select: none;
-  transform: translateX(-50%) rotate(var(--sent-letter-angle));
-  transform-origin: center bottom;
-  transition:
-    box-shadow 180ms ease,
-    transform 220ms ease;
 }
 
-.community-sent-letter-sheet:hover,
-.community-sent-letter-sheet:focus-visible,
-.community-sent-letter-sheet.is-selected {
+.community-sent-letter-list.is-community .community-sent-letter-row {
+  flex-basis: 270px;
+  width: 270px;
+}
+
+.community-sent-letter-row:hover,
+.community-sent-letter-row:focus-visible,
+.community-sent-letter-row.is-selected {
   z-index: 10;
   outline: none;
-  transform: translate(-50%, -10px) rotate(0);
 }
 
-.community-sent-letter-sheet > img {
+.community-sent-letter-thumb {
+  position: relative;
+  display: block;
+  width: 250px;
+  aspect-ratio: 567 / 411;
+  margin: 0 auto;
+  transition: transform 180ms ease;
+}
+
+.community-sent-letter-row:hover .community-sent-letter-thumb,
+.community-sent-letter-row:focus-visible .community-sent-letter-thumb {
+  transform: translateY(-4px) scale(1.06);
+}
+
+.community-sent-letter-thumb > img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(7px 10px 12px rgba(45, 75, 105, 0.2));
+  filter: drop-shadow(3px 5px 7px rgba(45, 75, 105, 0.18));
   pointer-events: none;
 }
 
 .community-sent-letter-seal {
-  top: 50%;
+  top: 47%;
   left: 50%;
+  width: 25%;
   transform: translate(-50%, -50%);
+  box-shadow:
+    inset 0 0 0 4px rgba(255, 255, 255, 0.72),
+    0 3px 6px rgba(45, 75, 105, 0.1);
 }
 
-.community-sent-letter-label {
+.community-sent-letter-meta {
   position: absolute;
-  top: auto;
-  bottom: calc(100% + 16px);
+  top: -30px;
   left: 50%;
-  z-index: 2;
-  display: grid;
-  width: min(300px, 68vw);
-  padding: 10px 14px;
+  z-index: 3;
+  display: block;
+  width: 250px;
+  padding: 7px 10px;
+  overflow: hidden;
   color: #315f91;
-  background: rgba(255, 250, 240, 0.94);
-  border: 1px solid rgba(71, 137, 200, 0.16);
-  border-radius: 4px;
-  box-shadow: 0 5px 12px rgba(45, 75, 105, 0.12);
-  text-align: left;
+  background: rgba(255, 250, 240, 0.98);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 7px;
+  box-shadow: 4px 4px 0 rgba(235, 170, 180, 0.52);
   opacity: 0;
-  transform: translate(-50%, 14px) scale(0.96);
   pointer-events: none;
+  transform: translate(-50%, 8px);
   transition:
-    opacity 180ms ease,
-    transform 220ms ease;
+    opacity 160ms ease,
+    transform 180ms ease;
 }
 
-.community-sent-letter-sheet:hover .community-sent-letter-label,
-.community-sent-letter-sheet:focus-visible .community-sent-letter-label {
+.community-sent-letter-row:hover .community-sent-letter-meta,
+.community-sent-letter-row:focus-visible .community-sent-letter-meta {
   opacity: 1;
-  transform: translate(-50%, 0) scale(1);
+  transform: translate(-50%, -2px);
 }
 
-.community-sent-letter-label::after {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 16px;
-  height: 16px;
-  background: rgba(255, 250, 240, 0.94);
-  border-right: 1px solid rgba(71, 137, 200, 0.16);
-  border-bottom: 1px solid rgba(71, 137, 200, 0.16);
-  content: "";
-  transform: translate(-50%, -8px) rotate(45deg);
+.community-sent-letter-meta strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font: 900 1rem/1.2 var(--font-bold);
+  text-align: center;
 }
 
-.community-sent-letter-label small {
-  overflow: hidden;
-  color: rgba(71, 137, 200, 0.66);
-  font: 850 0.68rem var(--font-bold);
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.community-sent-letter-label strong {
-  margin-top: 5px;
-  overflow: hidden;
-  font: 900 clamp(0.82rem, 1.5vw, 1.08rem)/1.15 var(--font-bold);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.community-sent-letter-label em {
-  margin-top: 6px;
-  color: rgba(183, 88, 112, 0.72);
-  font: 850 0.68rem var(--font-bold);
+.community-sent-letter-meta em {
+  display: block;
+  margin-top: 4px;
+  color: rgba(183, 88, 112, 0.82);
+  font: 850 0.7rem var(--font-bold);
   font-style: normal;
+  text-align: center;
 }
 
-.community-sent-letter-sheet.is-flying {
+.community-sent-letter-row.is-flying {
   z-index: 20;
   pointer-events: none;
   animation: communitySentLetterFly 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.community-sent-letter-sheet.is-dragging {
+.community-sent-letter-row.is-dragging {
   z-index: 30;
   cursor: grabbing;
   transition: none;
   transform:
     translate(
-      calc(-50% + var(--sent-letter-drag-x)),
+      var(--sent-letter-drag-x),
+      var(--sent-letter-drag-y)
+    )
+    scale(1.03);
+  animation-play-state: paused;
+}
+
+.community-sent-letter-list.is-sent .community-sent-letter-row.is-dragging {
+  transform:
+    translate(
+      var(--sent-letter-drag-x),
       var(--sent-letter-drag-y)
     )
     rotate(0)
     scale(1.03);
 }
 
-.community-sent-letter-sheet:disabled {
+.community-sent-letter-row:disabled {
   cursor: default;
 }
 
 @keyframes communitySentLetterFly {
   0% {
     opacity: 1;
-    transform: translateX(-50%) rotate(var(--sent-letter-angle));
+    transform: translate(0, 0);
   }
 
   18% {
     opacity: 1;
-    transform: translate(-50%, -18px) rotate(0) scale(1.03);
+    transform: translate(0, -12px) scale(1.03);
   }
 
   100% {
     opacity: 0;
     transform:
       translate(
-        calc(-50% + var(--sent-letter-fly-x)),
+        var(--sent-letter-fly-x),
         var(--sent-letter-fly-y)
       )
-      rotate(0)
       scale(0.58);
+  }
+}
+
+@keyframes communitySentLetterConveyor {
+  to {
+    transform: translateX(calc(-50% - 2px));
   }
 }
 
@@ -3794,15 +4221,84 @@ input {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 6px;
-  color: rgba(49, 95, 145, 0.86);
-  font-size: 0.86rem;
+  gap: 10px;
+  color: #315f91;
+  font-size: 0.92rem;
   font-weight: 900;
   font-family: var(--font-bold);
 }
 
+.community-letter-form label > span {
+  width: fit-content;
+  padding: 5px 10px;
+  color: #ffffff;
+  background: rgba(71, 137, 200, 0.88);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 rgba(235, 170, 180, 0.54);
+}
+
 .community-letter-form label:nth-of-type(1) {
   width: min(72%, 660px);
+}
+
+.community-letter-stamp-options {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 250, 240, 0.98);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow:
+    5px 6px 0 rgba(235, 170, 180, 0.55),
+    0 12px 24px rgba(49, 95, 145, 0.14);
+  animation: communityStampOptionsShow 160ms ease both;
+}
+
+.community-letter-stamp-options button {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 92px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 2px solid rgba(71, 137, 200, 0.18);
+  border-radius: 6px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.community-letter-stamp-options button:hover,
+.community-letter-stamp-options button:focus-visible,
+.community-letter-stamp-options button.is-active {
+  border-color: #4789C8;
+  box-shadow: 3px 3px 0 rgba(235, 170, 180, 0.72);
+  outline: none;
+}
+
+.community-letter-stamp-options button.is-active {
+  background: #ffffff;
+}
+
+.community-letter-stamp-options img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes communityStampOptionsShow {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .community-letter-form input,
@@ -3813,34 +4309,41 @@ input {
   border: 0;
   border-radius: 0;
   outline: none;
-  font: 760 clamp(1rem, 1.25vw, 1.16rem)/1.6 var(--font-bold);
+  font: 820 clamp(1.08rem, 1.35vw, 1.26rem)/1.55 var(--font-bold);
 }
 
 .community-letter-form input {
-  min-height: 42px;
-  padding: 0 0 2px;
-  border-bottom: 2px solid rgba(48, 55, 63, 0.36);
+  min-height: 46px;
+  padding: 0 0 4px;
+  border-bottom: 3px solid rgba(49, 95, 145, 0.38);
 }
 
 .community-letter-form textarea {
   min-height: clamp(320px, 42vw, 520px);
-  padding: 5px 0 0;
+  padding: 8px 0 0;
   background:
     repeating-linear-gradient(
       transparent 0 35px,
-      rgba(48, 55, 63, 0.34) 35px 37px,
-      transparent 37px 39px
+      rgba(49, 95, 145, 0.22) 35px 38px,
+      transparent 38px 40px
     );
-  line-height: 39px;
+  line-height: 40px;
   resize: vertical;
+}
+
+.community-letter-form input::placeholder,
+.community-letter-form textarea::placeholder {
+  color: rgba(49, 95, 145, 0.62);
+  opacity: 1;
 }
 
 .community-letter-form input:focus,
 .community-letter-form textarea:focus {
-  box-shadow: none;
+  box-shadow: 0 4px 0 rgba(71, 137, 200, 0.12);
 }
 
-.community-letter-form input:focus {
+.community-letter-form input:focus,
+.community-letter-form textarea:focus {
   border-color: #4789C8;
 }
 
@@ -7996,49 +8499,23 @@ input {
   .community-letter-room {
     grid-template-columns: 1fr;
     gap: 18px;
-    padding: 28px 0 0;
+    margin-top: 48px;
   }
 
   .community-letter-compose {
-    gap: 34px;
-  }
-
-  .community-letter-table {
-    width: 100%;
-    height: 180px;
-  }
-
-  .community-letter-table::before {
-    left: 12%;
-    right: 12%;
-    bottom: 16px;
-    height: 28px;
-    filter: blur(13px);
-  }
-
-  .community-letter-table::after {
-    left: 5%;
-    right: 5%;
-    top: 112px;
-    height: 48px;
-  }
-
-  .community-letter-table-top {
-    left: 1%;
-    right: 1%;
-    height: 142px;
-    clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
-    box-shadow:
-      inset 0 0 0 3px rgba(255, 255, 255, 0.9),
-      inset 0 -10px 20px rgba(71, 137, 200, 0.06),
-      6px 7px 0 rgba(235, 170, 180, 0.58),
-      0 18px 34px rgba(82, 49, 30, 0.14);
+    gap: 18px;
   }
 
   .community-letter-heading {
-    min-height: 460px;
-    padding: 34px 18px;
+    min-height: 0;
+    margin-top: -22px;
+    padding: 0;
     text-align: center;
+  }
+
+  .community-letter-heading-copy {
+    min-height: 0;
+    padding: 62px 18px 18px;
   }
 
   .community-letter-heading h1 {
@@ -8051,29 +8528,48 @@ input {
 
   .community-letter-form {
     min-height: 560px;
-    padding: 64px 18px 22px;
+    gap: 16px;
+    padding: 64px 18px 24px;
     border-radius: 24px;
     box-shadow:
       6px 7px 0 rgba(235, 170, 180, 0.66),
       0 22px 34px rgba(91, 60, 40, 0.2);
-    transform: rotate(-0.35deg);
+    transform: none;
   }
 
-  .community-letter-form::before {
-    top: 30px;
-    right: 48px;
-    width: 44px;
-    height: 56px;
-    border-width: 2px;
+  .community-letter-form.has-sent-letter {
+    min-height: 640px;
   }
 
-  .community-letter-form::after {
-    top: 48px;
-    right: 18px;
-    width: 96px;
-    height: 48px;
-    font-size: 0.54rem;
-    line-height: 48px;
+  .community-letter-fold-overlay.is-interactive {
+    gap: 18px;
+    padding: 24px 12px;
+  }
+
+  .community-letter-fold-overlay.is-reading-letter {
+    padding: 0;
+  }
+
+  .community-letter-send-card {
+    width: clamp(170px, 52vw, 240px);
+  }
+
+  .community-packaged-letter-controls {
+    gap: 16px;
+    width: min(520px, calc(100% - 24px));
+    padding: 0;
+  }
+
+  .community-packaged-letter-send {
+    min-height: 54px;
+    padding: 0 30px;
+    font-size: 1rem;
+  }
+
+  .community-letter-stamp-picker {
+    top: 24px;
+    right: 38px;
+    width: 58px;
   }
 
   .community-letter-form label:nth-of-type(1) {
@@ -8082,6 +8578,13 @@ input {
 
   .community-letter-form textarea {
     min-height: 300px;
+    line-height: 34px;
+    background:
+      repeating-linear-gradient(
+        transparent 0 30px,
+        rgba(49, 95, 145, 0.2) 30px 33px,
+        transparent 33px 34px
+      );
   }
 
   .community-letter-form > button {
@@ -8089,26 +8592,78 @@ input {
   }
 
   .community-sent-letters {
+    width: 100vw;
     margin-top: 42px;
   }
 
   .community-sent-letter-boxes {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
 
   .community-sent-letter-box {
-    min-height: 320px;
-    padding: 22px 14px;
+    min-height: 205px;
+    padding: 20px 0 16px;
   }
 
-  .community-sent-letter-stack {
-    width: 100%;
-    height: calc(175px + var(--sent-letter-tail));
+  .community-sent-letter-box-community {
+    width: 100vw;
   }
 
-  .community-sent-letter-sheet {
-    top: var(--sent-letter-top);
-    width: min(62vw, 280px);
+  .community-sent-letter-box-community .community-sent-letter-list {
+    height: 205px;
+  }
+
+  .community-sent-letter-list {
+    height: 190px;
+    margin-top: 0;
+  }
+
+  .community-sent-letter-row {
+    flex-basis: 230px;
+    width: 230px;
+    height: 180px;
+  }
+
+  .community-sent-letter-list.is-community .community-sent-letter-row {
+    flex-basis: 170px;
+    width: 170px;
+  }
+
+  .community-sent-letter-thumb {
+    width: 155px;
+  }
+
+  .community-sent-letter-meta {
+    top: -26px;
+    width: 155px;
+    padding: 6px 8px;
+  }
+
+  .community-sent-letter-list.is-sent .community-sent-letter-track {
+    width: calc(100% - 20px);
+    padding: 2px;
+    gap: 8px;
+  }
+
+  .community-sent-letter-list.is-community .community-sent-letter-track {
+    top: 44px;
+  }
+
+  .community-sent-letter-list.is-sent .community-sent-letter-row {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 10px;
+    height: 72px;
+    padding: 6px 10px 6px 6px;
+  }
+
+  .community-sent-letter-list.is-sent .community-sent-letter-thumb {
+    width: 78px;
+  }
+
+  .community-sent-letter-list.is-sent .community-sent-letter-meta {
+    width: auto;
+    padding: 0;
   }
 
   .community-official-site {
@@ -8870,10 +9425,16 @@ input {
   }
 
   .community-letter-heading {
-    min-height: auto;
+    min-height: 0;
+    margin-top: -10px;
     margin-bottom: 18px;
-    padding: 22px 10px;
-    border-radius: 18px;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .community-letter-heading-copy {
+    min-height: 0;
+    padding: 48px 10px 14px;
   }
 
   .community-letter-heading p {
@@ -8893,6 +9454,7 @@ input {
   }
 
   .community-letter-room {
+    margin-top: 32px;
     padding-top: 14px;
   }
 
@@ -8913,31 +9475,72 @@ input {
     transform: none;
   }
 
-  .community-letter-form::before {
-    top: 16px;
-    right: 30px;
-    width: 30px;
-    height: 38px;
-    border-width: 2px;
-    border-radius: 6px;
-    box-shadow: inset 0 0 0 4px rgba(255, 252, 241, 0.72);
+  .community-letter-form.has-sent-letter {
+    min-height: 430px;
   }
 
-  .community-letter-form::after {
-    top: 28px;
-    right: 8px;
-    width: 66px;
-    height: 34px;
-    font-size: 0.42rem;
-    line-height: 34px;
-    border-width: 1px;
+  .community-letter-fold-overlay.is-interactive {
+    gap: 12px;
+    padding: 16px 8px;
+  }
+
+  .community-letter-fold-overlay.is-reading-letter {
+    padding: 0;
+  }
+
+  .community-letter-send-card {
+    width: clamp(130px, 52vw, 170px);
+  }
+
+  .community-packaged-letter-controls {
+    gap: 8px;
+    width: calc(100% - 18px);
+    padding: 0;
+  }
+
+  .community-packaged-letter-controls legend {
+    font-size: 0.66rem;
+  }
+
+  .community-packaged-letter-controls button {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+  }
+
+  .community-packaged-letter-send {
+    min-height: 42px;
+    padding: 0 18px;
+    font-size: 0.84rem;
+  }
+
+  .community-letter-stamp-picker {
+    top: 12px;
+    right: 20px;
+    width: 40px;
   }
 
   .community-letter-form label,
   .community-letter-form label:nth-of-type(1) {
     width: 100%;
-    gap: 3px;
-    font-size: 0.68rem;
+    gap: 6px;
+    font-size: 0.7rem;
+  }
+
+  .community-letter-stamp-options {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .community-letter-stamp-options button {
+    width: 52px;
+    height: 66px;
+    padding: 4px;
+  }
+
+  .community-letter-form label > span {
+    padding: 4px 8px;
+    box-shadow: 2px 2px 0 rgba(235, 170, 180, 0.5);
   }
 
   .community-letter-form input,
@@ -8954,7 +9557,7 @@ input {
     background:
       repeating-linear-gradient(
         transparent 0 25px,
-        rgba(48, 55, 63, 0.28) 25px 27px,
+        rgba(49, 95, 145, 0.2) 25px 27px,
         transparent 27px 29px
       );
     line-height: 29px;
@@ -8990,34 +9593,13 @@ input {
     box-shadow: 4px 4px 0 rgba(235, 170, 180, 0.78);
   }
 
-  .community-letter-table {
-    height: 104px;
-  }
-
-  .community-letter-table::before {
-    left: 16%;
-    right: 16%;
-    bottom: 10px;
-    height: 20px;
-    filter: blur(10px);
-  }
-
-  .community-letter-table::after {
-    left: 7%;
-    right: 7%;
-    top: 64px;
-    height: 34px;
-  }
-
-  .community-letter-table-top {
-    left: 0;
-    right: 0;
-    height: 82px;
-    clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .community-sent-letter-track {
+    animation-play-state: paused;
+  }
+
   .brand span {
     animation: none;
   }
