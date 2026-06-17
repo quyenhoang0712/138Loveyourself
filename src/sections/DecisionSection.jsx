@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, decisionThread = [], onAskDecision }) {
   const threadRef = useRef(null)
-  const [decisionPrompt, setDecisionPrompt] = useState('xin 1 dấu hiệu')
+  const [decisionPrompt, setDecisionPrompt] = useState('')
   const isThinking = decisionMotion === 'thinking'
   const hasConversation = decisionThread.length > 0
 
@@ -58,13 +58,20 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
                 type="text"
                 value={decisionPrompt}
                 maxLength="120"
-                placeholder="xin 1 dấu hiệu"
+                placeholder="Nhập điều bạn muốn hỏi"
                 onChange={(event) => setDecisionPrompt(event.target.value)}
               />
               <button type="submit" aria-label="Gửi câu hỏi" disabled={isThinking || !decisionPrompt.trim()}>
                 gửi
               </button>
             </div>
+            <button
+              className="decision-chat-suggestion"
+              type="button"
+              onClick={() => setDecisionPrompt('xin 1 dấu hiệu')}
+            >
+              xin 1 dấu hiệu
+            </button>
           </form>
         </div>
       </div>

@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SiteHeader } from '../components/SiteHeader'
+import {
+  getReturnStreak,
+  returnStreakChangedEventName,
+} from '../utils/analytics'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
@@ -58,6 +62,32 @@ function storeVisitorProfileFromUser(user) {
   }
 }
 
+function getCalendarMonth() {
+  const today = new Date()
+  return {
+    label: today.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
+    month: today.getMonth(),
+    year: today.getFullYear(),
+  }
+}
+
+function getCalendarDateKey(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+function getMonthCalendarDays(year, month) {
+  const firstDate = new Date(year, month, 1)
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const leadingBlankCount = (firstDate.getDay() + 6) % 7
+  const cells = Array.from({ length: leadingBlankCount }, (_, index) => ({ key: `blank-${index}`, day: null }))
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push({ key: getCalendarDateKey(year, month, day), day })
+  }
+
+  return cells
+}
+
 export function UserProfileReport() {
   const [user, setUser] = useState(null)
   const [form, setForm] = useState(getProfileForm)
@@ -69,6 +99,7 @@ export function UserProfileReport() {
   const [isSavingPassword, setIsSavingPassword] = useState(false)
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false)
   const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false)
+  const [returnStreak, setReturnStreak] = useState(getReturnStreak)
 
   useEffect(() => {
     let ignore = false
@@ -98,6 +129,20 @@ export function UserProfileReport() {
   const profileName = user?.name || 'Bạn'
   const profileAge = user?.age ? `${user.age} tuổi` : 'Chưa cập nhật'
   const profileGender = getGenderLabel(user?.gender)
+  const calendarMonth = getCalendarMonth()
+  const calendarDays = getMonthCalendarDays(calendarMonth.year, calendarMonth.month)
+  const todayKey = getCalendarDateKey(calendarMonth.year, calendarMonth.month, new Date().getDate())
+  const visitedDateSet = new Set(returnStreak.visitedDates)
+  const totalVisitedDays = returnStreak.visitedDates.length
+
+  useEffect(() => {
+    const handleReturnStreakChanged = (event) => {
+      setReturnStreak(event.detail?.streak || getReturnStreak())
+    }
+
+    window.addEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
+    return () => window.removeEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
+  }, [])
 
   const closeProfileEditor = useCallback(() => {
     if (isSavingProfile || isSavingPassword) return
@@ -276,22 +321,53 @@ export function UserProfileReport() {
 
               <dl className="profile-summary-list">
                 <div>
-                  <dt>Tuổi</dt>
+                  <dt>Tuổi:</dt>
                   <dd>{profileAge}</dd>
                 </div>
                 <div>
-                  <dt>Giới tính</dt>
+                  <dt>Giới tính:</dt>
                   <dd>{profileGender}</dd>
-                </div>
-                <div>
-                  <dt>Tài khoản</dt>
-                  <dd>Đang hoạt động</dd>
                 </div>
               </dl>
 
               <button className="profile-summary-action" type="button" onClick={openProfileEditor}>
                 Chỉnh sửa profile
               </button>
+            </aside>
+
+            <aside className="profile-calendar-card" aria-label="Lịch sử sử dụng web">
+              <p>Lịch sử ghé thăm</p>
+              <h2>{calendarMonth.label}</h2>
+
+              <div className="profile-calendar-grid" aria-label={`Lịch ${calendarMonth.label}`}>
+                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((weekday) => (
+                  <span className="profile-calendar-weekday" key={weekday}>{weekday}</span>
+                ))}
+                {calendarDays.map((date) => {
+                  const isVisitedDate = visitedDateSet.has(date.key)
+                  const isMissedDate = Boolean(date.day) && date.key < todayKey && !isVisitedDate
+
+                  return (
+                    <span
+                      className={[
+                        'profile-calendar-day',
+                        date.day ? '' : 'is-empty',
+                        isVisitedDate ? 'is-visited' : '',
+                        isMissedDate ? 'is-missed' : '',
+                      ].filter(Boolean).join(' ')}
+                      key={date.key}
+                    >
+                      {date.day ? <span>{date.day}</span> : null}
+                      {isVisitedDate ? <em aria-hidden="true">✓</em> : null}
+                    </span>
+                  )
+                })}
+              </div>
+
+              <div className="profile-calendar-summary">
+                <span>Tổng thời gian đồng hành</span>
+                <strong>Bạn đã đồng hành cùng chúng mình {totalVisitedDays} ngày.</strong>
+              </div>
             </aside>
           </div>
         ) : null}
@@ -389,8 +465,28 @@ export function UserProfileReport() {
                 </button>
               </form>
 
-              {isPasswordEditorOpen ? (
-                <form className="profile-password-panel" onSubmit={handlePasswordSubmit}>
+              {!isPasswordEditorOpen && passwordMessage ? (
+                <p className={`profile-info-message profile-password-toast is-${passwordMessage.type}`}>{passwordMessage.text}</p>
+              ) : null}
+            </div>
+
+            {isPasswordEditorOpen ? (
+              <div
+                className="profile-password-popup-overlay"
+                role="presentation"
+                onMouseDown={(event) => {
+                  event.stopPropagation()
+                  if (!isSavingPassword) setIsPasswordEditorOpen(false)
+                }}
+              >
+                <form
+                  className="profile-password-panel profile-password-popup"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Đổi mật khẩu"
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onSubmit={handlePasswordSubmit}
+                >
                   <div className="profile-info-heading">
                     <p>Bảo mật</p>
                     <h2>Đổi mật khẩu</h2>
@@ -433,10 +529,8 @@ export function UserProfileReport() {
                     </button>
                   </div>
                 </form>
-              ) : passwordMessage ? (
-                <p className={`profile-info-message profile-password-toast is-${passwordMessage.type}`}>{passwordMessage.text}</p>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -35,3 +35,7 @@ Rules:
 - No TypeScript unless requested.
 - No Redux unless requested.
 - Keep folder structure unchanged.
+- Use `.jsx` for React components or files that render JSX.
+- Use `.js` for plain JavaScript data, helpers, constants, and utilities that do not render JSX.
+- Use `localStorage` only for local UI preferences, draft/temporary state, cached visitor context, or data that can safely disappear on another device/browser.
+- Store user profile data, authentication state, analytics, community content, feedback, saved/shared user actions, and anything that must persist across devices or be visible to backend/admin in MongoDB through the API.

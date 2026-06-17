@@ -138,6 +138,10 @@ export function AnalyticsReport() {
               <span>Tổng thời gian</span>
               <strong>{formatSeconds(report.totals.totalDurationSeconds)}</strong>
             </div>
+            <div>
+              <span>Góp ý</span>
+              <strong>{report.totals.feedbacks || 0}</strong>
+            </div>
           </div>
 
           <div className="analytics-grid">
@@ -176,6 +180,28 @@ export function AnalyticsReport() {
             <article>
               <h2>Tương tác</h2>
               <BarChart empty="Chưa có tương tác." items={report.events} labelFormatter={(value) => eventLabels[value] || value || 'Không rõ'} />
+            </article>
+
+            <article className="analytics-feedback-card">
+              <h2>Góp ý mới nhất</h2>
+              {report.feedbacks?.length ? (
+                <div className="analytics-feedback-list">
+                  {report.feedbacks.map((feedback) => (
+                    <section className="analytics-feedback-item" key={feedback._id || feedback.createdAt}>
+                      <p>{feedback.message}</p>
+                      <div>
+                        <span>{feedback.name || 'Ẩn danh'}</span>
+                        {feedback.email ? <a href={`mailto:${feedback.email}`}>{feedback.email}</a> : null}
+                        <time dateTime={feedback.createdAt}>
+                          {new Date(feedback.createdAt).toLocaleString('vi-VN')}
+                        </time>
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <p className="analytics-empty">Chưa có góp ý trong khoảng thời gian này.</p>
+              )}
             </article>
           </div>
         </>

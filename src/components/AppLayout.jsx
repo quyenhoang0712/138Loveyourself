@@ -28,9 +28,12 @@ import {
   getVisitorProfile,
   getAnalyticsIds,
   identifyVisitor,
+  getReturnStreak,
+  returnStreakChangedEventName,
   sendAnalyticsHeartbeat,
   startAnalyticsSession,
   trackAnalyticsEvent,
+  updateReturnStreak,
 } from '../utils/analytics'
 
 const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
@@ -38,6 +41,7 @@ const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const welcomeGuideLastSeenStorageKey = 'love-yourself-guide-last-seen'
+const returnStreakPopupSeenStorageKey = 'love-yourself-return-streak-popup-seen'
 const welcomeGuideReminderDelay = 12 * 60 * 60 * 1000
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
 const quickSpotifyButtonSrc = '/PNG/dia-than.png'
@@ -64,6 +68,35 @@ const visitorGenderOptions = [
   { label: 'Nữ', value: 'female' },
   { label: 'Khác', value: 'other' },
 ]
+
+function getTodayKey() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function shouldShowReturnStreakPopup() {
+  if (typeof window === 'undefined') return false
+
+  try {
+    return window.localStorage.getItem(returnStreakPopupSeenStorageKey) !== getTodayKey()
+  } catch {
+    return true
+  }
+}
+
+function markReturnStreakPopupSeen() {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(returnStreakPopupSeenStorageKey, getTodayKey())
+  } catch {
+    // Popup visibility can still be controlled for this session.
+  }
+}
 
 function getStoredVisitorProfile() {
   if (typeof window === 'undefined') return null
@@ -294,6 +327,41 @@ function FeedbackPopup({ isOpen, onClose }) {
   )
 }
 
+function ReturnStreakPopup({ isOpen, onClose, streak }) {
+  if (!isOpen) return null
+
+  return (
+    <div className="return-streak-overlay" role="presentation" onMouseDown={onClose}>
+      <section
+        className="return-streak-popup"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="return-streak-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button className="return-streak-close" type="button" aria-label="Đóng chuỗi ngày quay lại" onClick={onClose}>
+          ×
+        </button>
+
+        <div className="return-streak-copy">
+          <p>Streak</p>
+          <h2 id="return-streak-title">Chuỗi ngày quay lại</h2>
+          <strong>{streak.currentStreak} ngày</strong>
+        </div>
+
+        <div className="return-streak-milestones" aria-label="Ngày 1 đến ngày 7">
+          {streak.milestones.map((milestone) => (
+            <div className={streak.currentStreak >= milestone ? 'is-complete' : ''} key={milestone}>
+              <span>{milestone}</span>
+              <em>Ngày</em>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
   const hasStartedAnalyticsRef = useRef(false)
@@ -310,10 +378,24 @@ export function AppLayout({ state }) {
   const [visitorProfileError, setVisitorProfileError] = useState('')
   const [isVisitorProfileSaving, setIsVisitorProfileSaving] = useState(false)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  const [returnStreak, setReturnStreak] = useState(getReturnStreak)
+  const [isReturnStreakPopupOpen, setIsReturnStreakPopupOpen] = useState(false)
   const [isWelcomeGuideOpen, setIsWelcomeGuideOpen] = useState(
     () => Boolean(getStoredVisitorProfile()) && shouldShowWelcomeGuide(),
   )
   const [isVisitorPromptOpen, setIsVisitorPromptOpen] = useState(() => !getStoredVisitorProfile())
+
+  const handleReturnStreakPopupOpen = useCallback(() => {
+    if (!shouldShowReturnStreakPopup()) return
+
+    setReturnStreak(getReturnStreak())
+    setIsReturnStreakPopupOpen(true)
+  }, [])
+
+  const handleReturnStreakPopupClose = useCallback(() => {
+    markReturnStreakPopupSeen()
+    setIsReturnStreakPopupOpen(false)
+  }, [])
 
   const {
     activeAmbientSound,
@@ -423,6 +505,20 @@ export function AppLayout({ state }) {
   }, [activeRoom, isUtilityPageOpen])
 
   useEffect(() => {
+    const handleReturnStreakChanged = (event) => {
+      setReturnStreak(event.detail?.streak || getReturnStreak())
+    }
+
+    window.addEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
+    const updateTimeout = window.setTimeout(updateReturnStreak, 0)
+
+    return () => {
+      window.clearTimeout(updateTimeout)
+      window.removeEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
+    }
+  }, [])
+
+  useEffect(() => {
     if (isUtilityPageOpen) return undefined
 
     let isCancelled = false
@@ -433,6 +529,10 @@ export function AppLayout({ state }) {
         if (isCancelled) return
 
         const userProfile = data.user
+        if (userProfile) {
+          handleReturnStreakPopupOpen()
+        }
+
         const hasCompleteUserProfile = Number.isInteger(userProfile?.age) && Boolean(userProfile?.gender)
 
         if (hasCompleteUserProfile) {
@@ -478,11 +578,15 @@ export function AppLayout({ state }) {
     return () => {
       isCancelled = true
     }
-  }, [isUtilityPageOpen])
+  }, [handleReturnStreakPopupOpen, isUtilityPageOpen])
 
   useEffect(() => {
     const handleAuthChanged = (event) => {
       const userProfile = event.detail?.user
+      if (userProfile) {
+        handleReturnStreakPopupOpen()
+      }
+
       const hasCompleteUserProfile = Number.isInteger(userProfile?.age) && Boolean(userProfile?.gender)
 
       if (!hasCompleteUserProfile) return
@@ -494,7 +598,7 @@ export function AppLayout({ state }) {
 
     window.addEventListener('love-yourself-auth-changed', handleAuthChanged)
     return () => window.removeEventListener('love-yourself-auth-changed', handleAuthChanged)
-  }, [])
+  }, [handleReturnStreakPopupOpen])
 
   useEffect(() => {
     if (isUtilityPageOpen) return
@@ -939,6 +1043,12 @@ export function AppLayout({ state }) {
       <Toast message={toastMessage} />
 
       <FeedbackPopup isOpen={isFeedbackOpen} onClose={handleFeedbackClose} />
+
+      <ReturnStreakPopup
+        isOpen={isReturnStreakPopupOpen}
+        onClose={handleReturnStreakPopupClose}
+        streak={returnStreak}
+      />
 
       {isVisitorPromptOpen && !isUtilityPageOpen ? (
         <div className="visitor-prompt-backdrop">

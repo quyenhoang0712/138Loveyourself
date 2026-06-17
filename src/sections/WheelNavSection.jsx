@@ -9,9 +9,14 @@ const wheelLinks = [
   { href: '#focus-room', label: 'phòng tập trung', className: 'wheel-link-focus-room', rotation: 90, color: '#4789C8' },
 ]
 
+function normalizeRotation(rotation) {
+  return ((rotation % 360) + 360) % 360
+}
+
 export function WheelNavSection({ onRoomNavigate }) {
   const [rotation, setRotation] = useState(0)
   const [pendingHref, setPendingHref] = useState(null)
+  const activeRotation = normalizeRotation(rotation)
 
   const rotateWheel = (direction) => {
     setRotation((currentRotation) => currentRotation + direction * 90)
@@ -78,16 +83,20 @@ export function WheelNavSection({ onRoomNavigate }) {
           </button>
         </div>
         <nav className="wheel-nav-links" aria-label="Đi tới các phần">
-          {wheelLinks.map((link) => (
-            <a
-              className={`wheel-nav-link ${link.className} ${pendingHref === link.href ? 'is-pending' : ''}`}
-              href={link.href}
-              key={link.href}
-              onClick={(event) => handleRoomClick(event, link)}
-            >
-              {link.label}
-            </a>
-          ))}
+          {wheelLinks.map((link) => {
+            const isActive = activeRotation === normalizeRotation(link.rotation)
+
+            return (
+              <a
+                className={`wheel-nav-link ${link.className} ${isActive ? 'is-active' : ''} ${pendingHref === link.href ? 'is-pending' : ''}`}
+                href={link.href}
+                key={link.href}
+                onClick={(event) => handleRoomClick(event, link)}
+              >
+                {link.label}
+              </a>
+            )
+          })}
         </nav>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrashIcon } from '../components/icons'
+import { trackAnalyticsEvent } from '../utils/analytics'
 
 const closedLetterImage = '/letter-closed.png'
 const openLetterImage = '/letter-open.png'
@@ -283,6 +284,7 @@ export function CommunitySection() {
       setEnvelopeColor('blue')
       setSealColor('cream')
       setStampId(defaultStampId)
+      trackAnalyticsEvent('community_letter_write', 'community', { isCommunityLetter })
       requestAnimationFrame(() => {
         letterFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         titleInputRef.current?.focus({ preventScroll: true })
@@ -341,6 +343,7 @@ export function CommunitySection() {
       setSendingLetter(letter)
       setIsSentLetterOpen(true)
       setFlyingLetter(null)
+      trackAnalyticsEvent('community_letter_read', 'community', { stackId })
       requestAnimationFrame(() => {
         letterFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       })

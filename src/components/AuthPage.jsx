@@ -79,15 +79,16 @@ export function AuthPage() {
     setMessage(null)
 
     const formData = new FormData(event.currentTarget)
-    const formProfile = {
-      age: formData.get('age'),
-      gender: formData.get('gender'),
-    }
     const storedProfile = getStoredVisitorProfile()
-    const profileToSync = isRegister ? formProfile : storedProfile
+    const profileToSync = storedProfile
 
-    if (isRegister) {
-      storeVisitorProfile(formProfile)
+    if (isRegister && !profileToSync) {
+      setMessage({
+        type: 'error',
+        text: 'Bạn quay lại trang chủ nhập tuổi và giới tính trước, rồi đăng ký lại nha.',
+      })
+      setIsSubmitting(false)
+      return
     }
 
     const payload = {
@@ -196,7 +197,7 @@ export function AuthPage() {
           </div>
         ) : (
           <>
-        <div className="auth-tabs" aria-label="Chọn hình thức tài khoản">
+        <div className={`auth-tabs ${isRegister ? 'is-register' : 'is-login'}`} aria-label="Chọn hình thức tài khoản">
           <button
             className={mode === 'login' ? 'is-active' : ''}
             type="button"
@@ -225,25 +226,6 @@ export function AuthPage() {
             <label>
               <span>Tên hiển thị</span>
               <input name="name" type="text" autoComplete="name" placeholder="Mình nên gọi bạn là gì?" required />
-            </label>
-          ) : null}
-
-          {isRegister ? (
-            <label>
-              <span>Tuổi</span>
-              <input name="age" type="number" min="1" max="120" inputMode="numeric" placeholder="Ví dụ: 20" required />
-            </label>
-          ) : null}
-
-          {isRegister ? (
-            <label>
-              <span>Giới tính</span>
-              <select name="gender" defaultValue="" required>
-                <option value="" disabled>Chọn một mục</option>
-                <option value="female">Nữ</option>
-                <option value="male">Nam</option>
-                <option value="other">Khác</option>
-              </select>
             </label>
           ) : null}
 

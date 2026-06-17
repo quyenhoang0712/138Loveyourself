@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { Router } from 'express'
 import { AnalyticsEvent } from '../models/AnalyticsEvent.js'
+import { Feedback } from '../models/Feedback.js'
 import { Session } from '../models/Session.js'
 import { User } from '../models/User.js'
 import { Visitor } from '../models/Visitor.js'
@@ -22,6 +23,8 @@ const allowedEvents = new Set([
   'timer_pause',
   'timer_reset',
   'spotify_view',
+  'community_letter_read',
+  'community_letter_write',
 ])
 
 function normalizeRoom(room) {
@@ -390,7 +393,7 @@ router.get('/report', requireAdmin, async (req, res) => {
     return
   }
 
-  const [visitorsByGender, visitorsByAge, roomEvents, topEvents, sessions] = await Promise.all([
+  const [visitorsByGender, visitorsByAge, roomEvents, topEvents, sessions, feedbackCount, feedbacks] = await Promise.all([
     Visitor.aggregate([
       { $match: { firstSeenAt: { $gte: start, $lt: end } } },
       { $group: { _id: '$gender', count: { $sum: 1 } } },
@@ -414,6 +417,12 @@ router.get('/report', requireAdmin, async (req, res) => {
     Session.find({ startedAt: { $gte: start, $lt: end } })
       .select('lastRoom roomDurations durationSeconds')
       .lean(),
+    Feedback.countDocuments({ createdAt: { $gte: start, $lt: end } }),
+    Feedback.find({ createdAt: { $gte: start, $lt: end } })
+      .select('name email message createdAt')
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean(),
   ])
 
   const { totalDurationSeconds, roomDurations, stoppedRooms } = applySessionStats(sessions)
@@ -425,6 +434,7 @@ router.get('/report', requireAdmin, async (req, res) => {
     totals: {
       visitors: visitorsByGender.reduce((sum, item) => sum + item.count, 0),
       sessions: sessions.length,
+      feedbacks: feedbackCount,
       totalDurationSeconds,
       averageSessionSeconds: sessions.length ? Math.round(totalDurationSeconds / sessions.length) : 0,
     },
@@ -434,6 +444,7 @@ router.get('/report', requireAdmin, async (req, res) => {
     roomDurations,
     stoppedRooms,
     events: topEvents,
+    feedbacks,
   })
 })
 
