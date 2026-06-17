@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { decisionMessages } from '../decisionMessages'
 import { ui } from '../i18n/ui'
 import {
@@ -76,7 +76,7 @@ export function useAppState() {
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
 
-  const isQuoteSaved = savedQuotes.includes(quote)
+  const isQuoteSaved = useMemo(() => savedQuotes.includes(quote), [quote, savedQuotes])
   const isFocusPhase = timerPhase === 'focus'
   const isBreakPhase = timerPhase === 'shortBreak' || timerPhase === 'longBreak'
   const isBreakReadyPhase = timerPhase === 'shortBreakReady' || timerPhase === 'longBreakReady'
@@ -99,10 +99,16 @@ export function useAppState() {
     remainingWaterCapacityCubes > activeIceCubeCount
   const iceDropDepth = `${Math.max(148, 338 - iceCubeCount * 38)}%`
   const iceImpactBottom = `${Math.min(43, 13 + iceCubeCount * 6)}%`
-  const openedLetter = quoteLetters.find((letter) => letter.id === openedLetterId)
-  const allShareFrames = [...shareFrames, ...customShareFrames]
-  const activeShareFrame = allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0]
-  const shareQuoteFontSize = getShareQuoteFontSize(quote)
+  const openedLetter = useMemo(
+    () => quoteLetters.find((letter) => letter.id === openedLetterId),
+    [openedLetterId, quoteLetters],
+  )
+  const allShareFrames = useMemo(() => [...shareFrames, ...customShareFrames], [customShareFrames])
+  const activeShareFrame = useMemo(
+    () => allShareFrames.find((frame) => frame.id === activeShareFrameId) || shareFrames[0],
+    [activeShareFrameId, allShareFrames],
+  )
+  const shareQuoteFontSize = useMemo(() => getShareQuoteFontSize(quote), [quote])
   const copy = ui
   const activeTimerMessage = isTimerRunning
     ? isBreakPhase
@@ -515,6 +521,26 @@ export function useAppState() {
     )
   }
 
+  const handleTransformShareSticker = (stickerId, transform) => {
+    setPlacedShareStickers((currentStickers) =>
+      currentStickers.map((sticker) => {
+        if (sticker.id !== stickerId) return sticker
+        const nextSize = Number(transform.size)
+        const nextX = Number(transform.x)
+        const nextY = Number(transform.y)
+
+        return {
+          ...sticker,
+          ...transform,
+          rotation: transform.rotation ?? sticker.rotation,
+          size: Number.isFinite(nextSize) ? Math.min(38, Math.max(10, nextSize)) : sticker.size,
+          x: Number.isFinite(nextX) ? Math.min(92, Math.max(8, nextX)) : sticker.x,
+          y: Number.isFinite(nextY) ? Math.min(92, Math.max(8, nextY)) : sticker.y,
+        }
+      }),
+    )
+  }
+
   const handleResizeShareSticker = (stickerId, size) => {
     const nextSize = Math.min(38, Math.max(10, Number(size)))
 
@@ -812,15 +838,18 @@ export function useAppState() {
     setDecisionMotion('revealed')
   }
 
-  const handleAskDecision = () => {
+  const handleAskDecision = (prompt = 'xin 1 dấu hiệu') => {
+    const normalizedPrompt = String(prompt || '').trim()
+    if (!normalizedPrompt) return
+
     window.clearTimeout(decisionTimeoutRef.current)
     setDecisionMotion('thinking')
     setDecisionThread((currentThread) => [
       ...currentThread.map((entry) => ({ ...entry, isThinking: false })),
-      { id: `${Date.now()}-${currentThread.length}`, isThinking: true, prompt: 'xin 1 dấu hiệu', response: '' },
+      { id: `${Date.now()}-${currentThread.length}`, isThinking: true, prompt: normalizedPrompt, response: '' },
     ])
     setDecisionAnimationKey((currentKey) => currentKey + 1)
-    trackAnalyticsEvent('decision_ask', 'card-room')
+    trackAnalyticsEvent('decision_ask', 'card-room', { promptLength: normalizedPrompt.length })
     decisionTimeoutRef.current = window.setTimeout(() => {
       revealDecisionMessage(decisionMessage)
     }, 2000)
@@ -867,6 +896,7 @@ export function useAppState() {
     handleSkipBreak,
     handleStartBreak,
     handleTimerStartToggle,
+    handleTransformShareSticker,
     handleToggleSaveQuote,
     handleUndoShareSticker,
     iceCubeCount,

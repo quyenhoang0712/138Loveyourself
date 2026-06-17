@@ -4,6 +4,7 @@ const sessionSchema = new mongoose.Schema(
   {
     sessionId: { type: String, required: true, unique: true, index: true },
     visitorId: { type: String, required: true, index: true },
+    userId: { type: String, default: '', index: true },
     startedAt: { type: Date, default: Date.now, index: true },
     lastActiveAt: { type: Date, default: Date.now, index: true },
     endedAt: { type: Date, default: null },
@@ -15,5 +16,10 @@ const sessionSchema = new mongoose.Schema(
   },
   { versionKey: false },
 )
+
+sessionSchema.index({ startedAt: -1 })
+sessionSchema.index({ userId: 1, startedAt: -1 })
+sessionSchema.index({ visitorId: 1, startedAt: -1 })
+sessionSchema.index({ lastActiveAt: -1 })
 
 export const Session = mongoose.model('Session', sessionSchema)

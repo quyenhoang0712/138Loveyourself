@@ -15,9 +15,10 @@ async function ensureDatabase(req, res, next) {
     await connectDatabase()
     next()
   } catch (error) {
+    console.error('Database connection failed:', error)
     res.status(503).json({
       error: 'Database unavailable',
-      detail: error.message,
+      detail: process.env.NODE_ENV === 'production' ? undefined : error.message,
     })
   }
 }
@@ -25,6 +26,8 @@ async function ensureDatabase(req, res, next) {
 export function createApp({ serveStatic = false } = {}) {
   const app = express()
 
+  app.set('trust proxy', 1)
+  app.disable('x-powered-by')
   app.use(express.json({ limit: '1mb' }))
 
   app.get(['/api/health', '/health'], (req, res) => {
@@ -39,10 +42,36 @@ export function createApp({ serveStatic = false } = {}) {
   if (serveStatic) {
     const distPath = path.resolve(__dirname, '../dist')
     app.use(express.static(distPath))
-    app.get(/.*/, (req, res) => {
+    app.get(/.*/, (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path === '/health') {
+        next()
+        return
+      }
+
       res.sendFile(path.join(distPath, 'index.html'))
     })
   }
+
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' })
+  })
+
+  app.use((error, req, res, next) => {
+    if (res.headersSent) {
+      next(error)
+      return
+    }
+
+    console.error('Unhandled backend error:', error)
+    const status = error.status || 500
+    const message = status >= 500 && process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : error.message || 'Internal server error'
+
+    res.status(status).json({
+      error: message,
+    })
+  })
 
   return app
 }

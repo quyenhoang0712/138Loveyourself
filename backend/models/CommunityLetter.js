@@ -62,4 +62,7 @@ const communityLetterSchema = new mongoose.Schema({
   versionKey: false,
 })
 
+communityLetterSchema.index({ recipient: 1, createdAt: -1 })
+communityLetterSchema.index({ authorId: 1, createdAt: -1 })
+
 export const CommunityLetter = mongoose.model('CommunityLetter', communityLetterSchema)

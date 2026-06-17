@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ambientSoundOptions,
   heroVideoUrl,
@@ -22,6 +22,7 @@ import { PlaylistSection } from '../sections/PlaylistSection'
 import { AnalyticsReport } from '../sections/AnalyticsReport'
 import { QuoteSection } from '../sections/QuoteSection'
 import { RoomSection } from '../sections/RoomSection'
+import { UserProfileReport } from '../sections/UserProfileReport'
 import { WheelNavSection } from '../sections/WheelNavSection'
 import {
   getVisitorProfile,
@@ -56,6 +57,12 @@ const homePriorityAssets = [
   transitionMascotSrc,
   quickSpotifyButtonSrc,
   roomSwitcherIconSrc,
+]
+const uniqueHomePriorityAssets = [...new Set(homePriorityAssets)]
+const visitorGenderOptions = [
+  { label: 'Nam', value: 'male' },
+  { label: 'Nữ', value: 'female' },
+  { label: 'Khác', value: 'other' },
 ]
 
 function getStoredVisitorProfile() {
@@ -104,6 +111,12 @@ function getIsAnalyticsReportFromHash() {
   if (typeof window === 'undefined') return false
 
   return window.location.hash.replace('#', '') === 'analytics'
+}
+
+function getIsProfileFromHash() {
+  if (typeof window === 'undefined') return false
+
+  return window.location.hash.replace('#', '') === 'profile'
 }
 
 function preloadImage(src) {
@@ -287,6 +300,7 @@ export function AppLayout({ state }) {
   const [isFloatingHeaderVisible, setIsFloatingHeaderVisible] = useState(false)
   const [activeRoom, setActiveRoom] = useState(getActiveRoomFromHash)
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
+  const [isProfileOpen, setIsProfileOpen] = useState(getIsProfileFromHash)
   const [activeRoomTransitionColor, setActiveRoomTransitionColor] = useState(null)
   const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
   const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
@@ -342,6 +356,7 @@ export function AppLayout({ state }) {
     handleSkipBreak,
     handleStartBreak,
     handleTimerStartToggle,
+    handleTransformShareSticker,
     handleToggleSaveQuote,
     handleUndoShareSticker,
     iceCubeCount,
@@ -376,9 +391,10 @@ export function AppLayout({ state }) {
     timerPhase,
   } = state
   const activeAnalyticsRoom = activeRoom === 'play-room' ? 'sound-room' : activeRoom || 'home'
+  const isUtilityPageOpen = isAnalyticsReportOpen || isProfileOpen
 
   useEffect(() => {
-    if (activeRoom || isAnalyticsReportOpen) {
+    if (activeRoom || isUtilityPageOpen) {
       return undefined
     }
 
@@ -397,69 +413,107 @@ export function AppLayout({ state }) {
       window.removeEventListener('scroll', updateFloatingHeader)
       window.removeEventListener('resize', updateFloatingHeader)
     }
-  }, [activeRoom, isAnalyticsReportOpen])
+  }, [activeRoom, isUtilityPageOpen])
 
   useEffect(() => {
-    if (activeRoom || isAnalyticsReportOpen) return undefined
+    if (activeRoom || isUtilityPageOpen) return undefined
 
-    const priorityAssets = [...new Set(homePriorityAssets)]
-    priorityAssets.forEach(preloadImage)
+    uniqueHomePriorityAssets.forEach(preloadImage)
     return undefined
-  }, [activeRoom, isAnalyticsReportOpen])
+  }, [activeRoom, isUtilityPageOpen])
 
   useEffect(() => {
-    if (isAnalyticsReportOpen) return undefined
+    if (isUtilityPageOpen) return undefined
 
     let isCancelled = false
-    const storedProfile = getStoredVisitorProfile()
 
-    if (storedProfile) {
-      identifyVisitor(storedProfile).catch(() => undefined)
-
-      return () => {
-        isCancelled = true
-      }
-    }
-
-    getVisitorProfile()
-      .then((profile) => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((response) => response.json())
+      .then((data) => {
         if (isCancelled) return
 
-        const hasCompleteProfile = Number.isInteger(profile?.age) && Boolean(profile?.gender)
-        setIsVisitorPromptOpen(!hasCompleteProfile)
+        const userProfile = data.user
+        const hasCompleteUserProfile = Number.isInteger(userProfile?.age) && Boolean(userProfile?.gender)
 
-        if (hasCompleteProfile) {
-          storeVisitorProfile(profile)
+        if (hasCompleteUserProfile) {
+          storeVisitorProfile(userProfile)
+          identifyVisitor(userProfile).catch(() => undefined)
+          setIsVisitorPromptOpen(false)
           setIsWelcomeGuideOpen(shouldShowWelcomeGuide())
+          return
         }
+
+        const storedProfile = getStoredVisitorProfile()
+
+        if (storedProfile) {
+          identifyVisitor(storedProfile).catch(() => undefined)
+          return
+        }
+
+        return getVisitorProfile()
+          .then((profile) => {
+            if (isCancelled) return
+
+            const hasCompleteProfile = Number.isInteger(profile?.age) && Boolean(profile?.gender)
+            setIsVisitorPromptOpen(!hasCompleteProfile)
+
+            if (hasCompleteProfile) {
+              storeVisitorProfile(profile)
+              setIsWelcomeGuideOpen(shouldShowWelcomeGuide())
+            }
+          })
       })
       .catch(() => {
-        if (!isCancelled) setIsVisitorPromptOpen(true)
+        if (isCancelled) return
+
+        const storedProfile = getStoredVisitorProfile()
+        if (storedProfile) {
+          identifyVisitor(storedProfile).catch(() => undefined)
+          return
+        }
+
+        setIsVisitorPromptOpen(true)
       })
 
     return () => {
       isCancelled = true
     }
-  }, [isAnalyticsReportOpen])
+  }, [isUtilityPageOpen])
 
   useEffect(() => {
-    if (isAnalyticsReportOpen) return
+    const handleAuthChanged = (event) => {
+      const userProfile = event.detail?.user
+      const hasCompleteUserProfile = Number.isInteger(userProfile?.age) && Boolean(userProfile?.gender)
+
+      if (!hasCompleteUserProfile) return
+
+      storeVisitorProfile(userProfile)
+      identifyVisitor(userProfile).catch(() => undefined)
+      setIsVisitorPromptOpen(false)
+    }
+
+    window.addEventListener('love-yourself-auth-changed', handleAuthChanged)
+    return () => window.removeEventListener('love-yourself-auth-changed', handleAuthChanged)
+  }, [])
+
+  useEffect(() => {
+    if (isUtilityPageOpen) return
     if (hasStartedAnalyticsRef.current) return
     hasStartedAnalyticsRef.current = true
     startAnalyticsSession(activeAnalyticsRoom)
-  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
+  }, [activeAnalyticsRoom, isUtilityPageOpen])
 
   useEffect(() => {
-    if (isAnalyticsReportOpen) return
+    if (isUtilityPageOpen) return
     trackAnalyticsEvent('room_view', activeAnalyticsRoom)
 
     if (activeAnalyticsRoom === 'sound-room') {
       trackAnalyticsEvent('spotify_view', 'sound-room')
     }
-  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
+  }, [activeAnalyticsRoom, isUtilityPageOpen])
 
   useEffect(() => {
-    if (isAnalyticsReportOpen) return undefined
+    if (isUtilityPageOpen) return undefined
 
     const heartbeatId = window.setInterval(() => {
       sendAnalyticsHeartbeat(activeAnalyticsRoom)
@@ -476,12 +530,13 @@ export function AppLayout({ state }) {
       window.removeEventListener('pagehide', sendFinalHeartbeat)
       sendFinalHeartbeat()
     }
-  }, [activeAnalyticsRoom, isAnalyticsReportOpen])
+  }, [activeAnalyticsRoom, isUtilityPageOpen])
 
   useEffect(() => {
     const handleHashChange = () => {
       setActiveRoom(getActiveRoomFromHash())
       setIsAnalyticsReportOpen(getIsAnalyticsReportFromHash())
+      setIsProfileOpen(getIsProfileFromHash())
       window.scrollTo(0, 0)
     }
 
@@ -516,7 +571,7 @@ export function AppLayout({ state }) {
     }
   }, [activeRoom])
 
-  const handleRoomNavigate = (link) => {
+  const handleRoomNavigate = useCallback((link) => {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
     setIsRoomSwitcherOpen(false)
@@ -529,9 +584,9 @@ export function AppLayout({ state }) {
     window.setTimeout(() => {
       setActiveRoomTransitionColor(null)
     }, roomTransitionDuration)
-  }
+  }, [activeRoom])
 
-  const handleQuickSpotifyToggle = () => {
+  const handleQuickSpotifyToggle = useCallback(() => {
     if (quickSpotifySrc) {
       setIsQuickSpotifyOpen((isOpen) => !isOpen)
       return
@@ -539,7 +594,13 @@ export function AppLayout({ state }) {
 
     setQuickSpotifySrc(quickSpotifyEmbed)
     setIsQuickSpotifyOpen(true)
-  }
+  }, [quickSpotifySrc])
+
+  const availableRoomSwitcherLinks = useMemo(() => (
+    roomSwitcherLinks.filter((link) => (
+      !(link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'))
+    ))
+  ), [activeRoom])
 
   const quickSpotifyControl = activeRoom ? (
     <div className={`quick-spotify ${quickSpotifySrc ? 'is-playing' : ''} ${isQuickSpotifyOpen ? 'is-open' : ''}`}>
@@ -594,9 +655,7 @@ export function AppLayout({ state }) {
       </button>
 
       <nav className="room-switcher-options" aria-label="Chuyển phòng">
-        {roomSwitcherLinks.filter((link) => (
-          !(link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'))
-        )).map((link) => {
+        {availableRoomSwitcherLinks.map((link) => {
           const isActive = link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')
 
           return (
@@ -615,7 +674,7 @@ export function AppLayout({ state }) {
     </div>
   ) : null
 
-  const handleVisitorProfileSubmit = async (event) => {
+  const handleVisitorProfileSubmit = useCallback(async (event) => {
     event.preventDefault()
 
     const normalizedAge = Number(visitorAge)
@@ -645,17 +704,29 @@ export function AppLayout({ state }) {
     } finally {
       setIsVisitorProfileSaving(false)
     }
-  }
+  }, [visitorAge, visitorGender])
 
-  const handleWelcomeGuideClose = () => {
+  const handleWelcomeGuideClose = useCallback(() => {
     window.localStorage.setItem(welcomeGuideLastSeenStorageKey, String(Date.now()))
     setIsWelcomeGuideOpen(false)
-  }
+  }, [])
+
+  const handleFeedbackOpen = useCallback(() => {
+    setIsFeedbackOpen(true)
+  }, [])
+
+  const handleFeedbackClose = useCallback(() => {
+    setIsFeedbackOpen(false)
+  }, [])
+
+  const handleShareSheetClose = useCallback(() => {
+    setIsShareSheetOpen(false)
+  }, [setIsShareSheetOpen])
 
   const header = (
     <SiteHeader
       variant="static"
-      onFeedbackOpen={() => setIsFeedbackOpen(true)}
+      onFeedbackOpen={handleFeedbackOpen}
     />
   )
 
@@ -775,6 +846,8 @@ export function AppLayout({ state }) {
       className={`landing-page ${activeRoom ? `landing-page-room landing-page-${activeRoom}` : ''} ${
         isAnalyticsReportOpen ? 'landing-page-analytics' : ''
       } ${
+        isProfileOpen ? 'landing-page-profile' : ''
+      } ${
         draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''
       }`}
       onClickCapture={handleInterfaceClick}
@@ -785,6 +858,8 @@ export function AppLayout({ state }) {
         <>
           <AnalyticsReport />
         </>
+      ) : isProfileOpen ? (
+        <UserProfileReport />
       ) : activeRoom ? (
         <>
           <div className="room-page-header">{header}</div>
@@ -805,7 +880,7 @@ export function AppLayout({ state }) {
           {isFloatingHeaderVisible ? (
             <SiteHeader
               variant="floating"
-              onFeedbackOpen={() => setIsFeedbackOpen(true)}
+              onFeedbackOpen={handleFeedbackOpen}
             />
           ) : null}
 
@@ -837,7 +912,7 @@ export function AppLayout({ state }) {
         onAddCustomFrame={handleAddCustomFrame}
         onBeginMoveShareSticker={handleBeginMoveShareSticker}
         onColorShareSticker={handleColorShareSticker}
-        onClose={() => setIsShareSheetOpen(false)}
+        onClose={handleShareSheetClose}
         onCopyShareQuote={handleCopyShareQuote}
         onDownloadShareImage={handleDownloadShareImage}
         onFlipShareSticker={handleFlipShareSticker}
@@ -851,6 +926,7 @@ export function AppLayout({ state }) {
         onSelectShareFrame={handleSelectShareFrame}
         onShareInstagramStory={handleShareInstagramStory}
         onTextColorChange={setShareTextColor}
+        onTransformShareSticker={handleTransformShareSticker}
         onUndoShareSticker={handleUndoShareSticker}
         placedShareStickers={placedShareStickers}
         quote={quote}
@@ -862,9 +938,9 @@ export function AppLayout({ state }) {
 
       <Toast message={toastMessage} />
 
-      <FeedbackPopup isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+      <FeedbackPopup isOpen={isFeedbackOpen} onClose={handleFeedbackClose} />
 
-      {isVisitorPromptOpen && !isAnalyticsReportOpen ? (
+      {isVisitorPromptOpen && !isUtilityPageOpen ? (
         <div className="visitor-prompt-backdrop">
           <form className="visitor-prompt" aria-label="Thông tin người dùng" onSubmit={handleVisitorProfileSubmit}>
             <div className="visitor-prompt-heading">
@@ -888,11 +964,7 @@ export function AppLayout({ state }) {
             <fieldset className="visitor-field visitor-gender-field">
               <legend>Giới tính</legend>
               <div className="visitor-gender-options">
-                {[
-                  { label: 'Nam', value: 'male' },
-                  { label: 'Nữ', value: 'female' },
-                  { label: 'Khác', value: 'other' },
-                ].map((option) => (
+                {visitorGenderOptions.map((option) => (
                   <label className={visitorGender === option.value ? 'is-selected' : ''} key={option.value}>
                     <input
                       type="radio"
@@ -916,7 +988,7 @@ export function AppLayout({ state }) {
         </div>
       ) : null}
 
-      {isWelcomeGuideOpen && !isAnalyticsReportOpen ? (
+      {isWelcomeGuideOpen && !isUtilityPageOpen ? (
         <div className="visitor-prompt-backdrop welcome-guide-backdrop">
           <section className="welcome-guide" aria-labelledby="welcome-guide-title">
             <div className="welcome-guide-heading">

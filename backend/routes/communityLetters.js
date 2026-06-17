@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
       { recipient: { $exists: false } },
     ],
   })
+    .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
     .limit(50)
     .lean()
@@ -47,6 +48,7 @@ router.get('/mine', async (req, res) => {
   }
 
   const letters = await CommunityLetter.find({ authorId: user._id })
+    .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
     .limit(50)
     .lean()

@@ -1,18 +1,70 @@
 import { useEffect, useState } from 'react'
 import { LogoutIcon } from './icons'
 
+const authChangedEventName = 'love-yourself-auth-changed'
+const visitorProfileStorageKey = 'love-yourself-visitor-profile'
+
+function getStoredVisitorProfile() {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const profile = JSON.parse(window.localStorage.getItem(visitorProfileStorageKey) || 'null')
+    const age = Number(profile?.age)
+    const gender = profile?.gender
+
+    if (!Number.isInteger(age) || age < 1 || age > 120) return null
+    if (!['male', 'female', 'other'].includes(gender)) return null
+
+    return { age, gender }
+  } catch {
+    return null
+  }
+}
+
+function storeVisitorProfile(profile) {
+  if (typeof window === 'undefined') return
+
+  const age = Number(profile?.age)
+  const gender = profile?.gender
+  if (!Number.isInteger(age) || age < 1 || age > 120) return
+  if (!['male', 'female', 'other'].includes(gender)) return
+
+  try {
+    window.localStorage.setItem(visitorProfileStorageKey, JSON.stringify({ age, gender }))
+  } catch {
+    // The account flow can continue without browser storage.
+  }
+}
+
 export function AuthPage() {
   const [mode, setMode] = useState('login')
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState(null)
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const isRegister = mode === 'register'
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    let ignore = false
+    const controller = new AbortController()
+
+    fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then((response) => response.json())
-      .then((data) => setUser(data.user || null))
-      .catch(() => undefined)
+      .then((data) => {
+        if (!ignore) setUser(data.user || null)
+      })
+      .catch((error) => {
+        if (!ignore && error.name !== 'AbortError') setUser(null)
+      })
+      .finally(() => {
+        if (!ignore) setIsCheckingSession(false)
+      })
+
+    return () => {
+      ignore = true
+      controller.abort()
+    }
   }, [])
 
   const handleModeChange = (nextMode) => {
@@ -27,15 +79,29 @@ export function AuthPage() {
     setMessage(null)
 
     const formData = new FormData(event.currentTarget)
+    const formProfile = {
+      age: formData.get('age'),
+      gender: formData.get('gender'),
+    }
+    const storedProfile = getStoredVisitorProfile()
+    const profileToSync = isRegister ? formProfile : storedProfile
+
+    if (isRegister) {
+      storeVisitorProfile(formProfile)
+    }
+
     const payload = {
       name: formData.get('name'),
       email: formData.get('email'),
       password: formData.get('password'),
+      age: profileToSync?.age,
+      gender: profileToSync?.gender,
     }
 
     try {
       const response = await fetch(`/api/auth/${isRegister ? 'register' : 'login'}`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
@@ -55,6 +121,8 @@ export function AuthPage() {
       }
 
       setUser(data.user)
+      storeVisitorProfile(data.user)
+      window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: data.user } }))
       setMessage({ type: 'success', text: data.message })
       form.reset()
     } catch (error) {
@@ -70,10 +138,22 @@ export function AuthPage() {
   }
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    setUser(null)
-    setMode('login')
-    setMessage({ type: 'success', text: 'Bạn đã đăng xuất.' })
+    setIsLoggingOut(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      if (!response.ok) throw new Error('Chưa thể đăng xuất lúc này. Bạn thử lại nha.')
+
+      setUser(null)
+      setMode('login')
+      window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: null } }))
+      setMessage({ type: 'success', text: 'Bạn đã đăng xuất.' })
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message })
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -88,7 +168,13 @@ export function AuthPage() {
           <small>138knitwear</small>
         </a>
 
-        {user ? (
+        {isCheckingSession ? (
+          <div className="auth-profile" aria-live="polite">
+            <p>Tài khoản của bạn</p>
+            <h1 id="auth-title">Đang kiểm tra...</h1>
+            <span>Mình đang xem phiên đăng nhập còn hiệu lực không.</span>
+          </div>
+        ) : user ? (
           <div className="auth-profile">
             <p>Tài khoản của bạn</p>
             <h1 id="auth-title">{user.name}</h1>
@@ -101,6 +187,7 @@ export function AuthPage() {
                 type="button"
                 aria-label="Đăng xuất"
                 title="Đăng xuất"
+                disabled={isLoggingOut}
                 onClick={handleLogout}
               >
                 <LogoutIcon />
@@ -138,6 +225,25 @@ export function AuthPage() {
             <label>
               <span>Tên hiển thị</span>
               <input name="name" type="text" autoComplete="name" placeholder="Mình nên gọi bạn là gì?" required />
+            </label>
+          ) : null}
+
+          {isRegister ? (
+            <label>
+              <span>Tuổi</span>
+              <input name="age" type="number" min="1" max="120" inputMode="numeric" placeholder="Ví dụ: 20" required />
+            </label>
+          ) : null}
+
+          {isRegister ? (
+            <label>
+              <span>Giới tính</span>
+              <select name="gender" defaultValue="" required>
+                <option value="" disabled>Chọn một mục</option>
+                <option value="female">Nữ</option>
+                <option value="male">Nam</option>
+                <option value="other">Khác</option>
+              </select>
             </label>
           ) : null}
 

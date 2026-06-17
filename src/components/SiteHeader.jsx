@@ -6,27 +6,35 @@ const authChangedEventName = 'love-yourself-auth-changed'
 export function SiteHeader({ variant = 'sticky', onFeedbackOpen }) {
   const [user, setUser] = useState(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const profileLabel = `Phòng của ${user?.name || 'bạn'}`
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const handleAuthChanged = (event) => {
       setUser(event.detail?.user || null)
     }
 
     window.addEventListener(authChangedEventName, handleAuthChanged)
 
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then((response) => response.json())
       .then((data) => setUser(data.user || null))
-      .catch(() => undefined)
+      .catch((error) => {
+        if (error.name !== 'AbortError') setUser(null)
+      })
 
-    return () => window.removeEventListener(authChangedEventName, handleAuthChanged)
+    return () => {
+      controller.abort()
+      window.removeEventListener(authChangedEventName, handleAuthChanged)
+    }
   }, [])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
 
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
       setUser(null)
       window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: null } }))
     } catch {
@@ -50,8 +58,8 @@ export function SiteHeader({ variant = 'sticky', onFeedbackOpen }) {
       </a>
       {user ? (
         <div className="header-account-actions">
-          <a className="header-account-button" href="/auth">
-            Profile
+          <a className="header-account-button" href="#profile">
+            {profileLabel}
           </a>
           <button
             className="header-logout-button"

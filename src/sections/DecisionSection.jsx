@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, decisionThread = [], onAskDecision }) {
   const threadRef = useRef(null)
+  const [decisionPrompt, setDecisionPrompt] = useState('xin 1 dấu hiệu')
   const isThinking = decisionMotion === 'thinking'
   const hasConversation = decisionThread.length > 0
-  const decisionPrompt = 'xin 1 dấu hiệu'
 
   useEffect(() => {
     if (!threadRef.current) return
@@ -44,14 +44,24 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
 
           <form className="decision-chat-form" onSubmit={(event) => {
             event.preventDefault()
-            if (!isThinking) {
-              onAskDecision()
+            const normalizedPrompt = decisionPrompt.trim()
+
+            if (!isThinking && normalizedPrompt) {
+              onAskDecision(normalizedPrompt)
+              setDecisionPrompt('')
             }
           }}>
             <label htmlFor="decision-chat-input">Nhắn cho vị thần</label>
             <div className="decision-chat-input-row">
-              <input id="decision-chat-input" type="text" value={decisionPrompt} readOnly />
-              <button type="submit" aria-label="Gửi câu hỏi" disabled={isThinking}>
+              <input
+                id="decision-chat-input"
+                type="text"
+                value={decisionPrompt}
+                maxLength="120"
+                placeholder="xin 1 dấu hiệu"
+                onChange={(event) => setDecisionPrompt(event.target.value)}
+              />
+              <button type="submit" aria-label="Gửi câu hỏi" disabled={isThinking || !decisionPrompt.trim()}>
                 gửi
               </button>
             </div>

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrashIcon } from '../components/icons'
 
-const closedLetterImage = '/letter-closed.svg'
-const openLetterImage = '/letter-open.svg'
+const closedLetterImage = '/letter-closed.png'
+const openLetterImage = '/letter-open.png'
 const envelopeColorOptions = [
   { id: 'blue', label: 'Xanh', swatch: '#4b91cf', filter: 'none' },
   { id: 'pink', label: 'Hồng', swatch: '#d77f9c', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
@@ -38,6 +38,12 @@ async function readApiResponse(response) {
   }
 
   return response.json()
+}
+
+function preloadImage(src) {
+  const image = new Image()
+  image.decoding = 'async'
+  image.src = src
 }
 
 export function CommunitySection() {
@@ -77,23 +83,29 @@ export function CommunitySection() {
   const canWriteLetter = Boolean(user)
   const sentLettersPageCount = Math.max(1, Math.ceil(letters.length / sentLettersPerPage))
   const activeSentLettersPage = Math.min(sentLettersPage, sentLettersPageCount)
-  const paginatedSentLetters = letters.slice(
+  const paginatedSentLetters = useMemo(() => letters.slice(
     (activeSentLettersPage - 1) * sentLettersPerPage,
     activeSentLettersPage * sentLettersPerPage,
-  )
+  ), [activeSentLettersPage, letters])
+
+  useEffect(() => {
+    preloadImage(closedLetterImage)
+    preloadImage(openLetterImage)
+  }, [])
 
   useEffect(() => {
     let ignore = false
+    const controller = new AbortController()
 
     async function checkUser() {
       setIsCheckingUser(true)
 
       try {
-        const response = await fetch('/api/auth/me')
+        const response = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
         const data = await readApiResponse(response)
         if (!ignore) setUser(data.user || null)
-      } catch {
-        if (!ignore) setUser(null)
+      } catch (error) {
+        if (!ignore && error.name !== 'AbortError') setUser(null)
       } finally {
         if (!ignore) setIsCheckingUser(false)
       }
@@ -103,12 +115,12 @@ export function CommunitySection() {
       setIsLoadingCommunityLetters(true)
 
       try {
-        const response = await fetch('/api/community-letters')
+        const response = await fetch('/api/community-letters', { signal: controller.signal })
         const data = await readApiResponse(response)
         if (!response.ok) throw new Error(data.error)
         if (!ignore) setCommunityLetters(Array.isArray(data.letters) ? data.letters : [])
-      } catch {
-        if (!ignore) setCommunityLetters([])
+      } catch (error) {
+        if (!ignore && error.name !== 'AbortError') setCommunityLetters([])
       } finally {
         if (!ignore) setIsLoadingCommunityLetters(false)
       }
@@ -119,11 +131,13 @@ export function CommunitySection() {
 
     return () => {
       ignore = true
+      controller.abort()
     }
   }, [])
 
   useEffect(() => {
     let ignore = false
+    const controller = new AbortController()
 
     async function loadSentLetters() {
       if (!user) {
@@ -134,12 +148,12 @@ export function CommunitySection() {
       setIsLoadingSentLetters(true)
 
       try {
-        const response = await fetch('/api/community-letters/mine')
+        const response = await fetch('/api/community-letters/mine', { signal: controller.signal })
         const data = await readApiResponse(response)
         if (!response.ok) throw new Error(data.error)
         if (!ignore) setLetters(Array.isArray(data.letters) ? data.letters : [])
-      } catch {
-        if (!ignore) setLetters([])
+      } catch (error) {
+        if (!ignore && error.name !== 'AbortError') setLetters([])
       } finally {
         if (!ignore) setIsLoadingSentLetters(false)
       }
@@ -149,6 +163,7 @@ export function CommunitySection() {
 
     return () => {
       ignore = true
+      controller.abort()
     }
   }, [user])
 
@@ -350,7 +365,7 @@ export function CommunitySection() {
     )))
   }
 
-  const handleWriteNewLetter = () => {
+  const handleWriteNewLetter = useCallback(() => {
     setSendingLetter(null)
     setIsSentLetterOpen(false)
     setTitle('')
@@ -363,12 +378,12 @@ export function CommunitySection() {
       letterFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       titleInputRef.current?.focus({ preventScroll: true })
     })
-  }
+  }, [])
 
-  const updateDraggingLetter = (nextDrag) => {
+  const updateDraggingLetter = useCallback((nextDrag) => {
     draggingLetterRef.current = nextDrag
     setDraggingLetter(nextDrag)
-  }
+  }, [])
 
   const handleLetterDragStart = (letter, stackId, event) => {
     if (isSendingLetter || flyingLetter || event.button !== 0) return

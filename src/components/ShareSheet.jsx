@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CloseIcon, CopyIcon, DownloadIcon, FlipIcon, ResetIcon, RotateIcon, ShareIcon, UndoIcon } from './icons'
 
 const shareStickerOptions = [
@@ -69,6 +69,7 @@ export function ShareSheet({
   onRotateShareSticker,
   onSelectShareFrame,
   onTextColorChange,
+  onTransformShareSticker,
   onUndoShareSticker,
   placedShareStickers,
   quote,
@@ -78,6 +79,8 @@ export function ShareSheet({
   shareTextColors,
 }) {
   const previewRef = useRef(null)
+  const activeStickerPointersRef = useRef(new Map())
+  const stickerGestureRef = useRef(null)
   const [draggingStickerId, setDraggingStickerId] = useState(null)
   const [selectedStickerId, setSelectedStickerId] = useState(null)
 
@@ -93,6 +96,78 @@ export function ShareSheet({
       x: Math.min(92, Math.max(8, x)),
       y: Math.min(92, Math.max(8, y)),
     }
+  }
+
+  const getPreviewPointFromClient = (clientX, clientY) => {
+    const preview = previewRef.current
+    if (!preview) return null
+
+    const rect = preview.getBoundingClientRect()
+    const x = ((clientX - rect.left) / rect.width) * 100
+    const y = ((clientY - rect.top) / rect.height) * 100
+
+    return {
+      x: Math.min(92, Math.max(8, x)),
+      y: Math.min(92, Math.max(8, y)),
+    }
+  }
+
+  const getPointerCenter = (pointers) => ({
+    clientX: pointers.reduce((sum, pointer) => sum + pointer.clientX, 0) / pointers.length,
+    clientY: pointers.reduce((sum, pointer) => sum + pointer.clientY, 0) / pointers.length,
+  })
+
+  const getPointerDistance = ([firstPointer, secondPointer]) => Math.hypot(
+    secondPointer.clientX - firstPointer.clientX,
+    secondPointer.clientY - firstPointer.clientY,
+  )
+
+  const getPointerAngle = ([firstPointer, secondPointer]) => (
+    Math.atan2(secondPointer.clientY - firstPointer.clientY, secondPointer.clientX - firstPointer.clientX) * 180 / Math.PI
+  )
+
+  const beginStickerGesture = (sticker, pointers) => {
+    if (!pointers.length) return
+
+    stickerGestureRef.current = {
+      angle: pointers.length > 1 ? getPointerAngle(pointers) : 0,
+      distance: pointers.length > 1 ? getPointerDistance(pointers) : 0,
+      pointerCount: pointers.length,
+      rotation: sticker.rotation || 0,
+      size: sticker.size || 22,
+      stickerId: sticker.id,
+      startCenter: getPointerCenter(pointers),
+      startX: sticker.x,
+      startY: sticker.y,
+    }
+  }
+
+  const updateStickerGesture = (stickerId) => {
+    const pointers = Array.from(activeStickerPointersRef.current.values())
+    if (!pointers.length) return
+
+    const sticker = placedShareStickers.find((item) => item.id === stickerId)
+    if (!sticker) return
+
+    const gesture = stickerGestureRef.current
+    if (!gesture || gesture.stickerId !== stickerId || gesture.pointerCount !== pointers.length) {
+      beginStickerGesture(sticker, pointers)
+      return
+    }
+
+    const center = getPointerCenter(pointers)
+    const point = getPreviewPointFromClient(center.clientX, center.clientY)
+    const nextTransform = point ? { x: point.x, y: point.y } : {}
+
+    if (pointers.length > 1 && gesture.distance > 0) {
+      const nextDistance = getPointerDistance(pointers)
+      const nextAngle = getPointerAngle(pointers)
+
+      nextTransform.size = gesture.size * (nextDistance / gesture.distance)
+      nextTransform.rotation = gesture.rotation + nextAngle - gesture.angle
+    }
+
+    onTransformShareSticker(stickerId, nextTransform)
   }
 
   const handleStickerDragStart = (event, sticker) => {
@@ -115,15 +190,24 @@ export function ShareSheet({
     }
   }
 
-  const handlePlacedStickerPointerDown = (event, stickerId) => {
+  const handlePlacedStickerPointerDown = (event, sticker) => {
     event.preventDefault()
     event.currentTarget.setPointerCapture?.(event.pointerId)
+    const stickerId = sticker.id
+    const pointerCount = activeStickerPointersRef.current.size
     setDraggingStickerId(stickerId)
     setSelectedStickerId(stickerId)
-    onBeginMoveShareSticker()
+    if (!pointerCount) onBeginMoveShareSticker()
+    activeStickerPointersRef.current.set(event.pointerId, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+    })
+    beginStickerGesture(sticker, Array.from(activeStickerPointersRef.current.values()))
 
     const point = getPreviewPoint(event)
-    if (point) onMoveShareSticker(stickerId, point)
+    if (point && activeStickerPointersRef.current.size === 1) onMoveShareSticker(stickerId, point)
   }
 
   const handleRemovePlacedSticker = (stickerId) => {
@@ -134,12 +218,27 @@ export function ShareSheet({
   const handlePlacedStickerPointerMove = (event) => {
     if (!draggingStickerId) return
 
-    const point = getPreviewPoint(event)
-    if (point) onMoveShareSticker(draggingStickerId, point)
+    if (!activeStickerPointersRef.current.has(event.pointerId)) return
+
+    activeStickerPointersRef.current.set(event.pointerId, {
+      ...activeStickerPointersRef.current.get(event.pointerId),
+      clientX: event.clientX,
+      clientY: event.clientY,
+    })
+    updateStickerGesture(draggingStickerId)
   }
 
-  const handlePlacedStickerPointerUp = () => {
-    setDraggingStickerId(null)
+  const handlePlacedStickerPointerUp = (event) => {
+    activeStickerPointersRef.current.delete(event.pointerId)
+
+    if (!activeStickerPointersRef.current.size) {
+      stickerGestureRef.current = null
+      setDraggingStickerId(null)
+      return
+    }
+
+    const sticker = placedShareStickers.find((item) => item.id === draggingStickerId)
+    if (sticker) beginStickerGesture(sticker, Array.from(activeStickerPointersRef.current.values()))
   }
 
   const renderStickerTray = (stickers, className) => (
@@ -165,6 +264,13 @@ export function ShareSheet({
   const rightStickerOptions = shareStickerOptions.slice(stickerColumnSplit)
   const selectedSticker = placedShareStickers.find((sticker) => sticker.id === selectedStickerId)
   const hasStickerTools = Boolean(selectedSticker || placedShareStickers.length || shareStickerHistoryCount)
+
+  useEffect(() => {
+    if (isOpen) return
+
+    activeStickerPointersRef.current.clear()
+    stickerGestureRef.current = null
+  }, [isOpen])
 
   const handleSelectNextSticker = () => {
     if (!placedShareStickers.length) return
@@ -212,7 +318,7 @@ export function ShareSheet({
                   aria-pressed={selectedStickerId === sticker.id}
                   onClick={() => setSelectedStickerId(sticker.id)}
                   onDoubleClick={() => handleRemovePlacedSticker(sticker.id)}
-                  onPointerDown={(event) => handlePlacedStickerPointerDown(event, sticker.id)}
+                  onPointerDown={(event) => handlePlacedStickerPointerDown(event, sticker)}
                   onPointerMove={handlePlacedStickerPointerMove}
                   onPointerUp={handlePlacedStickerPointerUp}
                   onPointerCancel={handlePlacedStickerPointerUp}
