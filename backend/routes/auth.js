@@ -8,6 +8,7 @@ const router = Router()
 const scrypt = promisify(crypto.scrypt)
 const sessionCookieName = 'love_yourself_session'
 const sessionDuration = 7 * 24 * 60 * 60 * 1000
+const returnStreakMilestones = [1, 2, 3, 4, 5, 6, 7]
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -15,6 +16,77 @@ function normalizeEmail(email) {
 
 function normalizeGender(gender) {
   return ['male', 'female', 'other'].includes(gender) ? gender : ''
+}
+
+function getTodayKey() {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const parts = formatter.formatToParts(new Date()).reduce((value, part) => ({
+    ...value,
+    [part.type]: part.value,
+  }), {})
+
+  return `${parts.year}-${parts.month}-${parts.day}`
+}
+
+function getDateFromKey(dateKey) {
+  const [year, month, day] = String(dateKey || '').split('-').map(Number)
+  if (!year || !month || !day) return null
+
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+function getPreviousDateKey(dateKey) {
+  const date = getDateFromKey(dateKey)
+  if (!date) return ''
+
+  date.setUTCDate(date.getUTCDate() - 1)
+  return date.toISOString().slice(0, 10)
+}
+
+function normalizeVisitedDates(dates) {
+  return [...new Set((Array.isArray(dates) ? dates : [])
+    .map((date) => String(date || '').trim())
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)))]
+    .sort()
+}
+
+function getReturnStreakFromDates(visitedDates, todayKey = getTodayKey()) {
+  const visitedDateSet = new Set(normalizeVisitedDates(visitedDates))
+  visitedDateSet.add(todayKey)
+
+  let currentStreak = 0
+  let cursorKey = todayKey
+
+  while (visitedDateSet.has(cursorKey)) {
+    currentStreak += 1
+    cursorKey = getPreviousDateKey(cursorKey)
+  }
+
+  const sortedDates = [...visitedDateSet].sort()
+
+  return {
+    currentStreak,
+    lastVisitDate: todayKey,
+    milestones: returnStreakMilestones,
+    visitedDates: sortedDates,
+  }
+}
+
+function normalizeReturnStreak(streak) {
+  const visitedDates = normalizeVisitedDates(streak?.visitedDates)
+  const lastVisitDate = String(streak?.lastVisitDate || '')
+
+  return {
+    currentStreak: Math.max(0, Number(streak?.currentStreak || 0)),
+    lastVisitDate,
+    milestones: returnStreakMilestones,
+    visitedDates: visitedDates.length ? visitedDates : normalizeVisitedDates([lastVisitDate]),
+  }
 }
 
 function getCookie(req, name) {
@@ -75,7 +147,7 @@ function readSession(req) {
 export async function getAuthenticatedUser(req) {
   const session = readSession(req)
   return session
-    ? User.findById(session.userId).select('name email role age gender ageGroup').lean()
+    ? User.findById(session.userId).select('name email role age gender ageGroup returnStreak').lean()
     : null
 }
 
@@ -120,6 +192,7 @@ function publicUser(user) {
     age: user.age || null,
     gender: user.gender || '',
     ageGroup: user.ageGroup || '',
+    returnStreak: normalizeReturnStreak(user.returnStreak),
   }
 }
 
@@ -196,6 +269,36 @@ router.post('/login', async (req, res) => {
 router.get('/me', async (req, res) => {
   const user = await getAuthenticatedUser(req)
   res.json({ user: user ? publicUser(user) : null })
+})
+
+router.post('/streak/visit', async (req, res) => {
+  const session = readSession(req)
+  if (!session) {
+    res.status(401).json({ error: 'Bạn cần đăng nhập để lưu streak.' })
+    return
+  }
+
+  const user = await User.findById(session.userId).select('returnStreak')
+  if (!user) {
+    res.status(401).json({ error: 'Phiên đăng nhập không còn hợp lệ.' })
+    return
+  }
+
+  const currentStreak = normalizeReturnStreak(user.returnStreak)
+  const localStreak = normalizeReturnStreak(req.body?.streak)
+  const nextStreak = getReturnStreakFromDates([
+    ...currentStreak.visitedDates,
+    ...localStreak.visitedDates,
+  ])
+
+  user.returnStreak = {
+    currentStreak: nextStreak.currentStreak,
+    lastVisitDate: nextStreak.lastVisitDate,
+    visitedDates: nextStreak.visitedDates,
+  }
+
+  await user.save()
+  res.json({ streak: nextStreak })
 })
 
 router.patch('/me', async (req, res) => {

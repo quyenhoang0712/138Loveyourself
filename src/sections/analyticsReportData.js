@@ -34,6 +34,7 @@ export const genderLabels = {
 export const roomLabels = {
   'card-room': 'Phòng thiệp',
   community: 'Cộng đồng',
+  'diary-room': 'Phòng nhật ký',
   'focus-room': 'Phòng tập trung',
   'healing-room': 'Phòng chữa lành',
   home: 'Trang chính',

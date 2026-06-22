@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SiteHeader } from '../components/SiteHeader'
 import {
+  dailyJourneyChangedEventName,
+  getDailyJourney,
   getReturnStreak,
   returnStreakChangedEventName,
+  updateReturnStreak,
 } from '../utils/analytics'
 
 const authChangedEventName = 'love-yourself-auth-changed'
@@ -88,6 +91,15 @@ function getMonthCalendarDays(year, month) {
   return cells
 }
 
+function getReadableDate(value) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 export function UserProfileReport() {
   const [user, setUser] = useState(null)
   const [form, setForm] = useState(getProfileForm)
@@ -99,7 +111,12 @@ export function UserProfileReport() {
   const [isSavingPassword, setIsSavingPassword] = useState(false)
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false)
   const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [activePegboardPopup, setActivePegboardPopup] = useState(null)
   const [returnStreak, setReturnStreak] = useState(getReturnStreak)
+  const [dailyJourney, setDailyJourney] = useState(getDailyJourney)
+  const [totalFocusMinutes, setTotalFocusMinutes] = useState(0)
+  const [writtenLetters, setWrittenLetters] = useState([])
 
   useEffect(() => {
     let ignore = false
@@ -112,6 +129,20 @@ export function UserProfileReport() {
 
         setUser(data.user || null)
         setForm(getProfileForm(data.user))
+
+        if (data.user?.returnStreak) {
+          setReturnStreak(data.user.returnStreak)
+        }
+
+        if (data.user) {
+          updateReturnStreak()
+            .then((streak) => {
+              if (!ignore) setReturnStreak(streak)
+            })
+            .catch(() => {
+              if (!ignore) setReturnStreak(getReturnStreak())
+            })
+        }
       })
       .catch((error) => {
         if (!ignore && error.name !== 'AbortError') setUser(null)
@@ -126,6 +157,48 @@ export function UserProfileReport() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!user) return undefined
+
+    let ignore = false
+    const controller = new AbortController()
+
+    fetch('/api/analytics/focus-total', { credentials: 'include', signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!ignore) setTotalFocusMinutes(Number(data?.totalFocusMinutes || 0))
+      })
+      .catch(() => {
+        if (!ignore) setTotalFocusMinutes(dailyJourney.focusMinutes)
+      })
+
+    return () => {
+      ignore = true
+      controller.abort()
+    }
+  }, [dailyJourney.focusMinutes, user])
+
+  useEffect(() => {
+    if (!user) return undefined
+
+    let ignore = false
+    const controller = new AbortController()
+
+    fetch('/api/community-letters/mine', { credentials: 'include', signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!ignore) setWrittenLetters(Array.isArray(data?.letters) ? data.letters.slice(0, 3) : [])
+      })
+      .catch(() => {
+        if (!ignore) setWrittenLetters([])
+      })
+
+    return () => {
+      ignore = true
+      controller.abort()
+    }
+  }, [user])
+
   const profileName = user?.name || 'Bạn'
   const profileAge = user?.age ? `${user.age} tuổi` : 'Chưa cập nhật'
   const profileGender = getGenderLabel(user?.gender)
@@ -134,6 +207,23 @@ export function UserProfileReport() {
   const todayKey = getCalendarDateKey(calendarMonth.year, calendarMonth.month, new Date().getDate())
   const visitedDateSet = new Set(returnStreak.visitedDates)
   const totalVisitedDays = returnStreak.visitedDates.length
+  const dailyTasks = [
+    { isComplete: dailyJourney.quoteOpened, label: 'Mở một lá thiệp' },
+    { isComplete: dailyJourney.focusMinutes > 0, label: 'Bắt đầu tập trung' },
+    { isComplete: dailyJourney.musicListened, label: 'Ghé phòng âm thanh' },
+    { isComplete: dailyJourney.communityReadCount > 0, label: 'Đọc một lời nhắn cộng đồng' },
+    { isComplete: dailyJourney.communityWrittenCount > 0, label: 'Viết một lời nhắn' },
+    { isComplete: dailyJourney.relaxationPlayed, label: 'Ghé phòng chữa lành' },
+  ]
+  const isDailyLampLit = dailyTasks.every((task) => task.isComplete)
+  const displayedFocusMinutes = user ? totalFocusMinutes : 0
+  const displayedLetters = user ? writtenLetters : []
+  const focusHours = Math.floor(displayedFocusMinutes / 60)
+  const focusRemainingMinutes = displayedFocusMinutes % 60
+  const focusTimeLabel = focusHours > 0
+    ? `${focusHours} giờ ${focusRemainingMinutes} phút`
+    : `${focusRemainingMinutes} phút`
+  const stopwatchLabel = `${String(focusHours).padStart(2, '0')}:${String(focusRemainingMinutes).padStart(2, '0')}`
 
   useEffect(() => {
     const handleReturnStreakChanged = (event) => {
@@ -142,6 +232,15 @@ export function UserProfileReport() {
 
     window.addEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
     return () => window.removeEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
+  }, [])
+
+  useEffect(() => {
+    const handleDailyJourneyChanged = (event) => {
+      setDailyJourney(event.detail?.journey || getDailyJourney())
+    }
+
+    window.addEventListener(dailyJourneyChangedEventName, handleDailyJourneyChanged)
+    return () => window.removeEventListener(dailyJourneyChangedEventName, handleDailyJourneyChanged)
   }, [])
 
   const closeProfileEditor = useCallback(() => {
@@ -173,6 +272,18 @@ export function UserProfileReport() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [closeProfileEditor, isPasswordEditorOpen, isProfileEditorOpen, isSavingPassword, isSavingProfile])
 
+  useEffect(() => {
+    if (!isCalendarOpen && !activePegboardPopup) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsCalendarOpen(false)
+      if (event.key === 'Escape') setActivePegboardPopup(null)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activePegboardPopup, isCalendarOpen])
+
   const openProfileEditor = () => {
     setForm(getProfileForm(user))
     setMessage(null)
@@ -180,6 +291,17 @@ export function UserProfileReport() {
     setPasswordForm({ password: '', confirmPassword: '' })
     setIsPasswordEditorOpen(false)
     setIsProfileEditorOpen(true)
+  }
+
+  const openPegboardPopup = (popupName) => {
+    setActivePegboardPopup(popupName)
+  }
+
+  const handlePegboardPopupKeyDown = (event, popupName) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+
+    event.preventDefault()
+    openPegboardPopup(popupName)
   }
 
   const handleFieldChange = (field, value) => {
@@ -292,6 +414,100 @@ export function UserProfileReport() {
     }
   }
 
+  const renderCalendarContent = () => (
+    <>
+      <p>Lịch sử ghé thăm</p>
+      <h2>{calendarMonth.label}</h2>
+
+      <div className="profile-calendar-grid" aria-label={`Lịch ${calendarMonth.label}`}>
+        {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((weekday) => (
+          <span className="profile-calendar-weekday" key={weekday}>{weekday}</span>
+        ))}
+        {calendarDays.map((date) => {
+          const isVisitedDate = visitedDateSet.has(date.key)
+          const isMissedDate = Boolean(date.day) && date.key < todayKey && !isVisitedDate
+
+          return (
+            <span
+              className={[
+                'profile-calendar-day',
+                date.day ? '' : 'is-empty',
+                isVisitedDate ? 'is-visited' : '',
+                isMissedDate ? 'is-missed' : '',
+              ].filter(Boolean).join(' ')}
+              key={date.key}
+            >
+              {date.day ? <span>{date.day}</span> : null}
+              {isVisitedDate ? <em aria-hidden="true">✓</em> : null}
+            </span>
+          )
+        })}
+      </div>
+
+      <div className="profile-calendar-summary">
+        <span>Tổng thời gian đồng hành</span>
+        <strong>Bạn đã đồng hành cùng chúng mình {totalVisitedDays} ngày.</strong>
+      </div>
+    </>
+  )
+
+  const renderPegboardPopupContent = () => {
+    if (activePegboardPopup === 'daily-tasks') {
+      return (
+        <>
+          <p>Nhiệm vụ hằng ngày</p>
+          <h2>{isDailyLampLit ? 'Đèn đã bật rồi.' : 'Làm nhiệm vụ để bật đèn'}</h2>
+          <div className="profile-pegboard-popup-task-list">
+            {dailyTasks.map((task) => (
+              <span className={task.isComplete ? 'is-complete' : ''} key={task.label}>
+                {task.label}
+              </span>
+            ))}
+          </div>
+        </>
+      )
+    }
+
+    if (activePegboardPopup === 'focus-clock') {
+      return (
+        <>
+          <p>Đồng hồ bấm giờ</p>
+          <h2>Bạn đã tập trung {focusTimeLabel}</h2>
+          <div className="profile-pegboard-popup-focus">
+            <strong>{stopwatchLabel}</strong>
+            <span>Tổng từ lúc tạo tài khoản đến giờ.</span>
+          </div>
+        </>
+      )
+    }
+
+    if (activePegboardPopup === 'letters') {
+      return (
+        <>
+          <p>Thư bạn đã viết</p>
+          <h2>{displayedLetters.length ? `${displayedLetters.length} lá thư gần nhất` : 'Chưa có lá thư nào'}</h2>
+          <div className="profile-pegboard-popup-letter-list">
+            {displayedLetters.length ? displayedLetters.map((letter) => (
+              <article key={letter.id}>
+                <span>{getReadableDate(letter.createdAt) || 'Một ngày dịu dàng'}</span>
+                <h3>{letter.title}</h3>
+                <p>{letter.body}</p>
+                <small>Gửi tới {letter.recipient || 'Cộng đồng'}</small>
+              </article>
+            )) : (
+              <article>
+                <h3>Hộp thư còn trống</h3>
+                <p>Những lá thư bạn gửi ở phòng cộng đồng sẽ nằm ở đây.</p>
+              </article>
+            )}
+          </div>
+        </>
+      )
+    }
+
+    return null
+  }
+
   return (
     <section className="profile-report" aria-labelledby="profile-room-title">
       <div className="profile-hero-bar">
@@ -299,18 +515,13 @@ export function UserProfileReport() {
       </div>
 
       <div className="profile-room-content">
-        <div className="profile-room-hero">
-          <p className="profile-room-eyebrow">{isLoadingUser ? 'Đang tải hồ sơ' : 'Hồ sơ cá nhân'}</p>
-          <h1 id="profile-room-title">Profile của {profileName}</h1>
-          <span className="profile-room-intro">
-            Mỗi lần bạn ghé thăm, lắng nghe một bản nhạc, mở một lá thư, tập trung học tập hay để lại một lời nhắn cho cộng đồng, nơi này sẽ ghi nhớ tất cả.
-            Đây không chỉ là nơi lưu lại những con số, mà còn là nơi lưu giữ hành trình của bạn: những ngày kiên trì, những khoảnh khắc bình yên và những bước tiến nhỏ mà đôi khi chính bạn cũng quên mất.
-            Hãy thỉnh thoảng quay lại để nhìn xem mình đã đi được bao xa nhé.
-          </span>
-          {!user && !isLoadingUser ? (
-            <a href="/auth">Đăng nhập để xem profile</a>
-          ) : null}
-        </div>
+        {!user ? (
+          <div className="profile-login-card">
+            <p>{isLoadingUser ? 'Đang tải hồ sơ' : 'Hồ sơ cá nhân'}</p>
+            <h1 id="profile-room-title">{isLoadingUser ? 'Đợi mình một chút nha.' : 'Bạn chưa đăng nhập.'}</h1>
+            {!isLoadingUser ? <a href="/auth">Đăng nhập để xem profile</a> : null}
+          </div>
+        ) : null}
 
         {user ? (
           <div className="profile-shell">
@@ -335,40 +546,128 @@ export function UserProfileReport() {
               </button>
             </aside>
 
-            <aside className="profile-calendar-card" aria-label="Lịch sử sử dụng web">
-              <p>Lịch sử ghé thăm</p>
-              <h2>{calendarMonth.label}</h2>
+            <section className="profile-pegboard" aria-label="Bảng pegboard">
+              <aside
+                className={`profile-desk-lamp-box ${isDailyLampLit ? 'is-lit' : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-label={isDailyLampLit ? 'Đèn nhiệm vụ hằng ngày đã bật' : 'Đèn nhiệm vụ hằng ngày chưa bật'}
+                onClick={() => openPegboardPopup('daily-tasks')}
+                onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'daily-tasks')}
+              >
+                <span className="profile-desk-lamp" />
+              </aside>
 
-              <div className="profile-calendar-grid" aria-label={`Lịch ${calendarMonth.label}`}>
-                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((weekday) => (
-                  <span className="profile-calendar-weekday" key={weekday}>{weekday}</span>
-                ))}
-                {calendarDays.map((date) => {
-                  const isVisitedDate = visitedDateSet.has(date.key)
-                  const isMissedDate = Boolean(date.day) && date.key < todayKey && !isVisitedDate
+              <aside
+                className="profile-focus-clock-box"
+                role="button"
+                tabIndex={0}
+                aria-label={`Đồng hồ bấm giờ ghi nhận ${focusTimeLabel}`}
+                onClick={() => openPegboardPopup('focus-clock')}
+                onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'focus-clock')}
+              >
+                <div className="profile-focus-clock">
+                  <strong>{stopwatchLabel}</strong>
+                  <span />
+                </div>
+                <p className="profile-focus-clock-caption">Bạn đã tập trung {focusTimeLabel}</p>
+              </aside>
 
-                  return (
-                    <span
-                      className={[
-                        'profile-calendar-day',
-                        date.day ? '' : 'is-empty',
-                        isVisitedDate ? 'is-visited' : '',
-                        isMissedDate ? 'is-missed' : '',
-                      ].filter(Boolean).join(' ')}
-                      key={date.key}
-                    >
-                      {date.day ? <span>{date.day}</span> : null}
-                      {isVisitedDate ? <em aria-hidden="true">✓</em> : null}
-                    </span>
-                  )
-                })}
+              <aside className="profile-pegboard-whiteboard" aria-label="Bảng trắng" />
+
+              <aside
+                className="profile-calendar-card profile-calendar-card-pegboard"
+                role="button"
+                tabIndex={0}
+                aria-label="Phóng to lịch sử ghé thăm"
+                onClick={() => setIsCalendarOpen(true)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setIsCalendarOpen(true)
+                  }
+                }}
+              >
+                {renderCalendarContent()}
+              </aside>
+
+              {displayedLetters.length ? (
+                <aside
+                  className="profile-letter-holder"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Thư bạn đã viết"
+                  onClick={() => openPegboardPopup('letters')}
+                  onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'letters')}
+                >
+                  <p>Thư bạn đã viết</p>
+                  <div className="profile-letter-pocket">
+                    {displayedLetters.map((letter) => (
+                      <article className="profile-letter-card" key={letter.id}>
+                        <img src="/letter-closed.png" alt="" />
+                        <strong>{letter.title}</strong>
+                        <small>{letter.recipient || 'Cộng đồng'}</small>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="profile-letter-pocket-front" aria-hidden="true" />
+                </aside>
+              ) : null}
+            </section>
+          </div>
+        ) : null}
+
+        {user && isCalendarOpen ? (
+          <div className="profile-calendar-backdrop" role="presentation" onMouseDown={() => setIsCalendarOpen(false)}>
+            <div
+              className="profile-calendar-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-calendar-dialog-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <button
+                className="profile-calendar-close"
+                type="button"
+                aria-label="Đóng lịch"
+                onClick={() => setIsCalendarOpen(false)}
+              >
+                ×
+              </button>
+              <div className="profile-calendar-card profile-calendar-card-expanded">
+                <span className="profile-calendar-dialog-title" id="profile-calendar-dialog-title">
+                  Lịch sử ghé thăm
+                </span>
+                {renderCalendarContent()}
               </div>
+            </div>
+          </div>
+        ) : null}
 
-              <div className="profile-calendar-summary">
-                <span>Tổng thời gian đồng hành</span>
-                <strong>Bạn đã đồng hành cùng chúng mình {totalVisitedDays} ngày.</strong>
-              </div>
-            </aside>
+        {user && activePegboardPopup ? (
+          <div className="profile-calendar-backdrop" role="presentation" onMouseDown={() => setActivePegboardPopup(null)}>
+            <div
+              className="profile-calendar-dialog profile-pegboard-popup-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-pegboard-popup-title"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <button
+                className="profile-calendar-close"
+                type="button"
+                aria-label="Đóng nội dung pegboard"
+                onClick={() => setActivePegboardPopup(null)}
+              >
+                ×
+              </button>
+              <section className="profile-pegboard-popup-card">
+                <span className="profile-calendar-dialog-title" id="profile-pegboard-popup-title">
+                  Nội dung pegboard
+                </span>
+                {renderPegboardPopupContent()}
+              </section>
+            </div>
           </div>
         ) : null}
 

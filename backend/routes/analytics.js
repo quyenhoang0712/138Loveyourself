@@ -10,6 +10,7 @@ import { applySessionActivity, getAgeGroup, getDateRange } from '../utils/analyt
 const router = Router()
 
 const allowedRooms = new Set(['home', 'card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community'])
+const iceCubeSeconds = 30 * 60
 const allowedEvents = new Set([
   'profile_saved',
   'session_start',
@@ -376,6 +377,32 @@ router.get('/me-report', requireUser, async (req, res) => {
     roomDurations,
     stoppedRooms,
     events: topEvents,
+  })
+})
+
+router.get('/focus-total', requireUser, async (req, res) => {
+  const userId = String(req.user._id)
+  const [focusTotal] = await AnalyticsEvent.aggregate([
+    {
+      $match: {
+        userId,
+        type: 'timer_start',
+        room: 'focus-room',
+        'metadata.phase': 'focus',
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalIceCubes: { $sum: { $toDouble: { $ifNull: ['$metadata.iceCubeCount', 0] } } },
+      },
+    },
+  ])
+  const totalFocusSeconds = Math.round(Number(focusTotal?.totalIceCubes || 0) * iceCubeSeconds)
+
+  res.json({
+    totalFocusMinutes: Math.round(totalFocusSeconds / 60),
+    totalFocusSeconds,
   })
 })
 

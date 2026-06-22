@@ -15,6 +15,7 @@ import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
 import { CommunitySection } from '../sections/CommunitySection'
 import { DecisionSection } from '../sections/DecisionSection'
+import { DiarySection } from '../sections/DiarySection'
 import { FocusSection } from '../sections/FocusSection'
 import { HealingSection } from '../sections/HealingSection'
 import { IntroVideoSection } from '../sections/IntroVideoSection'
@@ -36,7 +37,7 @@ import {
   updateReturnStreak,
 } from '../utils/analytics'
 
-const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
+const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community', 'diary-room']
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
@@ -53,6 +54,7 @@ const roomSwitcherLinks = [
   { href: '#healing-room', label: 'Chữa lành', room: 'healing-room', color: '#4789C8' },
   { href: '#sound-room', label: 'Âm thanh', room: 'sound-room', color: '#EBAAB4' },
   { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' },
+  { href: '#diary-room', label: 'Nhật ký', room: 'diary-room', color: '#F8DB8E' },
 ]
 const homePriorityAssets = [
   '/Vector.gif',
@@ -158,20 +160,49 @@ function preloadImage(src) {
   image.src = src
 }
 
+function AnimatedTitle({ children, id }) {
+  let characterIndex = 0
+  const text = String(children)
+
+  return (
+    <h2 aria-label={text} id={id}>
+      {text.split(' ').map((word, wordIndex) => (
+        <span className="room-title-word" key={`${word}-${wordIndex}`}>
+          {Array.from(word).map((character) => {
+            const currentCharacterIndex = characterIndex
+            characterIndex += 1
+
+            return (
+              <span
+                aria-hidden="true"
+                className="room-title-character"
+                key={`${character}-${currentCharacterIndex}`}
+                style={{ '--title-character-index': currentCharacterIndex }}
+              >
+                {character}
+              </span>
+            )
+          })}
+        </span>
+      ))}
+    </h2>
+  )
+}
+
 function CommunityIntroSection({ onCommunityNavigate }) {
   const communityLink = { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' }
 
   return (
     <section className="home-community-intro scroll-pop" aria-labelledby="home-community-title">
       <div className="home-community-copy">
-        <p>Trang cộng đồng</p>
-        <h2 id="home-community-title">Một góc để mọi người cùng ở lại với nhau.</h2>
+        <p>Phòng cộng đồng</p>
+        <AnimatedTitle id="home-community-title">Một góc để mọi người cùng ở lại với nhau.</AnimatedTitle>
         <span>
           Đây sẽ là nơi gom những chia sẻ nhẹ nhàng, lời nhắn và câu chuyện từ cộng đồng Love Yourself.
           Trước mắt mình mở sẵn cánh cửa, phần nội dung sẽ được thêm sau.
         </span>
         <button type="button" onClick={() => onCommunityNavigate(communityLink)}>
-          Vào trang cộng đồng
+          Vào  cộng đồng
         </button>
       </div>
       <img className="home-community-icon" src="/PNG/giay.png" alt="" aria-hidden="true" />
@@ -179,13 +210,32 @@ function CommunityIntroSection({ onCommunityNavigate }) {
   )
 }
 
+function DiaryIntroSection({ onDiaryNavigate }) {
+  const diaryLink = { href: '#diary-room', label: 'Nhật ký', room: 'diary-room', color: '#F8DB8E' }
+
+  return (
+    <section className="home-community-intro home-diary-intro scroll-pop" aria-labelledby="home-diary-title">
+      <img className="home-community-icon home-diary-icon" src="/PNG/note.png" alt="" aria-hidden="true" />
+      <div className="home-community-copy">
+        <p>Phòng nhật ký</p>
+        <AnimatedTitle id="home-diary-title">Một căn phòng mới để giữ lại những dòng riêng.</AnimatedTitle>
+        <span>
+          Phòng nhật ký sẽ được dựng sau. Trước mắt mình để căn phòng này trống đã.
+        </span>
+        <button type="button" onClick={() => onDiaryNavigate(diaryLink)}>
+          Vào phòng nhật ký
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function OfficialSiteIntroSection() {
   return (
     <section className="community-official-site scroll-pop" aria-labelledby="official-site-title">
-      <img className="official-site-art" src="/PNG/ao-khan-len.png" alt="" aria-hidden="true" />
       <div className="official-site-copy">
         <p>Web chính của 138knitwear</p>
-        <h2 id="official-site-title">Ghé 138knitwear để xem những collection mới nhất.</h2>
+        <AnimatedTitle id="official-site-title">Ghé 138knitwear để xem những collection mới nhất.</AnimatedTitle>
         <span>
           Ở đó người tình có thể xem các sản phẩm knitwear, phụ kiện, lookbook và những tin tức mới từ 138.
           Còn góc Love Yourself này là nơi mình ở lại lâu hơn với cảm xúc, lời nhắn và cộng đồng.
@@ -196,6 +246,7 @@ function OfficialSiteIntroSection() {
           </a>
         </div>
       </div>
+      <img className="official-site-art" src="/PNG/ao-khan-len.png" alt="" aria-hidden="true" />
     </section>
   )
 }
@@ -339,10 +390,6 @@ function ReturnStreakPopup({ isOpen, onClose, streak }) {
         aria-labelledby="return-streak-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button className="return-streak-close" type="button" aria-label="Đóng chuỗi ngày quay lại" onClick={onClose}>
-          ×
-        </button>
-
         <div className="return-streak-copy">
           <p>Streak</p>
           <h2 id="return-streak-title">Chuỗi ngày quay lại</h2>
@@ -357,6 +404,10 @@ function ReturnStreakPopup({ isOpen, onClose, streak }) {
             </div>
           ))}
         </div>
+
+        <button className="return-streak-close" type="button" onClick={onClose}>
+          Đồng ý
+        </button>
       </section>
     </div>
   )
@@ -584,7 +635,9 @@ export function AppLayout({ state }) {
     const handleAuthChanged = (event) => {
       const userProfile = event.detail?.user
       if (userProfile) {
-        handleReturnStreakPopupOpen()
+        updateReturnStreak()
+          .then(() => handleReturnStreakPopupOpen())
+          .catch(() => handleReturnStreakPopupOpen())
       }
 
       const hasCompleteUserProfile = Number.isInteger(userProfile?.age) && Boolean(userProfile?.gender)
@@ -652,14 +705,15 @@ export function AppLayout({ state }) {
   useEffect(() => {
     let observer
     const animationFrame = window.requestAnimationFrame(() => {
-      const animatedElements = document.querySelectorAll('.scroll-pop:not(.is-visible)')
+      const animatedElements = document.querySelectorAll('.scroll-pop')
 
       observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('is-visible')
-              observer.unobserve(entry.target)
+            } else {
+              entry.target.classList.remove('is-visible')
             }
           })
         },
@@ -943,6 +997,15 @@ export function AppLayout({ state }) {
     'sound-room': soundRoom,
     'play-room': soundRoom,
     community: <CommunitySection />,
+    'diary-room': (
+      <RoomSection
+        eyebrow="Phòng nhật ký"
+        id="diary-room"
+        title="Phòng nhật ký"
+      >
+        <DiarySection />
+      </RoomSection>
+    ),
   }[activeRoom]
 
   return (
@@ -991,6 +1054,7 @@ export function AppLayout({ state }) {
           <div className="home-roll-stack">
             <WheelNavSection onRoomNavigate={handleRoomNavigate} />
             <CommunityIntroSection onCommunityNavigate={handleRoomNavigate} />
+            <DiaryIntroSection onDiaryNavigate={handleRoomNavigate} />
             <OfficialSiteIntroSection />
           </div>
         </>

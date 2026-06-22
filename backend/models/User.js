@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema(
     age: { type: Number, min: 1, max: 120, default: null },
     gender: { type: String, enum: ['male', 'female', 'other', ''], default: '', index: true },
     ageGroup: { type: String, default: '', index: true },
+    returnStreak: {
+      currentStreak: { type: Number, min: 0, default: 0 },
+      lastVisitDate: { type: String, default: '' },
+      visitedDates: { type: [String], default: [] },
+    },
     passwordHash: { type: String, required: true, select: false },
     passwordSalt: { type: String, required: true, select: false },
     lastLoginAt: { type: Date, default: Date.now },

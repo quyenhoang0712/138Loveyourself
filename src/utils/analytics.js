@@ -91,9 +91,7 @@ export function getReturnStreak() {
   }
 }
 
-export function updateReturnStreak() {
-  if (typeof window === 'undefined') return getReturnStreak()
-
+function getNextLocalReturnStreak() {
   const todayKey = getTodayKey()
   const currentStreak = getReturnStreak()
   const dayDiff = getDayDiff(currentStreak.lastVisitDate, todayKey)
@@ -109,20 +107,49 @@ export function updateReturnStreak() {
     nextStreak = 1
   }
 
-  const nextValue = {
+  return {
     currentStreak: nextStreak,
     lastVisitDate: todayKey,
     milestones: returnStreakMilestones,
     visitedDates: [...new Set([...currentStreak.visitedDates, todayKey])].sort(),
   }
+}
 
+function storeReturnStreak(streak) {
   try {
-    window.localStorage.setItem(returnStreakStorageKey, JSON.stringify(nextValue))
-    window.dispatchEvent(new CustomEvent(returnStreakChangedEventName, { detail: { streak: nextValue } }))
+    window.localStorage.setItem(returnStreakStorageKey, JSON.stringify(streak))
+    window.dispatchEvent(new CustomEvent(returnStreakChangedEventName, { detail: { streak } }))
   } catch {
     // Return streak is a local convenience card.
   }
+}
 
+export async function updateReturnStreak() {
+  if (typeof window === 'undefined') return getReturnStreak()
+
+  const localStreak = getReturnStreak()
+
+  try {
+    const response = await fetch('/api/auth/streak/visit', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ streak: localStreak }),
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      const streak = data.streak || getNextLocalReturnStreak()
+
+      storeReturnStreak(streak)
+      return streak
+    }
+  } catch {
+    // Logged-out visitors or offline/dev API failures keep using local streak.
+  }
+
+  const nextValue = getNextLocalReturnStreak()
+  storeReturnStreak(nextValue)
   return nextValue
 }
 
