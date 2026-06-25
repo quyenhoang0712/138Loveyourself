@@ -3,7 +3,7 @@ import { LogoutIcon } from './icons'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 
-export function SiteHeader({ variant = 'sticky', onFeedbackOpen }) {
+export function SiteHeader({ onIntroOpen, variant = 'sticky' }) {
   const [user, setUser] = useState(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const profileLabel = `Phòng của ${user?.name || 'bạn'}`
@@ -46,9 +46,9 @@ export function SiteHeader({ variant = 'sticky', onFeedbackOpen }) {
 
   return (
     <header className={`site-header site-header-${variant}`}>
-      {onFeedbackOpen ? (
-        <button className="header-feedback-button" type="button" onClick={onFeedbackOpen}>
-          Góp ý
+      {onIntroOpen ? (
+        <button className="header-intro-button" type="button" aria-label="Giới thiệu phòng" onClick={onIntroOpen}>
+          Giới thiệu
         </button>
       ) : null}
 

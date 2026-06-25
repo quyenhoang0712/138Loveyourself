@@ -238,17 +238,3 @@ export function TrashIcon() {
     </svg>
   )
 }
-
-export function SoundOffIcon() {
-  return (
-    <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M11 5 6.8 8.5H3.5v7h3.3L11 19V5Zm4.5 4.5 5 5m0-5-5 5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}

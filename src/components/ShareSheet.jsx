@@ -32,7 +32,6 @@ const shareStickerOptions = [
   { alt: 'Hộp nhạc', src: '/PNG/hop-nhac.png' },
   { alt: 'Mascot nhảy', src: '/PNG/mascot-nhay.png' },
   { alt: 'Cọ vẽ', src: '/PNG/brush.png' },
-  { alt: 'Mascot ống nhòm', src: '/PNG/mascot-ong-nhom.png' },
   { alt: 'Máy ảnh', src: '/PNG/may-anh.png' },
   { alt: 'Ghi chú', src: '/PNG/note.png' },
   { alt: 'Giày', src: '/PNG/giay.png' },

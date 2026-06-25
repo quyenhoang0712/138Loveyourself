@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ambientSoundOptions,
   heroVideoUrl,
@@ -9,7 +9,6 @@ import {
   shareTextColors,
 } from '../config/appConfig'
 import { AmbientVisualEffect } from './AmbientVisualEffect'
-import { CloseIcon, SoundOffIcon } from './icons'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
@@ -22,12 +21,11 @@ import { IntroVideoSection } from '../sections/IntroVideoSection'
 import { PlaylistSection } from '../sections/PlaylistSection'
 import { AnalyticsReport } from '../sections/AnalyticsReport'
 import { QuoteSection } from '../sections/QuoteSection'
-import { RoomSection } from '../sections/RoomSection'
+import { RoomSection, roomIntroOpenEventName } from '../sections/RoomSection'
 import { UserProfileReport } from '../sections/UserProfileReport'
 import { WheelNavSection } from '../sections/WheelNavSection'
 import {
   getVisitorProfile,
-  getAnalyticsIds,
   identifyVisitor,
   getReturnStreak,
   returnStreakChangedEventName,
@@ -45,24 +43,20 @@ const welcomeGuideLastSeenStorageKey = 'love-yourself-guide-last-seen'
 const returnStreakPopupSeenStorageKey = 'love-yourself-return-streak-popup-seen'
 const welcomeGuideReminderDelay = 12 * 60 * 60 * 1000
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
-const quickSpotifyButtonSrc = '/PNG/dia-than.png'
 const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0'
-const roomSwitcherIconSrc = '/PNG/mascot-ong-nhom.png'
-const roomSwitcherLinks = [
-  { href: '#card-room', label: 'Thiệp', room: 'card-room', color: '#9AB4EE' },
-  { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
-  { href: '#healing-room', label: 'Chữa lành', room: 'healing-room', color: '#4789C8' },
-  { href: '#sound-room', label: 'Âm thanh', room: 'sound-room', color: '#EBAAB4' },
-  { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' },
-  { href: '#diary-room', label: 'Nhật ký', room: 'diary-room', color: '#F8DB8E' },
+const bottomToolbarLinks = [
+  { id: 'home', href: '#', label: 'Trang chủ', color: '#9AB4EE' },
+  { id: 'community', href: '#community', label: 'Cộng đồng', color: '#9AB4EE' },
+  { id: 'diary-room', href: '#diary-room', label: 'Nhật ký', color: '#F8DB8E' },
+  { id: 'profile', href: '#profile', label: 'Phòng bạn', color: '#4789C8' },
+  { id: 'spotify', label: 'Spotify', color: '#EBAAB4' },
+  { id: 'shop', href: 'https://138knitwear.com/', label: 'Mua hàng', color: '#F8DB8E' },
 ]
 const homePriorityAssets = [
   '/Vector.gif',
   '/PNG/giay.png',
   '/PNG/ao-khan-len.png',
   transitionMascotSrc,
-  quickSpotifyButtonSrc,
-  roomSwitcherIconSrc,
 ]
 const uniqueHomePriorityAssets = [...new Set(homePriorityAssets)]
 const visitorGenderOptions = [
@@ -220,7 +214,7 @@ function DiaryIntroSection({ onDiaryNavigate }) {
         <p>Phòng nhật ký</p>
         <AnimatedTitle id="home-diary-title">Một căn phòng mới để giữ lại những dòng riêng.</AnimatedTitle>
         <span>
-          Phòng nhật ký sẽ được dựng sau. Trước mắt mình để căn phòng này trống đã.
+          Mở lịch, chọn tâm trạng trong ngày, rồi viết lại vài dòng trong cuốn sổ nhỏ của mình.
         </span>
         <button type="button" onClick={() => onDiaryNavigate(diaryLink)}>
           Vào phòng nhật ký
@@ -251,130 +245,98 @@ function OfficialSiteIntroSection() {
   )
 }
 
-function FeedbackPopup({ isOpen, onClose }) {
-  const [message, setMessage] = useState('')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+function BottomToolbar({ activeRoom, isAnalyticsReportOpen, isProfileOpen, isSpotifyOpen, onNavigate }) {
+  const activeTool = isProfileOpen ? 'profile' : activeRoom || (isAnalyticsReportOpen ? null : 'home')
+  const resolvedActiveId = isSpotifyOpen ? 'spotify' : activeTool
+  const [isToolbarRevealed, setIsToolbarRevealed] = useState(false)
+  const [visualActiveId, setVisualActiveId] = useState(() => resolvedActiveId || 'home')
+  const hideTimeoutRef = useRef(null)
+  const indicatorActiveId = resolvedActiveId === visualActiveId ? resolvedActiveId : visualActiveId
+  const visualActiveIndex = bottomToolbarLinks.findIndex((link) => link.id === indicatorActiveId)
+  const isRevealed = isToolbarRevealed || isSpotifyOpen
 
-  useEffect(() => {
-    if (!isOpen) return undefined
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose()
+  const revealToolbar = useCallback(() => {
+    if (hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current)
+      hideTimeoutRef.current = null
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+    setIsToolbarRevealed(true)
+  }, [])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setStatus(null)
+  const scheduleHideToolbar = useCallback(() => {
+    if (hideTimeoutRef.current) window.clearTimeout(hideTimeoutRef.current)
 
-    try {
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...getAnalyticsIds(),
-          name,
-          email,
-          message,
-        }),
-      })
-      const data = await response.json().catch(() => null)
+    hideTimeoutRef.current = window.setTimeout(() => {
+      setIsToolbarRevealed(false)
+      hideTimeoutRef.current = null
+    }, 420)
+  }, [])
 
-      if (!response.ok) {
-        throw new Error(data?.error || 'Chưa gửi được góp ý. Bạn thử lại giúp mình nha.')
-      }
-
-      setMessage('')
-      setName('')
-      setEmail('')
-      setStatus({ type: 'success', text: data?.message || 'Cảm ơn bạn đã góp ý!' })
-    } catch (error) {
-      setStatus({
-        type: 'error',
-        text: error.message === 'Failed to fetch'
-          ? 'Không kết nối được máy chủ. Bạn thử lại sau nha.'
-          : error.message,
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  if (!isOpen) return null
+  useEffect(() => () => {
+    if (hideTimeoutRef.current) window.clearTimeout(hideTimeoutRef.current)
+  }, [])
 
   return (
-    <div className="home-feedback-backdrop" role="presentation" onClick={onClose}>
-      <section
-        className="home-feedback-section home-feedback-popup"
-        aria-labelledby="home-feedback-title"
-        role="dialog"
-        aria-modal="true"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button className="home-feedback-close" type="button" aria-label="Đóng góp ý" onClick={onClose}>
-          <CloseIcon />
-        </button>
+    <nav
+      className={`bottom-toolbar ${isRevealed ? 'is-revealed' : ''} ${isSpotifyOpen ? 'is-spotify-open' : ''}`}
+      aria-label="Thanh công cụ chính"
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) scheduleHideToolbar()
+      }}
+      onFocusCapture={revealToolbar}
+      onPointerEnter={revealToolbar}
+      onPointerLeave={scheduleHideToolbar}
+    >
+      <span className="bottom-toolbar-peek" aria-hidden="true" />
 
-        <div className="home-feedback-copy">
-          <p>Đóng góp ý kiến</p>
-          <h2 id="home-feedback-title">Bạn muốn Love Yourself dịu hơn ở chỗ nào?</h2>
-          <span>
-            Gửi tụi mình một lời nhắn nhỏ: điều bạn thích, điều còn khó dùng, hoặc một căn phòng bạn muốn có thêm.
-            Mỗi góp ý sẽ giúp góc này lớn lên đúng cách hơn.
-          </span>
+      {isSpotifyOpen ? (
+        <div className="bottom-toolbar-spotify-panel">
+          <iframe
+            className="bottom-toolbar-spotify-player"
+            title="Spotify ngẫu nhiên"
+            src={quickSpotifyEmbed}
+            width="100%"
+            height="86"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
         </div>
+      ) : null}
 
-        <form className="home-feedback-form" onSubmit={handleSubmit}>
-          <label>
-            <span>Lời góp ý</span>
-            <textarea
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              placeholder="Bạn muốn nhắn gì cho tụi mình?"
-              minLength="6"
-              maxLength="1200"
-              required
-            />
-          </label>
+      <div className="bottom-toolbar-track">
+        {visualActiveIndex >= 0 ? (
+          <span
+            className="bottom-toolbar-active-indicator"
+            style={{
+              transform: `translateX(${visualActiveIndex * 100}%) translateX(${visualActiveIndex * 4}px)`,
+              width: `calc((100% - 14px - ${(bottomToolbarLinks.length - 1) * 4}px) / ${bottomToolbarLinks.length})`,
+            }}
+            aria-hidden="true"
+          />
+        ) : null}
+        {bottomToolbarLinks.map((link) => {
+          const isActive = link.id === resolvedActiveId
 
-          <div className="home-feedback-fields">
-            <label>
-              <span>Tên của bạn</span>
-              <input
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Không bắt buộc"
-                maxLength="80"
-              />
-            </label>
-            <label>
-              <span>Email</span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="Để tụi mình phản hồi nếu cần"
-                maxLength="160"
-              />
-            </label>
-          </div>
-
-          {status ? <p className={`home-feedback-message is-${status.type}`}>{status.text}</p> : null}
-
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang gửi...' : 'Gửi góp ý'}
-          </button>
-        </form>
-      </section>
-    </div>
+          return (
+            <button
+              className={`bottom-toolbar-item bottom-toolbar-${link.id} ${isActive ? 'is-active' : ''}`}
+              type="button"
+              key={link.id}
+              aria-current={isActive && link.id !== 'spotify' ? 'page' : undefined}
+              aria-pressed={link.id === 'spotify' ? isActive : undefined}
+              onClick={() => {
+                setVisualActiveId(link.id === 'spotify' && isSpotifyOpen ? activeTool || 'home' : link.id)
+                onNavigate(link)
+              }}
+            >
+              <span className="bottom-toolbar-icon" aria-hidden="true" />
+              <span>{link.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </nav>
   )
 }
 
@@ -421,14 +383,11 @@ export function AppLayout({ state }) {
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
   const [isProfileOpen, setIsProfileOpen] = useState(getIsProfileFromHash)
   const [activeRoomTransitionColor, setActiveRoomTransitionColor] = useState(null)
-  const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
-  const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
   const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
   const [visitorAge, setVisitorAge] = useState('')
   const [visitorGender, setVisitorGender] = useState('')
   const [visitorProfileError, setVisitorProfileError] = useState('')
   const [isVisitorProfileSaving, setIsVisitorProfileSaving] = useState(false)
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
   const [returnStreak, setReturnStreak] = useState(getReturnStreak)
   const [isReturnStreakPopupOpen, setIsReturnStreakPopupOpen] = useState(false)
   const [isWelcomeGuideOpen, setIsWelcomeGuideOpen] = useState(
@@ -732,7 +691,6 @@ export function AppLayout({ state }) {
   const handleRoomNavigate = useCallback((link) => {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
-    setIsRoomSwitcherOpen(false)
     setActiveRoomTransitionColor(link.color || '#F8DB8E')
 
     window.setTimeout(() => {
@@ -745,92 +703,45 @@ export function AppLayout({ state }) {
   }, [activeRoom])
 
   const handleQuickSpotifyToggle = useCallback(() => {
-    if (quickSpotifySrc) {
-      setIsQuickSpotifyOpen((isOpen) => !isOpen)
+    setIsQuickSpotifyOpen((isOpen) => !isOpen)
+  }, [])
+
+  const handleBottomToolbarNavigate = useCallback((link) => {
+    if (link.id === 'spotify') {
+      handleQuickSpotifyToggle()
       return
     }
 
-    setQuickSpotifySrc(quickSpotifyEmbed)
-    setIsQuickSpotifyOpen(true)
-  }, [quickSpotifySrc])
+    if (link.id === 'shop') {
+      window.open(link.href, '_blank', 'noopener,noreferrer')
+      return
+    }
 
-  const availableRoomSwitcherLinks = useMemo(() => (
-    roomSwitcherLinks.filter((link) => (
-      !(link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'))
-    ))
-  ), [activeRoom])
+    if (link.id === 'home') {
+      setActiveRoomTransitionColor(null)
+      setActiveRoom(null)
+      setIsAnalyticsReportOpen(false)
+      setIsProfileOpen(false)
 
-  const quickSpotifyControl = activeRoom ? (
-    <div className={`quick-spotify ${quickSpotifySrc ? 'is-playing' : ''} ${isQuickSpotifyOpen ? 'is-open' : ''}`}>
-      {quickSpotifySrc ? (
-        <div className="quick-spotify-player-shell">
-          <iframe
-            className="quick-spotify-player"
-            title="Spotify ngẫu nhiên"
-            src={quickSpotifySrc}
-            width="100%"
-            height="86"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        </div>
-      ) : null}
+      if (window.location.hash) {
+        window.location.hash = ''
+      }
 
-      <button
-        className="quick-spotify-button"
-        type="button"
-        aria-label={quickSpotifySrc && isQuickSpotifyOpen ? 'Thu gọn Spotify' : 'Mở Spotify'}
-        aria-pressed={Boolean(quickSpotifySrc && isQuickSpotifyOpen)}
-        onClick={handleQuickSpotifyToggle}
-      >
-        <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
-      </button>
-    </div>
-  ) : null
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
 
-  const roomSwitcher = activeRoom ? (
-    <div className={`room-switcher ${isRoomSwitcherOpen ? 'is-open' : ''}`}>
-      {activeAmbientSound ? (
-        <button
-          className="room-sound-stop"
-          type="button"
-          aria-label="Tắt âm thanh nền"
-          title="Tắt âm thanh nền"
-          onClick={() => handleAmbientSoundToggle(activeAmbientSound)}
-        >
-          <SoundOffIcon />
-        </button>
-      ) : null}
+    if (link.id === 'profile') {
+      setActiveRoomTransitionColor(null)
+      setActiveRoom(null)
+      setIsAnalyticsReportOpen(false)
+      setIsProfileOpen(true)
+      window.location.hash = link.href
+      return
+    }
 
-      <button
-        className="room-switcher-trigger"
-        type="button"
-        aria-label="Mở menu chuyển phòng"
-        aria-expanded={isRoomSwitcherOpen}
-        onClick={() => setIsRoomSwitcherOpen((current) => !current)}
-      >
-        <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
-      </button>
-
-      <nav className="room-switcher-options" aria-label="Chuyển phòng">
-        {availableRoomSwitcherLinks.map((link) => {
-          const isActive = link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')
-
-          return (
-            <button
-              className={`room-switcher-option ${isActive ? 'is-active' : ''}`}
-              type="button"
-              key={link.room}
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => handleRoomNavigate(link)}
-            >
-              {link.label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
-  ) : null
+    handleRoomNavigate({ href: link.href, room: link.id, color: link.color })
+  }, [handleQuickSpotifyToggle, handleRoomNavigate])
 
   const handleVisitorProfileSubmit = useCallback(async (event) => {
     event.preventDefault()
@@ -869,22 +780,20 @@ export function AppLayout({ state }) {
     setIsWelcomeGuideOpen(false)
   }, [])
 
-  const handleFeedbackOpen = useCallback(() => {
-    setIsFeedbackOpen(true)
-  }, [])
-
-  const handleFeedbackClose = useCallback(() => {
-    setIsFeedbackOpen(false)
-  }, [])
-
   const handleShareSheetClose = useCallback(() => {
     setIsShareSheetOpen(false)
   }, [setIsShareSheetOpen])
 
+  const handleRoomIntroOpen = useCallback(() => {
+    if (!activeRoom) return
+
+    window.dispatchEvent(new CustomEvent(roomIntroOpenEventName, { detail: { roomId: activeRoom } }))
+  }, [activeRoom])
+
   const header = (
     <SiteHeader
+      onIntroOpen={activeRoom ? handleRoomIntroOpen : undefined}
       variant="static"
-      onFeedbackOpen={handleFeedbackOpen}
     />
   )
 
@@ -1031,8 +940,6 @@ export function AppLayout({ state }) {
         <>
           <div className="room-page-header">{header}</div>
           {activeRoomContent}
-          {quickSpotifyControl}
-          {roomSwitcher}
         </>
       ) : (
         <>
@@ -1045,10 +952,7 @@ export function AppLayout({ state }) {
           </div>
 
           {isFloatingHeaderVisible ? (
-            <SiteHeader
-              variant="floating"
-              onFeedbackOpen={handleFeedbackOpen}
-            />
+            <SiteHeader variant="floating" />
           ) : null}
 
           <div className="home-roll-stack">
@@ -1106,12 +1010,18 @@ export function AppLayout({ state }) {
 
       <Toast message={toastMessage} />
 
-      <FeedbackPopup isOpen={isFeedbackOpen} onClose={handleFeedbackClose} />
-
       <ReturnStreakPopup
         isOpen={isReturnStreakPopupOpen}
         onClose={handleReturnStreakPopupClose}
         streak={returnStreak}
+      />
+
+      <BottomToolbar
+        activeRoom={activeRoom}
+        isAnalyticsReportOpen={isAnalyticsReportOpen}
+        isProfileOpen={isProfileOpen}
+        isSpotifyOpen={isQuickSpotifyOpen}
+        onNavigate={handleBottomToolbarNavigate}
       />
 
       {isVisitorPromptOpen && !isUtilityPageOpen ? (
@@ -1168,7 +1078,7 @@ export function AppLayout({ state }) {
             <div className="welcome-guide-heading">
               <p>Một chút bí kíp nè</p>
               <h2 id="welcome-guide-title">Mình đi một vòng nha!</h2>
-              <span>Trang chủ dẫn bạn tới các căn phòng, còn hai nút nhỏ sẽ luôn đi cùng bạn.</span>
+              <span>Trang chủ dẫn bạn tới các căn phòng, còn nút nghe nhạc sẽ luôn đi cùng bạn.</span>
             </div>
 
             <article className="welcome-guide-home">
@@ -1188,18 +1098,10 @@ export function AppLayout({ state }) {
 
             <div className="welcome-guide-items">
               <article className="welcome-guide-item welcome-guide-spotify">
-                <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
+                <span className="welcome-guide-toolbar-icon" aria-hidden="true" />
                 <div>
                   <strong>Nút nghe nhạc</strong>
-                  <p>Chạm vào đĩa nhạc để mở hoặc thu gọn Spotify thật nhanh.</p>
-                </div>
-              </article>
-
-              <article className="welcome-guide-item welcome-guide-rooms">
-                <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
-                <div>
-                  <strong>Nút chuyển phòng</strong>
-                  <p>Chạm vào mascos này để ghé sang căn phòng khác bất cứ lúc nào.</p>
+                  <p>Chạm Spotify ở thanh dưới để mở hoặc thu gọn trình phát.</p>
                 </div>
               </article>
             </div>
