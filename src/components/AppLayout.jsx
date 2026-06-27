@@ -118,6 +118,17 @@ function getTlDateKey(date = new Date()) {
   return `${parts.year}-${parts.month}-${parts.day}`
 }
 
+function getTlRelativeDateKey(dayOffset = 0, date = new Date()) {
+  return getTlDateKey(new Date(date.getTime() + dayOffset * 24 * 60 * 60 * 1000))
+}
+
+function getTlDateFromKey(dateKey) {
+  const [year, month, day] = String(dateKey || '').split('-').map(Number)
+  if (!year || !month || !day) return new Date()
+
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+}
+
 function getTodayKey() {
   const today = new Date()
   const year = today.getFullYear()
@@ -310,6 +321,7 @@ function TlRoomSchedule() {
   const [selectedFlame, setSelectedFlame] = useState(tlFlameOptions[0])
   const [now, setNow] = useState(() => new Date())
   const [tlDateKey, setTlDateKey] = useState(() => getTlDateKey())
+  const [registrationDateKey, setRegistrationDateKey] = useState(() => getTlDateKey())
   const [viewingDateKey, setViewingDateKey] = useState(() => getTlDateKey())
   const [registrations, setRegistrations] = useState([])
   const [ratingRegistrationId, setRatingRegistrationId] = useState('')
@@ -361,7 +373,7 @@ function TlRoomSchedule() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slot: selectedSlot,
-          dateKey: tlDateKey,
+          dateKey: registrationDateKey,
           tobacco: selectedTobacco,
           flame: selectedFlame,
           lighter: selectedLighter,
@@ -373,8 +385,10 @@ function TlRoomSchedule() {
 
       if (viewingDateKey === data.registration.dateKey) {
         setRegistrations((currentRegistrations) => [data.registration, ...currentRegistrations])
+      } else {
+        setViewingDateKey(data.registration.dateKey)
       }
-      setTlRoomMessage('Đã đăng ký.')
+      setTlRoomMessage(`Đã đăng ký ngày ${tlDateFormatter.format(getTlDateFromKey(data.registration.dateKey))}.`)
       setIsRegisterPopupOpen(false)
     } catch (error) {
       setTlRoomMessage(error.message)
@@ -437,6 +451,11 @@ function TlRoomSchedule() {
   const viewingSlotRegistrations = viewingSlot
     ? registrations.filter((registration) => registration.slot === viewingSlot)
     : []
+  const tomorrowDateKey = getTlRelativeDateKey(1, now)
+  const registrationDateOptions = [
+    { label: 'Hôm nay', dateKey: tlDateKey },
+    { label: 'Ngày mai', dateKey: tomorrowDateKey },
+  ]
   const openRegistrationImage = (registration) => {
     if (!registration?.ratingImage) return
 
@@ -629,6 +648,24 @@ function TlRoomSchedule() {
             </button>
 
             <div className="tl-room-popup-content">
+              <fieldset className="tl-room-option-group">
+                <legend>Ngày đăng ký</legend>
+                <div className="tl-room-option-grid tl-room-option-grid-compact">
+                  {registrationDateOptions.map((option) => (
+                    <label className={registrationDateKey === option.dateKey ? 'is-selected' : ''} key={option.dateKey}>
+                      <input
+                        type="radio"
+                        name="tl-register-date"
+                        value={option.dateKey}
+                        checked={registrationDateKey === option.dateKey}
+                        onChange={(event) => setRegistrationDateKey(event.target.value)}
+                      />
+                      <span>{option.label} {tlDateFormatter.format(getTlDateFromKey(option.dateKey))}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
               <fieldset className="tl-room-option-group">
                 <legend>Loại thuốc</legend>
                 <div className="tl-room-option-grid tl-room-option-grid-compact">
