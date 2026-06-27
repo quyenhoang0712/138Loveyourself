@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrashIcon } from '../components/icons'
+import { roomIntroOpenEventName } from './RoomSection'
 import { trackAnalyticsEvent } from '../utils/analytics'
 
 const closedLetterImage = '/letter-closed.png'
@@ -10,6 +11,12 @@ const envelopeColorOptions = [
   { id: 'green', label: 'Xanh lá', swatch: '#6ca58b', filter: 'hue-rotate(286deg) saturate(0.62) brightness(0.98)' },
   { id: 'violet', label: 'Tím', swatch: '#8c83c7', filter: 'hue-rotate(52deg) saturate(0.72) brightness(1.02)' },
 ]
+const envelopeCardColors = {
+  blue: '#8ec3ee',
+  pink: '#ef9fb5',
+  green: '#86c8a8',
+  violet: '#b59ae0',
+}
 const sealColorOptions = [
   { id: 'cream', label: 'Kem', color: '#fff1bf' },
   { id: 'pink', label: 'Hồng', color: '#efb1bd' },
@@ -25,6 +32,10 @@ const defaultStampId = stampOptions[0].id
 
 function getEnvelopeFilter(colorId) {
   return envelopeColorOptions.find((option) => option.id === colorId)?.filter || 'none'
+}
+
+function getEnvelopeCardColor(colorId) {
+  return envelopeCardColors[colorId] || envelopeCardColors.blue
 }
 
 function getStampImage(stampId) {
@@ -48,6 +59,7 @@ function preloadImage(src) {
 }
 
 export function CommunitySection() {
+  const [isIntroOpen, setIsIntroOpen] = useState(true)
   const [letters, setLetters] = useState([])
   const [communityLetters, setCommunityLetters] = useState([])
   const [isLoadingCommunityLetters, setIsLoadingCommunityLetters] = useState(true)
@@ -92,6 +104,27 @@ export function CommunitySection() {
   useEffect(() => {
     preloadImage(closedLetterImage)
     preloadImage(openLetterImage)
+  }, [])
+
+  useEffect(() => {
+    if (!isIntroOpen) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsIntroOpen(false)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isIntroOpen])
+
+  useEffect(() => {
+    const handleIntroOpen = (event) => {
+      if (event.detail?.roomId !== 'community') return
+      setIsIntroOpen(true)
+    }
+
+    window.addEventListener(roomIntroOpenEventName, handleIntroOpen)
+    return () => window.removeEventListener(roomIntroOpenEventName, handleIntroOpen)
   }, [])
 
   useEffect(() => {
@@ -471,22 +504,19 @@ export function CommunitySection() {
     const displayedLetters = stackId === 'sent'
       ? visibleLetters
       : [...visibleLetters, ...visibleLetters]
+    const reverseDisplayedLetters = stackId === 'community'
+      ? [...visibleLetters].reverse()
+      : []
 
-    return (
-      <div
-        className={`community-sent-letter-list is-${stackId}`}
-        style={{
-          '--sent-letter-track-duration': `${Math.max(24, visibleLetters.length * 2.8)}s`,
-        }}
-      >
-        {hiddenLetterCount ? <span className="community-sent-letter-count">+{hiddenLetterCount} thư</span> : null}
-        <div className="community-sent-letter-track">
-          {displayedLetters.map((letter, index) => {
-            const trackStackId = `${stackId}-${index < visibleLetters.length ? 'first' : 'second'}`
-            const isFlying = flyingLetter?.id === letter.id && flyingLetter.stackId === trackStackId
-            const isDragging = draggingLetter?.id === letter.id && draggingLetter.stackId === trackStackId
+    const renderTrackLetters = (trackLetters, trackName) => (
+      trackLetters.map((letter, index) => {
+        const trackStackId = stackId === 'sent'
+          ? `${stackId}-${index < visibleLetters.length ? 'first' : 'second'}`
+          : `${stackId}-${trackName}-${index}`
+        const isFlying = flyingLetter?.id === letter.id && flyingLetter.stackId === trackStackId
+        const isDragging = draggingLetter?.id === letter.id && draggingLetter.stackId === trackStackId
 
-            return (
+        return (
               <button
                 className={`community-sent-letter-row ${sendingLetter?.id === letter.id ? 'is-selected' : ''} ${
                   isFlying ? 'is-flying' : ''
@@ -497,9 +527,12 @@ export function CommunitySection() {
                   '--sent-letter-fly-x': `${isFlying ? flyingLetter.x : 0}px`,
                   '--sent-letter-fly-y': `${isFlying ? flyingLetter.y : 0}px`,
                   '--sent-letter-stack-index': index,
+                  '--community-story-card-color': getEnvelopeCardColor(letter.envelopeColor),
+                  '--community-story-envelope-filter': getEnvelopeFilter(letter.envelopeColor),
+                  '--community-story-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
                 }}
                 type="button"
-                key={`${index < visibleLetters.length ? 'first' : 'second'}-${letter.id}`}
+                key={`${trackName}-${index < visibleLetters.length ? 'first' : 'second'}-${letter.id}`}
                 aria-label={`${letter.title}. Gửi ${letter.recipient}. ${Number(letter.votes || 0)} vote.`}
                 disabled={isSendingLetter || Boolean(flyingLetter)}
                 onClick={(event) => handleOpenStoredLetter(letter, trackStackId, event)}
@@ -508,60 +541,108 @@ export function CommunitySection() {
                 onPointerMove={canDelete ? handleLetterDragMove : undefined}
                 onPointerUp={canDelete ? (event) => handleLetterDragEnd(letter, event) : undefined}
               >
-                <span className="community-sent-letter-thumb" aria-hidden="true">
-                  <img
-                    src={closedLetterImage}
-                    alt=""
-                    style={{ filter: getEnvelopeFilter(letter.envelopeColor) }}
-                  />
-                  <span
-                    className="community-sent-letter-seal"
-                    style={{
-                      '--community-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
-                    }}
-                  >
-                    ♥
-                  </span>
-                </span>
-                <span className="community-sent-letter-meta">
-                  <strong>{letter.title}</strong>
-                  <em>{Number(letter.votes || 0)} vote</em>
-                </span>
+                {stackId === 'community' ? (
+                  <>
+                    <span className="community-story-recipient">Gửi: {letter.recipient || 'Cộng đồng'}</span>
+                    <span className="community-story-body">
+                      {letter.title}
+                    </span>
+                    <span className="community-story-footer">
+                      <strong>Nhấn để đọc thư</strong>
+                      <em>{Number(letter.votes || 0)} vote</em>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="community-sent-letter-thumb" aria-hidden="true">
+                      <img
+                        src={closedLetterImage}
+                        alt=""
+                        style={{ filter: getEnvelopeFilter(letter.envelopeColor) }}
+                      />
+                      <span
+                        className="community-sent-letter-seal"
+                        style={{
+                          '--community-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
+                        }}
+                      >
+                        ♥
+                      </span>
+                    </span>
+                    <span className="community-sent-letter-meta">
+                      <strong>{letter.title}</strong>
+                      <em>{Number(letter.votes || 0)} vote</em>
+                    </span>
+                  </>
+                )}
               </button>
             )
-          })}
+      })
+    )
+
+    return (
+      <div
+        className={`community-sent-letter-list is-${stackId}`}
+        style={{
+          '--sent-letter-track-duration': `${Math.max(24, visibleLetters.length * 2.8)}s`,
+        }}
+      >
+        {hiddenLetterCount ? <span className="community-sent-letter-count">+{hiddenLetterCount} thư</span> : null}
+        <div className="community-sent-letter-track">
+          {renderTrackLetters(displayedLetters, 'primary')}
         </div>
+        {stackId === 'community' ? (
+          <div className="community-sent-letter-track community-sent-letter-track-reverse">
+            {renderTrackLetters([...reverseDisplayedLetters, ...reverseDisplayedLetters], 'reverse')}
+          </div>
+        ) : null}
       </div>
     )
   }
 
   return (
-    <section className="community-section" id="community" aria-labelledby="community-title">
-      <section className="community-letter-heading">
-        <div className="community-letter-heading-copy">
-          <p>Phòng cộng đồng</p>
-          <h1 id="community-title">Viết một lá thư nhỏ để ở lại cùng mọi người.</h1>
-          <span>
-            Đây là góc để anh gửi lại một lời nhắn dịu dàng cho ai đó, hoặc cho chính mình.
-            Mỗi lá thư có người nhận, tiêu đề và nội dung riêng; mình giữ chúng như một khoảng nhỏ
-            để cộng đồng có thể chậm lại, lắng nghe nhau và ở cạnh nhau nhẹ hơn.
-          </span>
+    <section className="community-section" id="community" aria-label="Phòng cộng đồng">
+      {isIntroOpen ? (
+        <div className="room-intro-backdrop" role="presentation" onMouseDown={() => setIsIntroOpen(false)}>
+          <section
+            className="room-intro-dialog room-heading"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="community-intro-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              className="room-intro-close"
+              type="button"
+              aria-label="Đóng giới thiệu phòng cộng đồng"
+              onClick={() => setIsIntroOpen(false)}
+            >
+              ×
+            </button>
+            <p>Phòng cộng đồng</p>
+            <h2 id="community-intro-title">Viết một lá thư nhỏ để ở lại cùng mọi người.</h2>
+            <span>
+              Đây là góc để anh gửi lại một lời nhắn dịu dàng cho ai đó, hoặc cho chính mình.
+              Mỗi lá thư có người nhận, tiêu đề và nội dung riêng; mình giữ chúng như một khoảng nhỏ
+              để cộng đồng có thể chậm lại, lắng nghe nhau và ở cạnh nhau nhẹ hơn.
+            </span>
+          </section>
         </div>
+      ) : null}
 
-        <div
-          className="community-sent-letters community-community-letters"
-          aria-labelledby="community-sent-stack-title"
-        >
-          <div className="community-sent-letter-boxes">
-            <section className="community-sent-letter-box community-sent-letter-box-community">
-              <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
-              {renderLetterStack(
-                communityLetters,
-                isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.',
-                { canDelete: false, stackId: 'community' }
-              )}
-            </section>
-          </div>
+      <section
+        className="community-sent-letters community-community-letters"
+        aria-labelledby="community-sent-stack-title"
+      >
+        <div className="community-sent-letter-boxes">
+          <section className="community-sent-letter-box community-sent-letter-box-community">
+            <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
+            {renderLetterStack(
+              communityLetters,
+              isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.',
+              { canDelete: false, stackId: 'community' }
+            )}
+          </section>
         </div>
       </section>
 

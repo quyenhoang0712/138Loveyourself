@@ -188,7 +188,7 @@ router.post('/identify', async (req, res) => {
       },
       $setOnInsert: { firstSeenAt: new Date() },
     },
-    { new: true, upsert: true },
+    { returnDocument: 'after', upsert: true },
   ).lean()
 
   if (user) {
@@ -248,7 +248,7 @@ router.post('/sessions', async (req, res) => {
         referrer,
       },
     },
-    { new: true, upsert: true },
+    { returnDocument: 'after', upsert: true },
   ).lean()
 
   await recordEvent({ visitorId, sessionId, userId, type: 'session_start', room: normalizeRoom(room) })

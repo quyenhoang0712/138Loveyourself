@@ -36,6 +36,16 @@ function storeVisitorProfile(profile) {
   }
 }
 
+function getSafeReturnTo() {
+  if (typeof window === 'undefined') return '/'
+
+  const returnTo = new URLSearchParams(window.location.search).get('returnTo') || ''
+  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) return '/'
+  if (returnTo.startsWith('/auth')) return '/'
+
+  return returnTo
+}
+
 export function AuthPage() {
   const [mode, setMode] = useState('login')
   const [user, setUser] = useState(null)
@@ -44,6 +54,7 @@ export function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const isRegister = mode === 'register'
+  const returnTo = getSafeReturnTo()
 
   useEffect(() => {
     let ignore = false
@@ -126,6 +137,10 @@ export function AuthPage() {
       window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: data.user } }))
       setMessage({ type: 'success', text: data.message })
       form.reset()
+
+      if (returnTo !== '/') {
+        window.location.assign(returnTo)
+      }
     } catch (error) {
       setMessage({
         type: 'error',
@@ -182,7 +197,7 @@ export function AuthPage() {
             <span>{user.email}</span>
             {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
             <div>
-              <a href="/">Vào trang chủ</a>
+              <a href={returnTo}>{returnTo === '/' ? 'Vào trang chủ' : 'Tiếp tục'}</a>
               <button
                 className="auth-logout-button"
                 type="button"
