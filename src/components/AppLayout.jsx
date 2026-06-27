@@ -524,12 +524,6 @@ function TlRoomSchedule() {
         </div>
       </section>
 
-      <div className="tl-room-actions">
-        <button className="tl-room-register-button" type="button" onClick={() => setIsRegisterPopupOpen(true)}>
-          Đăng ký bi đầu ngày
-        </button>
-      </div>
-
       <div className="tl-room-schedule" aria-label="Lịch theo từng khung giờ">
         {tlScheduleSlots.map((slot) => {
           const isSelected = selectedSlot === slot
@@ -554,6 +548,12 @@ function TlRoomSchedule() {
             </div>
           )
         })}
+      </div>
+
+      <div className="tl-room-actions">
+        <button className="tl-room-register-button" type="button" onClick={() => setIsRegisterPopupOpen(true)}>
+          Đăng ký bi đầu ngày
+        </button>
       </div>
 
       <section className="tl-room-registration-list" aria-labelledby="tl-room-registration-list-title">
