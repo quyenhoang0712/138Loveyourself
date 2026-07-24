@@ -12,6 +12,7 @@ const tlLighterOptions = ['Tự châm', 'Khoa', 'Hiếu', 'Quyền', 'Đạt nh�
 const tlFlameOptions = ['Khò', 'Bật thường']
 const tlRatingOptions = ['Không phê', 'Phê', 'Phê vãi lồn']
 const tlAudioSrc = '/tl/tl.m4a'
+const maxRatingImageDataLength = 850000
 const tlMembers = [
   { name: 'Khoa', image: '/tl/members/Khoa.jpg' },
   { name: 'Đại ca Hiếu', image: '/tl/members/daicaHieu.jpg' },
@@ -72,6 +73,63 @@ async function readJsonResponse(response) {
   } catch {
     throw new Error(text || 'Máy chủ chưa trả JSON hợp lệ.')
   }
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('Chưa đọc được ảnh này.'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function loadImageFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Chưa nén được ảnh này.'))
+    image.src = dataUrl
+  })
+}
+
+function canvasToDataUrl(canvas, quality) {
+  return canvas.toDataURL('image/jpeg', quality)
+}
+
+async function compressRatingImage(file) {
+  const originalDataUrl = await readFileAsDataUrl(file)
+  if (originalDataUrl.length <= maxRatingImageDataLength) return originalDataUrl
+
+  const image = await loadImageFromDataUrl(originalDataUrl)
+  const sizePlans = [
+    { maxSide: 1280, qualities: [0.78, 0.68, 0.58] },
+    { maxSide: 960, qualities: [0.7, 0.58, 0.48] },
+    { maxSide: 720, qualities: [0.64, 0.52, 0.42] },
+  ]
+
+  for (const plan of sizePlans) {
+    const scale = Math.min(1, plan.maxSide / Math.max(image.naturalWidth, image.naturalHeight))
+    const width = Math.max(1, Math.round(image.naturalWidth * scale))
+    const height = Math.max(1, Math.round(image.naturalHeight * scale))
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const context = canvas.getContext('2d')
+    if (!context) break
+
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, width, height)
+    context.drawImage(image, 0, 0, width, height)
+
+    for (const quality of plan.qualities) {
+      const compressedDataUrl = canvasToDataUrl(canvas, quality)
+      if (compressedDataUrl.length <= maxRatingImageDataLength) return compressedDataUrl
+    }
+  }
+
+  throw new Error('Ảnh này vẫn hơi nặng, bạn chọn ảnh khác hoặc chụp nhỏ hơn nha.')
 }
 
 function TlRoomAudio() {
@@ -242,18 +300,25 @@ function TlRoomSchedule() {
     )))
   }
 
-  const handleRegistrationRatingImage = (registrationId, file) => {
-    if (!file || !file.type.startsWith('image/')) return
+  const handleRegistrationRatingImage = async (registrationId, file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setTlRoomMessage('Bạn chọn file ảnh giúp mình nha.')
+      return
+    }
 
-    const reader = new FileReader()
-    reader.onload = () => {
+    try {
+      setTlRoomMessage('Đang nén ảnh...')
+      const ratingImage = await compressRatingImage(file)
       setRegistrations((currentRegistrations) => currentRegistrations.map((registration) => (
         registration.id === registrationId
-          ? { ...registration, ratingImage: String(reader.result || ''), ratingImageName: file.name }
+          ? { ...registration, ratingImage, ratingImageName: file.name }
           : registration
       )))
+      setTlRoomMessage('Đã chọn ảnh, bạn gửi đánh giá nha.')
+    } catch (error) {
+      setTlRoomMessage(error.message)
     }
-    reader.readAsDataURL(file)
   }
 
   const handleRatingSubmit = async () => {
@@ -263,7 +328,7 @@ function TlRoomSchedule() {
     }
 
     try {
-      const response = await fetch(`/api/tl-registrations/${encodeURIComponent(ratingRegistration.id)}/rating`, {
+      const response = await fetch(`/api/tl-registration-rating?id=${encodeURIComponent(ratingRegistration.id)}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

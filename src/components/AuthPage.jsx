@@ -49,7 +49,12 @@ function getSafeReturnTo() {
 export function AuthPage() {
   const [mode, setMode] = useState('login')
   const [user, setUser] = useState(null)
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState(() => {
+    if (typeof window === 'undefined') return null
+
+    const authError = new URLSearchParams(window.location.search).get('authError')
+    return authError ? { type: 'error', text: authError } : null
+  })
   const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -59,6 +64,11 @@ export function AuthPage() {
   useEffect(() => {
     let ignore = false
     const controller = new AbortController()
+    const authError = new URLSearchParams(window.location.search).get('authError')
+
+    if (authError) {
+      window.history.replaceState(null, '', window.location.pathname)
+    }
 
     fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then((response) => response.json())
@@ -81,6 +91,23 @@ export function AuthPage() {
   const handleModeChange = (nextMode) => {
     setMode(nextMode)
     setMessage(null)
+  }
+
+  const handleGoogleAuth = () => {
+    const storedProfile = getStoredVisitorProfile()
+    const params = new URLSearchParams({ returnTo })
+
+    if (storedProfile) {
+      params.set('age', String(storedProfile.age))
+      params.set('gender', storedProfile.gender)
+    }
+
+    window.location.assign(`/api/auth/google/start?${params.toString()}`)
+  }
+
+  const handleFacebookAuth = () => {
+    const params = new URLSearchParams({ returnTo })
+    window.location.assign(`/api/auth/facebook/start?${params.toString()}`)
   }
 
   const handleSubmit = async (event) => {
@@ -235,6 +262,20 @@ export function AuthPage() {
         </div>
 
         {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
+
+        <button className="auth-google-button" type="button" onClick={handleGoogleAuth}>
+          <span aria-hidden="true">G</span>
+          Tiếp tục với Google
+        </button>
+
+        <button className="auth-google-button" type="button" onClick={handleFacebookAuth}>
+          <span aria-hidden="true">f</span>
+          Tiếp tục với Facebook
+        </button>
+
+        <div className="auth-divider">
+          <span>hoặc dùng email cũ</span>
+        </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {isRegister ? (

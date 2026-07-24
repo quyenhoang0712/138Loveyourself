@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import net from 'node:net'
 
@@ -42,7 +43,24 @@ function isPortOpen(port, host = '127.0.0.1') {
   })
 }
 
+function getLanAddress() {
+  const interfaces = os.networkInterfaces()
+  for (const addresses of Object.values(interfaces)) {
+    for (const address of addresses || []) {
+      if (address.family === 'IPv4' && !address.internal) return address.address
+    }
+  }
+
+  return '127.0.0.1'
+}
+
 loadEnvFile()
+
+const apiPort = process.env.PORT || '5001'
+if (!process.env.EXPO_PUBLIC_API_URL) {
+  process.env.EXPO_PUBLIC_API_URL = `http://127.0.0.1:${apiPort}`
+}
+const mobileApiUrl = process.env.EXPO_PUBLIC_MOBILE_API_URL || `http://${getLanAddress()}:${apiPort}`
 
 const mongoUri = process.env.MONGO_URI || ''
 const usesLocalMongo = !mongoUri || mongoUri.includes('127.0.0.1') || mongoUri.includes('localhost')
@@ -80,6 +98,16 @@ commands.push(
     command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
     args: ['run', 'dev:front'],
   },
+  {
+    name: 'mobile',
+    command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
+    args: ['run', 'start:lan'],
+    cwd: path.resolve('mobile'),
+    env: {
+      ...process.env,
+      EXPO_PUBLIC_API_URL: mobileApiUrl,
+    },
+  },
 )
 
 const children = new Set()
@@ -99,7 +127,8 @@ function stopAll(signal = 'SIGTERM') {
 for (const item of commands) {
   const child = spawn(item.command, item.args, {
     stdio: 'inherit',
-    env: process.env,
+    env: item.env || process.env,
+    cwd: item.cwd,
   })
 
   children.add(child)

@@ -7,6 +7,7 @@
     "start": "node --env-file-if-exists=.env backend/index.js",
     "dev:api": "node --env-file-if-exists=.env backend/index.js",
     "dev:front": "vite",
+    "dev:mobile": "npm --prefix mobile run start:lan",
     "dev": "node scripts/dev.js",
     "build": "vite build",
     "lint": "eslint .",

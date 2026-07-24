@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ambientSoundOptions,
   heroVideoUrl,
@@ -8,7 +8,7 @@ import {
   shareTextColors,
 } from '../config/appConfig'
 import { AmbientVisualEffect } from './AmbientVisualEffect'
-import { CloseIcon, SoundOffIcon } from './icons'
+import { CloseIcon } from './icons'
 import { ShareSheet, Toast } from './ShareSheet'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
@@ -43,28 +43,19 @@ const roomRoutes = [...publicRoomRoutes, privateRoomRoute]
 const roomTransitionDuration = 1300
 const roomTransitionRouteDelay = 1300
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
-const welcomeGuideLastSeenStorageKey = 'love-yourself-guide-last-seen'
 const returnStreakPopupSeenStorageKey = 'love-yourself-return-streak-popup-seen'
-const welcomeGuideReminderDelay = 12 * 60 * 60 * 1000
 const transitionMascotSrc = '/PNG/tay-trai-tim.png'
-const quickSpotifyButtonSrc = '/PNG/dia-than.png'
 const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0'
-const roomSwitcherIconSrc = '/PNG/mascot-ong-nhom.png'
 const roomSwitcherLinks = [
-  { href: '#card-room', label: 'Thiệp', room: 'card-room', color: '#9AB4EE' },
-  { href: '#focus-room', label: 'Tập trung', room: 'focus-room', color: '#F8DB8E' },
-  { href: '#healing-room', label: 'Chữa lành', room: 'healing-room', color: '#4789C8' },
-  { href: '#sound-room', label: 'Âm thanh', room: 'sound-room', color: '#EBAAB4' },
-  { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' },
-  { href: '#diary-room', label: 'Nhật ký', room: 'diary-room', color: '#F8DB8E' },
+  { href: '#community', label: 'Phòng cộng đồng', room: 'community', color: '#9AB4EE' },
+  { href: '#card-room', label: 'Phòng ghi chú', room: 'card-room', color: '#9AB4EE' },
+  { href: '#diary-room', label: 'Phòng nhật ký', room: 'diary-room', color: '#F8DB8E' },
 ]
 const homePriorityAssets = [
   '/Vector.gif',
   '/PNG/giay.png',
   '/PNG/ao-khan-len.png',
   transitionMascotSrc,
-  quickSpotifyButtonSrc,
-  roomSwitcherIconSrc,
 ]
 const uniqueHomePriorityAssets = [...new Set(homePriorityAssets)]
 const visitorGenderOptions = [
@@ -128,13 +119,6 @@ function storeVisitorProfile(profile) {
   } catch {
     // Continue with the database when browser storage is unavailable.
   }
-}
-
-function shouldShowWelcomeGuide() {
-  if (typeof window === 'undefined') return false
-
-  const lastSeenAt = Number(window.localStorage.getItem(welcomeGuideLastSeenStorageKey))
-  return !lastSeenAt || Date.now() - lastSeenAt >= welcomeGuideReminderDelay
 }
 
 function getActiveRoomFromHash() {
@@ -418,6 +402,96 @@ function ReturnStreakPopup({ isOpen, onClose, streak }) {
   )
 }
 
+function BottomToolbar({
+  activeRoom,
+  isHidden,
+  isHomeActive,
+  isProfileActive,
+  isQuickSpotifyOpen,
+  quickSpotifySrc,
+  onHomeNavigate,
+  onProfileNavigate,
+  onQuickSpotifyToggle,
+  onToggleHidden,
+  onRoomNavigate,
+  onShopOpen,
+}) {
+  const createRoomToolbarItem = (link) => ({
+    id: link.room,
+    label: link.label,
+    className: `bottom-toolbar-${link.room}`,
+    isActive: link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'),
+    onClick: () => onRoomNavigate(link),
+  })
+  const toolbarItems = [
+    { id: 'home', label: 'Trang chủ', className: 'bottom-toolbar-home', isActive: isHomeActive, onClick: onHomeNavigate },
+    ...roomSwitcherLinks.map(createRoomToolbarItem),
+    { id: 'profile', label: 'Phòng cá nhân', className: 'bottom-toolbar-profile', isActive: isProfileActive, onClick: onProfileNavigate },
+    {
+      id: 'spotify',
+      label: 'Nghe nhạc',
+      className: 'bottom-toolbar-spotify',
+      isPressed: Boolean(quickSpotifySrc && isQuickSpotifyOpen),
+      onClick: onQuickSpotifyToggle,
+    },
+    { id: 'shop', label: 'Shop', className: 'bottom-toolbar-shop', onClick: onShopOpen },
+  ]
+  const activeItemIndex = toolbarItems.findIndex((item) => item.isActive)
+
+  return (
+    <nav className={`bottom-toolbar ${isHidden ? 'is-hidden' : ''}`} aria-label="Điều hướng nhanh">
+      <button
+        className="bottom-toolbar-peek"
+        type="button"
+        aria-label={isHidden ? 'Hiện thanh điều hướng' : 'Ẩn thanh điều hướng'}
+        aria-expanded={!isHidden}
+        onClick={onToggleHidden}
+      />
+
+      {quickSpotifySrc && isQuickSpotifyOpen && !isHidden ? (
+        <div className="bottom-toolbar-spotify-panel">
+          <iframe
+            className="bottom-toolbar-spotify-player"
+            title="Spotify mini"
+            src={quickSpotifySrc}
+            width="100%"
+            height="152"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+
+      <div className="bottom-toolbar-track">
+        {activeItemIndex >= 0 ? (
+          <span
+            className="bottom-toolbar-active-indicator"
+            style={{
+              width: `calc((100% - 14px - ${toolbarItems.length - 1} * 4px) / ${toolbarItems.length})`,
+              transform: `translateX(calc(${activeItemIndex} * (100% + 4px)))`,
+            }}
+            aria-hidden="true"
+          />
+        ) : null}
+
+        {toolbarItems.map((item) => (
+          <button
+            className={`bottom-toolbar-item ${item.className} ${item.isActive ? 'is-active is-indicator-active' : ''} ${item.isPressed ? 'is-pressed' : ''}`}
+            type="button"
+            key={item.id}
+            aria-current={item.isActive ? 'page' : undefined}
+            aria-pressed={item.isPressed || undefined}
+            onClick={item.onClick}
+          >
+            <span className="bottom-toolbar-icon" aria-hidden="true" />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  )
+}
+
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
   const hasStartedAnalyticsRef = useRef(false)
@@ -426,7 +500,7 @@ export function AppLayout({ state }) {
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
   const [isProfileOpen, setIsProfileOpen] = useState(getIsProfileFromHash)
   const [activeRoomTransitionColor, setActiveRoomTransitionColor] = useState(null)
-  const [isRoomSwitcherOpen, setIsRoomSwitcherOpen] = useState(false)
+  const [isBottomToolbarHidden, setIsBottomToolbarHidden] = useState(false)
   const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
   const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
   const [visitorAge, setVisitorAge] = useState('')
@@ -436,9 +510,6 @@ export function AppLayout({ state }) {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
   const [returnStreak, setReturnStreak] = useState(getReturnStreak)
   const [isReturnStreakPopupOpen, setIsReturnStreakPopupOpen] = useState(false)
-  const [isWelcomeGuideOpen, setIsWelcomeGuideOpen] = useState(
-    () => Boolean(getStoredVisitorProfile()) && shouldShowWelcomeGuide(),
-  )
   const [isVisitorPromptOpen, setIsVisitorPromptOpen] = useState(() => !getStoredVisitorProfile())
 
   const handleReturnStreakPopupOpen = useCallback(() => {
@@ -530,7 +601,6 @@ export function AppLayout({ state }) {
   } = state
   const activeAnalyticsRoom = activeRoom === 'play-room' ? 'sound-room' : activeRoom || 'home'
   const isUtilityPageOpen = isAnalyticsReportOpen || isProfileOpen
-  const shouldShowRoomFloatingControls = activeRoom && activeRoom !== privateRoomRoute
 
   useEffect(() => {
     if (activeRoom || isUtilityPageOpen) {
@@ -596,7 +666,6 @@ export function AppLayout({ state }) {
           storeVisitorProfile(userProfile)
           identifyVisitor(userProfile).catch(() => undefined)
           setIsVisitorPromptOpen(false)
-          setIsWelcomeGuideOpen(shouldShowWelcomeGuide())
           return
         }
 
@@ -616,7 +685,6 @@ export function AppLayout({ state }) {
 
             if (hasCompleteProfile) {
               storeVisitorProfile(profile)
-              setIsWelcomeGuideOpen(shouldShowWelcomeGuide())
             }
           })
       })
@@ -737,7 +805,6 @@ export function AppLayout({ state }) {
   const handleRoomNavigate = useCallback((link) => {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
-    setIsRoomSwitcherOpen(false)
     setActiveRoomTransitionColor(link.color || '#F8DB8E')
 
     window.setTimeout(() => {
@@ -759,83 +826,34 @@ export function AppLayout({ state }) {
     setIsQuickSpotifyOpen(true)
   }, [quickSpotifySrc])
 
-  const availableRoomSwitcherLinks = useMemo(() => (
-    roomSwitcherLinks.filter((link) => (
-      !(link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'))
-    ))
-  ), [activeRoom])
+  const handleHomeNavigate = useCallback(() => {
+    setActiveRoom(null)
+    setIsAnalyticsReportOpen(false)
+    setIsProfileOpen(false)
 
-  const quickSpotifyControl = shouldShowRoomFloatingControls ? (
-    <div className={`quick-spotify ${quickSpotifySrc ? 'is-playing' : ''} ${isQuickSpotifyOpen ? 'is-open' : ''}`}>
-      {quickSpotifySrc ? (
-        <div className="quick-spotify-player-shell">
-          <iframe
-            className="quick-spotify-player"
-            title="Spotify ngẫu nhiên"
-            src={quickSpotifySrc}
-            width="100%"
-            height="86"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        </div>
-      ) : null}
+    if (window.location.pathname === '/tl') {
+      window.history.pushState(null, '', '/')
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      return
+    }
 
-      <button
-        className="quick-spotify-button"
-        type="button"
-        aria-label={quickSpotifySrc && isQuickSpotifyOpen ? 'Thu gọn Spotify' : 'Mở Spotify'}
-        aria-pressed={Boolean(quickSpotifySrc && isQuickSpotifyOpen)}
-        onClick={handleQuickSpotifyToggle}
-      >
-        <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
-      </button>
-    </div>
-  ) : null
+    window.location.hash = ''
+  }, [])
 
-  const roomSwitcher = shouldShowRoomFloatingControls ? (
-    <div className={`room-switcher ${isRoomSwitcherOpen ? 'is-open' : ''}`}>
-      {activeAmbientSound ? (
-        <button
-          className="room-sound-stop"
-          type="button"
-          aria-label="Tắt âm thanh nền"
-          title="Tắt âm thanh nền"
-          onClick={() => handleAmbientSoundToggle(activeAmbientSound)}
-        >
-          <SoundOffIcon />
-        </button>
-      ) : null}
+  const handleProfileNavigate = useCallback(() => {
+    setActiveRoom(null)
+    setIsAnalyticsReportOpen(false)
+    setIsProfileOpen(true)
+    window.location.hash = '#profile'
+  }, [])
 
-      <button
-        className="room-switcher-trigger"
-        type="button"
-        aria-label="Mở menu chuyển phòng"
-        aria-expanded={isRoomSwitcherOpen}
-        onClick={() => setIsRoomSwitcherOpen((current) => !current)}
-      >
-        <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
-      </button>
+  const handleShopOpen = useCallback(() => {
+    window.open('https://138knitwear.com/', '_blank', 'noopener,noreferrer')
+  }, [])
 
-      <nav className="room-switcher-options" aria-label="Chuyển phòng">
-        {availableRoomSwitcherLinks.map((link) => {
-          const isActive = link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')
-
-          return (
-            <button
-              className={`room-switcher-option ${isActive ? 'is-active' : ''}`}
-              type="button"
-              key={link.room}
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => handleRoomNavigate(link)}
-            >
-              {link.label}
-            </button>
-          )
-        })}
-      </nav>
-    </div>
-  ) : null
+  const handleBottomToolbarHiddenToggle = useCallback(() => {
+    setIsBottomToolbarHidden((isHidden) => !isHidden)
+  }, [])
 
   const handleVisitorProfileSubmit = useCallback(async (event) => {
     event.preventDefault()
@@ -860,19 +878,12 @@ export function AppLayout({ state }) {
     try {
       await identifyVisitor(localProfile)
       setIsVisitorPromptOpen(false)
-      setIsWelcomeGuideOpen(true)
     } catch {
       setIsVisitorPromptOpen(false)
-      setIsWelcomeGuideOpen(true)
     } finally {
       setIsVisitorProfileSaving(false)
     }
   }, [visitorAge, visitorGender])
-
-  const handleWelcomeGuideClose = useCallback(() => {
-    window.localStorage.setItem(welcomeGuideLastSeenStorageKey, String(Date.now()))
-    setIsWelcomeGuideOpen(false)
-  }, [])
 
   const handleFeedbackOpen = useCallback(() => {
     setIsFeedbackOpen(true)
@@ -1037,8 +1048,6 @@ export function AppLayout({ state }) {
         <>
           <div className="room-page-header">{header}</div>
           {activeRoomContent}
-          {quickSpotifyControl}
-          {roomSwitcher}
         </>
       ) : (
         <>
@@ -1065,6 +1074,23 @@ export function AppLayout({ state }) {
           </div>
         </>
       )}
+
+      {!isAnalyticsReportOpen ? (
+        <BottomToolbar
+          activeRoom={activeRoom}
+          isHidden={isBottomToolbarHidden}
+          isHomeActive={!activeRoom && !isProfileOpen}
+          isProfileActive={isProfileOpen}
+          isQuickSpotifyOpen={isQuickSpotifyOpen}
+          quickSpotifySrc={quickSpotifySrc}
+          onHomeNavigate={handleHomeNavigate}
+          onProfileNavigate={handleProfileNavigate}
+          onQuickSpotifyToggle={handleQuickSpotifyToggle}
+          onToggleHidden={handleBottomToolbarHiddenToggle}
+          onRoomNavigate={handleRoomNavigate}
+          onShopOpen={handleShopOpen}
+        />
+      ) : null}
 
       {activeRoomTransitionColor ? (
         <div
@@ -1165,55 +1191,6 @@ export function AppLayout({ state }) {
               {isVisitorProfileSaving ? 'Đang lưu...' : 'Bắt đầu'}
             </button>
           </form>
-        </div>
-      ) : null}
-
-      {isWelcomeGuideOpen && !isUtilityPageOpen ? (
-        <div className="visitor-prompt-backdrop welcome-guide-backdrop">
-          <section className="welcome-guide" aria-labelledby="welcome-guide-title">
-            <div className="welcome-guide-heading">
-              <p>Một chút bí kíp nè</p>
-              <h2 id="welcome-guide-title">Mình đi một vòng nha!</h2>
-              <span>Trang chủ dẫn bạn tới các căn phòng, còn hai nút nhỏ sẽ luôn đi cùng bạn.</span>
-            </div>
-
-            <article className="welcome-guide-home">
-              <img src="/PNG/vong-xoay.png" alt="" aria-hidden="true" />
-              <div>
-                <strong>Bắt đầu từ trang chủ</strong>
-                <p>Lướt xuống vòng xoay, chạm hai mũi tên để đổi hướng, rồi chọn tên căn phòng bạn muốn ghé.</p>
-              </div>
-              <span className="welcome-guide-steps" aria-hidden="true">
-                <b>1. Lướt xuống</b>
-                <b>2. Xoay vòng</b>
-                <b>3. Chọn phòng</b>
-              </span>
-            </article>
-
-            <p className="welcome-guide-section-label">Khi đã vào một căn phòng</p>
-
-            <div className="welcome-guide-items">
-              <article className="welcome-guide-item welcome-guide-spotify">
-                <img src={quickSpotifyButtonSrc} alt="" aria-hidden="true" />
-                <div>
-                  <strong>Nút nghe nhạc</strong>
-                  <p>Chạm vào đĩa nhạc để mở hoặc thu gọn Spotify thật nhanh.</p>
-                </div>
-              </article>
-
-              <article className="welcome-guide-item welcome-guide-rooms">
-                <img src={roomSwitcherIconSrc} alt="" aria-hidden="true" />
-                <div>
-                  <strong>Nút chuyển phòng</strong>
-                  <p>Chạm vào mascos này để ghé sang căn phòng khác bất cứ lúc nào.</p>
-                </div>
-              </article>
-            </div>
-
-            <button className="welcome-guide-submit" type="button" onClick={handleWelcomeGuideClose}>
-              Mình hiểu rồi, đi thôi!
-            </button>
-          </section>
         </div>
       ) : null}
 
