@@ -26,6 +26,20 @@ WebBrowser.maybeCompleteAuthSession();
 
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL
   || (Platform.OS === 'android' ? 'http://10.0.2.2:5001' : 'http://127.0.0.1:5001');
+const defaultAssetBaseUrl = 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets';
+const assetBaseUrl = String(process.env.EXPO_PUBLIC_ASSET_BASE_URL || defaultAssetBaseUrl).replace(/\/+$/, '');
+
+function getAssetSource(pathname) {
+  const cleanPathname = String(pathname || '').replace(/^\/+/, '');
+  return { uri: `${assetBaseUrl}/${cleanPathname.split('/').map(encodeURIComponent).join('/')}` };
+}
+
+const appAssetSources = {
+  homeBackground: getAssetSource('mobile/nenn-mobile.png'),
+  mascotWithSpeaker: getAssetSource('mobile/mascot-cam-loa-mobile.png'),
+  transitionMascot: getAssetSource('PNG/tay-trai-tim.png'),
+  wheel: getAssetSource('Vector.gif'),
+};
 
 const toolbarItems = [
   { id: 'home', label: 'Trang chủ', icon: 'home' },
@@ -92,7 +106,7 @@ function ToolbarIcon({ type, isActive }) {
       {type === 'profile' ? (
         <>
           <View style={[styles.profileHead, strokeStyle]} />
-          <View style={[styles.profileBody, strokeStyle]} />
+          <View style={[styles.profileIconBody, strokeStyle]} />
         </>
       ) : null}
 
@@ -254,6 +268,7 @@ function HomeScreen({
   const lastShakeAtRef = useRef(0);
   const [activeWheelLinkId, setActiveWheelLinkId] = useState('sound-room');
   const wheelSize = Math.max(width * 1.9, 680);
+  const lowerWheelLinkInset = Math.max(14, Math.min(width * 0.14, (width - 268) / 2));
   const wheelRotation = rotationValue.interpolate({
     inputRange: [-360, 360],
     outputRange: ['-360deg', '360deg'],
@@ -332,7 +347,7 @@ function HomeScreen({
                 accessibilityIgnoresInvertColors
                 pointerEvents="none"
                 resizeMode="contain"
-                source={require('./assets/nenn-mobile.png')}
+                source={appAssetSources.homeBackground}
                 style={styles.homeIntroImage}
               />
             </View>
@@ -353,7 +368,7 @@ function HomeScreen({
             accessibilityIgnoresInvertColors
             pointerEvents="none"
             resizeMode="contain"
-            source={require('./assets/Vector.gif')}
+            source={appAssetSources.wheel}
             style={[
               styles.homeVector,
               {
@@ -398,6 +413,8 @@ function HomeScreen({
                 style={({ pressed }) => [
                   styles.homeWheelLink,
                   styles[`homeWheelLink${link.style[0].toUpperCase()}${link.style.slice(1)}`],
+                  link.style === 'focus' ? { left: lowerWheelLinkInset } : null,
+                  link.style === 'healing' ? { right: lowerWheelLinkInset } : null,
                   isActiveWheelLink && styles.homeWheelLinkActive,
                   pressed && styles.homeWheelLinkPressed,
                 ]}
@@ -577,7 +594,7 @@ function ProfileScreen({ user, onAuthPress, onAuthChange }) {
             <Image
               accessibilityIgnoresInvertColors
               resizeMode="contain"
-              source={require('./assets/mascot-cam-loa-mobile.png')}
+              source={appAssetSources.mascotWithSpeaker}
               style={styles.profileGuestImage}
             />
             <Text style={styles.profileEyebrow}>Phòng cá nhân</Text>
@@ -726,12 +743,38 @@ function AuthScreen({ user, isCheckingSession, onAuthChange, onBack }) {
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isFacebookSubmitting, setIsFacebookSubmitting] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [authConfig, setAuthConfig] = useState(null);
   const isRegister = mode === 'register';
 
   const handleModeChange = (nextMode) => {
+    if (nextMode === 'register' && authConfig?.passwordRegistrationEnabled === false) {
+      setMessage({
+        type: 'error',
+        text: 'Đăng ký bằng mật khẩu đang tạm khóa. Bạn dùng Google để tạo tài khoản mới nha.',
+      });
+      return;
+    }
+
     setMode(nextMode);
     setMessage(null);
   };
+
+  useEffect(() => {
+    let ignore = false;
+
+    fetchWithTimeout(`${apiBaseUrl}/api/auth/config`, { credentials: 'include' })
+      .then(readApiResponse)
+      .then((data) => {
+        if (!ignore) setAuthConfig(data);
+      })
+      .catch(() => {
+        // Existing password login remains available if config metadata cannot load.
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     Animated.spring(tabSlideValue, {
@@ -756,6 +799,12 @@ function AuthScreen({ user, isCheckingSession, onAuthChange, onBack }) {
     setIsSubmitting(true);
     setMessage(null);
 
+    if (isRegister && (password.length < 15 || password.length > 128)) {
+      setMessage({ type: 'error', text: 'Mật khẩu mới cần từ 15 đến 128 ký tự.' });
+      setIsSubmitting(false);
+      return;
+    }
+
     const payload = {
       name,
       email,
@@ -773,6 +822,14 @@ function AuthScreen({ user, isCheckingSession, onAuthChange, onBack }) {
 
       if (!response.ok) {
         throw new Error(data?.error || 'Chưa thể xử lý yêu cầu.');
+      }
+
+      if (data.requiresVerification) {
+        setMode('login');
+        setMessage({ type: 'success', text: data.message });
+        setName('');
+        setPassword('');
+        return;
       }
 
       onAuthChange(data.user);
@@ -986,8 +1043,9 @@ function AuthScreen({ user, isCheckingSession, onAuthChange, onBack }) {
           />
 
           <TextInput
+            maxLength={128}
             onChangeText={setPassword}
-            placeholder="Nhập mật khẩu"
+            placeholder={isRegister ? 'Mật khẩu từ 15 ký tự' : 'Nhập mật khẩu'}
             placeholderTextColor="#9d8f86"
             secureTextEntry
             style={styles.authInput}
@@ -1004,33 +1062,39 @@ function AuthScreen({ user, isCheckingSession, onAuthChange, onBack }) {
             </Text>
           </Pressable>
 
-          <View style={styles.socialLoginRow}>
-            <View style={styles.socialLoginItem}>
-              <Pressable
-                disabled={isGoogleSubmitting}
-                onPress={() => handleSocialLogin('google')}
-                style={({ pressed }) => [styles.googleButton, pressed && styles.buttonPressed, isGoogleSubmitting && styles.buttonDisabled]}
-              >
-                <Text style={styles.googleBadge}>G</Text>
-              </Pressable>
-              <Text style={styles.googleButtonText}>
-                {isGoogleSubmitting ? 'Đang mở...' : 'Google'}
-              </Text>
-            </View>
+          {authConfig?.googleEnabled !== false || authConfig?.facebookEnabled !== false ? (
+            <View style={styles.socialLoginRow}>
+              {authConfig?.googleEnabled !== false ? (
+                <View style={styles.socialLoginItem}>
+                  <Pressable
+                    disabled={isGoogleSubmitting}
+                    onPress={() => handleSocialLogin('google')}
+                    style={({ pressed }) => [styles.googleButton, pressed && styles.buttonPressed, isGoogleSubmitting && styles.buttonDisabled]}
+                  >
+                    <Text style={styles.googleBadge}>G</Text>
+                  </Pressable>
+                  <Text style={styles.googleButtonText}>
+                    {isGoogleSubmitting ? 'Đang mở...' : 'Google'}
+                  </Text>
+                </View>
+              ) : null}
 
-            <View style={styles.socialLoginItem}>
-              <Pressable
-                disabled={isFacebookSubmitting}
-                onPress={() => handleSocialLogin('facebook')}
-                style={({ pressed }) => [styles.googleButton, pressed && styles.buttonPressed, isFacebookSubmitting && styles.buttonDisabled]}
-              >
-                <Text style={styles.googleBadge}>f</Text>
-              </Pressable>
-              <Text style={styles.googleButtonText}>
-                {isFacebookSubmitting ? 'Đang mở...' : 'Facebook'}
-              </Text>
+              {authConfig?.facebookEnabled !== false ? (
+                <View style={styles.socialLoginItem}>
+                  <Pressable
+                    disabled={isFacebookSubmitting}
+                    onPress={() => handleSocialLogin('facebook')}
+                    style={({ pressed }) => [styles.googleButton, pressed && styles.buttonPressed, isFacebookSubmitting && styles.buttonDisabled]}
+                  >
+                    <Text style={styles.googleBadge}>f</Text>
+                  </Pressable>
+                  <Text style={styles.googleButtonText}>
+                    {isFacebookSubmitting ? 'Đang mở...' : 'Facebook'}
+                  </Text>
+                </View>
+              ) : null}
             </View>
-          </View>
+          ) : null}
 
         </View>
       </ScrollView>
@@ -1104,7 +1168,7 @@ function RoomTransitionOverlay({ color, transitionKey }) {
       <Animated.Image
         accessibilityIgnoresInvertColors
         resizeMode="contain"
-        source={require('./assets/tay-trai-tim.png')}
+        source={appAssetSources.transitionMascot}
         style={[
           styles.roomTransitionMascot,
           {
@@ -1968,7 +2032,10 @@ const styles = StyleSheet.create({
   brand: {
     alignItems: 'center',
     justifyContent: 'center',
+    maxWidth: '36%',
+    minWidth: 0,
     paddingHorizontal: 8,
+    flexShrink: 1,
   },
   brandTitle: {
     color: '#ffffff',
@@ -2153,7 +2220,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 999,
   },
-  profileBody: {
+  profileIconBody: {
     position: 'absolute',
     left: 5,
     bottom: 4,

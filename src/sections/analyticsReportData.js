@@ -40,7 +40,6 @@ export const roomLabels = {
   home: 'Trang chính',
   'play-room': 'Phòng âm thanh',
   'sound-room': 'Phòng âm thanh',
-  'tl-room': 'Phòng thuốc lào tiên lãng phường ông lãnh',
 }
 
 export function getTodayKey() {

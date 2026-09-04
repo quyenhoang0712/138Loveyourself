@@ -8,8 +8,11 @@ import {
   shareTextColors,
 } from '../config/appConfig'
 import { AmbientVisualEffect } from './AmbientVisualEffect'
+import { BottomToolbar } from './BottomToolbar'
 import { CloseIcon } from './icons'
+import { PageTransitionSkeleton } from './PageTransitionSkeleton'
 import { ShareSheet, Toast } from './ShareSheet'
+import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
 import { CommunitySection } from '../sections/CommunitySection'
@@ -22,7 +25,6 @@ import { PlaylistSection } from '../sections/PlaylistSection'
 import { AnalyticsReport } from '../sections/AnalyticsReport'
 import { QuoteSection } from '../sections/QuoteSection'
 import { RoomSection } from '../sections/RoomSection'
-import { TlRoomSection } from '../sections/TlRoomSection'
 import { UserProfileReport } from '../sections/UserProfileReport'
 import { WheelNavSection } from '../sections/WheelNavSection'
 import {
@@ -36,28 +38,35 @@ import {
   trackAnalyticsEvent,
   updateReturnStreak,
 } from '../utils/analytics'
+import { assetUrl } from '../utils/assets'
+import { waitForPageContentReady } from '../utils/pageReady'
 
-const privateRoomRoute = 'tl-room'
-const publicRoomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community', 'diary-room']
-const roomRoutes = [...publicRoomRoutes, privateRoomRoute]
-const roomTransitionDuration = 1300
-const roomTransitionRouteDelay = 1300
+const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community', 'diary-room']
+const pageTransitionRouteDelay = 100
+const pageTransitionMinimumDuration = 480
+const pageTransitionExitDuration = 220
+const pageTransitionReadyTimeout = 8000
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const returnStreakPopupSeenStorageKey = 'love-yourself-return-streak-popup-seen'
-const transitionMascotSrc = '/PNG/tay-trai-tim.png'
-const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1yd3LjXq6a5EXVA11w7UPH?utm_source=generator&theme=0'
-const roomSwitcherLinks = [
-  { href: '#community', label: 'Phòng cộng đồng', room: 'community', color: '#9AB4EE' },
-  { href: '#card-room', label: 'Phòng ghi chú', room: 'card-room', color: '#9AB4EE' },
-  { href: '#diary-room', label: 'Phòng nhật ký', room: 'diary-room', color: '#F8DB8E' },
-]
+const quickSpotifyEmbed = 'https://open.spotify.com/playlist/1pMn6rcoUT3mwTlZpGXIQX?si=7d2c0372d77b4613'
 const homePriorityAssets = [
-  '/Vector.gif',
-  '/PNG/giay.png',
-  '/PNG/ao-khan-len.png',
-  transitionMascotSrc,
+  assetUrl('Vector.gif'),
+  assetUrl('PNG/giay.png'),
+  assetUrl('PNG/ao-khan-len.png'),
 ]
 const uniqueHomePriorityAssets = [...new Set(homePriorityAssets)]
+const pageTransitionMeta = {
+  home: { label: 'Trang chủ', color: '#F8DB8E' },
+  profile: { label: 'Phòng cá nhân', color: '#9AB4EE' },
+  analytics: { label: 'Báo cáo', color: '#9AB4EE' },
+  community: { label: 'Phòng cộng đồng', color: '#9AB4EE' },
+  'card-room': { label: 'Phòng thông điệp', color: '#F8DB8E' },
+  'focus-room': { label: 'Phòng tập trung', color: '#4789C8' },
+  'healing-room': { label: 'Phòng thư giãn', color: '#F8DB8E' },
+  'sound-room': { label: 'Phòng âm nhạc', color: '#4789C8' },
+  'play-room': { label: 'Phòng âm nhạc', color: '#4789C8' },
+  'diary-room': { label: 'Phòng kỷ niệm', color: '#F8DB8E' },
+}
 const visitorGenderOptions = [
   { label: 'Nam', value: 'male' },
   { label: 'Nữ', value: 'female' },
@@ -125,10 +134,6 @@ function getActiveRoomFromHash() {
   if (typeof window === 'undefined') return null
 
   const hashRoom = window.location.hash.replace('#', '')
-  if (hashRoom === privateRoomRoute) {
-    return window.location.pathname === '/tl' ? privateRoomRoute : null
-  }
-
   return roomRoutes.includes(hashRoom) ? hashRoom : null
 }
 
@@ -144,98 +149,130 @@ function getIsProfileFromHash() {
   return window.location.hash.replace('#', '') === 'profile'
 }
 
+function getPageKeyFromLocation() {
+  if (getIsAnalyticsReportFromHash()) return 'analytics'
+  if (getIsProfileFromHash()) return 'profile'
+  return getActiveRoomFromHash() || 'home'
+}
+
 function preloadImage(src) {
   const image = new Image()
   image.decoding = 'async'
   image.src = src
 }
 
-function AnimatedTitle({ children, id }) {
-  let characterIndex = 0
-  const text = String(children)
-
-  return (
-    <h2 aria-label={text} id={id}>
-      {text.split(' ').map((word, wordIndex) => (
-        <span className="room-title-word" key={`${word}-${wordIndex}`}>
-          {Array.from(word).map((character) => {
-            const currentCharacterIndex = characterIndex
-            characterIndex += 1
-
-            return (
-              <span
-                aria-hidden="true"
-                className="room-title-character"
-                key={`${character}-${currentCharacterIndex}`}
-                style={{ '--title-character-index': currentCharacterIndex }}
-              >
-                {character}
-              </span>
-            )
-          })}
-        </span>
-      ))}
-    </h2>
-  )
-}
-
 function CommunityIntroSection({ onCommunityNavigate }) {
   const communityLink = { href: '#community', label: 'Cộng đồng', room: 'community', color: '#9AB4EE' }
 
   return (
-    <section className="home-community-intro scroll-pop" aria-labelledby="home-community-title">
-      <div className="home-community-copy">
-        <p>Phòng cộng đồng</p>
-        <AnimatedTitle id="home-community-title">Một góc để mọi người cùng ở lại với nhau.</AnimatedTitle>
-        <span>
-          Đây sẽ là nơi gom những chia sẻ nhẹ nhàng, lời nhắn và câu chuyện từ cộng đồng Love Yourself.
-          Trước mắt mình mở sẵn cánh cửa, phần nội dung sẽ được thêm sau.
-        </span>
-        <button type="button" onClick={() => onCommunityNavigate(communityLink)}>
-          Vào phòng cộng đồng
-        </button>
+    <section
+      className="home-community-intro home-community-showcase scroll-pop"
+      aria-labelledby="home-community-title"
+    >
+      <img
+        className="home-community-edge"
+        src={assetUrl('homepage/home-community-edge.png')}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <div className="home-community-showcase-inner">
+        <div className="home-community-showcase-art-frame" aria-hidden="true">
+          <img
+            className="home-community-showcase-art"
+            src={assetUrl('homepage/home-community-art.gif')}
+            alt=""
+          />
+        </div>
+
+        <div className="home-community-copy home-community-showcase-copy">
+          <h2 id="home-community-title">
+            Cộng đồng
+            <span>“học yêu chính mình”</span>
+          </h2>
+          <p className="home-community-showcase-description">
+            Nếu “Love User” chưa biết chia sẻ với ai, thì chúng mình cùng nhau ở đây để đồng hành trên hành
+            trình này. Hãy cùng nhau viết nên những câu chuyện thật nhẹ nhàng nhé. Đừng lo lắng, ai trong
+            chúng ta cũng có những tổn thương và sai sót mà, luôn vững tin “Love User” nhé.
+          </p>
+          <button type="button" onClick={() => onCommunityNavigate(communityLink)}>
+            Tham gia cộng đồng
+          </button>
+        </div>
       </div>
-      <img className="home-community-icon" src="/PNG/giay.png" alt="" aria-hidden="true" />
+
+      <span className="home-community-showcase-rule" aria-hidden="true" />
     </section>
   )
 }
 
-function DiaryIntroSection({ onDiaryNavigate }) {
-  const diaryLink = { href: '#diary-room', label: 'Nhật ký', room: 'diary-room', color: '#F8DB8E' }
-
+function ProfileIntroSection({ onProfileNavigate }) {
   return (
-    <section className="home-community-intro home-diary-intro scroll-pop" aria-labelledby="home-diary-title">
-      <img className="home-community-icon home-diary-icon" src="/PNG/note.png" alt="" aria-hidden="true" />
-      <div className="home-community-copy">
-        <p>Phòng nhật ký</p>
-        <AnimatedTitle id="home-diary-title">Một căn phòng mới để giữ lại những dòng riêng.</AnimatedTitle>
-        <span>
-          Phòng nhật ký sẽ được dựng sau. Trước mắt mình để căn phòng này trống đã.
-        </span>
-        <button type="button" onClick={() => onDiaryNavigate(diaryLink)}>
-          Vào phòng nhật ký
-        </button>
+    <section className="home-profile-intro scroll-pop" aria-labelledby="home-profile-intro-title">
+      <div className="home-profile-intro-inner">
+        <div className="home-profile-intro-copy">
+          <h2 id="home-profile-intro-title">Phòng cá nhân</h2>
+          <p>
+            Đây là góc nhỏ dành riêng cho bạn. Bạn có thể xem lại những hoạt động mình đã làm trên website,
+            lưu lại vài dòng nhật ký những điều đang nghĩ trong đầu. Không cần viết hay hay đầy đủ đâu, cứ để
+            mọi thứ ở đây theo cách tự nhiên nhất của bạn nhé.
+          </p>
+          <button type="button" onClick={onProfileNavigate}>
+            Vào phòng cá nhân
+          </button>
+        </div>
+
+        <img
+          className="home-profile-intro-art"
+          src={assetUrl('homepage/home-profile-art.gif')}
+          alt=""
+          aria-hidden="true"
+        />
       </div>
+
+      <span className="home-profile-intro-rule" aria-hidden="true" />
     </section>
   )
 }
 
 function OfficialSiteIntroSection() {
   return (
-    <section className="community-official-site scroll-pop" aria-labelledby="official-site-title">
-      <div className="official-site-copy">
-        <p>Web chính của 138knitwear</p>
-        <AnimatedTitle id="official-site-title">Ghé 138knitwear để xem những collection mới nhất.</AnimatedTitle>
-        <span>
-          Ở đó người tình có thể xem các sản phẩm knitwear, phụ kiện, lookbook và những tin tức mới từ 138.
-          Còn góc Love Yourself này là nơi mình ở lại lâu hơn với cảm xúc, lời nhắn và cộng đồng.
-        </span>
-        <div className="official-site-actions">
-          <a className="official-site-link" href="https://138knitwear.com/" target="_blank" rel="noreferrer">
-            Mở 138knitwear.com          </a>
-        </div>
+    <section className="home-store-intro scroll-pop" aria-labelledby="home-store-intro-title">
+      <img
+        className="home-store-background"
+        src={assetUrl('homepage/home-store-background.png')}
+        alt=""
+        aria-hidden="true"
+      />
+      <img
+        className="home-store-bubble"
+        src={assetUrl('homepage/home-store-bubble.svg')}
+        alt=""
+        aria-hidden="true"
+      />
+      <img
+        className="home-store-mascot"
+        src={assetUrl('homepage/home-store-mascot.png')}
+        alt=""
+        aria-hidden="true"
+      />
+      <img
+        className="home-store-shop"
+        src={assetUrl('homepage/home-store-shop.png')}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <div className="home-store-copy">
+        <h2 id="home-store-intro-title">Cửa hàng lưu niệm</h2>
+        <p>
+          Nếu bạn muốn mang một chút cảm giác dễ thương ở đây về nhà, ghé qua gian hàng lưu niệm của mình
+          nhaaa. Ở đó có những món đồ nhỏ để bạn tự tặng mình, hoặc gửi tặng một người bạn thương.
+        </p>
+        <a href="https://138knitwear.com/" target="_blank" rel="noreferrer">
+          Ghé qua cửa hàng lưu niệm
+        </a>
       </div>
-      <img className="official-site-art" src="/PNG/ao-khan-len.png" alt="" aria-hidden="true" />
     </section>
   )
 }
@@ -379,127 +416,53 @@ function ReturnStreakPopup({ isOpen, onClose, streak }) {
         aria-labelledby="return-streak-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
+        <div className="return-streak-badge" aria-hidden="true">
+          <svg viewBox="0 0 64 76" fill="none">
+            <path
+              d="M39.5 3.5c-13 7.8-20.6 17.4-20.9 30.3L8.2 30.4c-2.7 6.2-3.8 12-3 17.8C6.5 62.8 17.7 72 32 72c15.7 0 28-11.8 28-27.1 0-9.1-4.1-16.2-12.5-22.7C39 15.8 36.2 10 39.5 3.5Z"
+              stroke="currentColor"
+              strokeWidth="6"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M34.5 31.2c-1.2 5.6.6 9.7 5.5 13.5 3.2 2.5 4.8 5.8 4.8 9.8 0 7-5.6 12.3-13 12.3-8.1 0-14.2-5.8-14.2-13.5 0-4.2 1.2-8.3 3.8-12.7l8 3.5c-.2-4.7 1.5-9 5.1-12.9Z"
+              stroke="currentColor"
+              strokeWidth="5"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        <button className="return-streak-dismiss" type="button" aria-label="Đóng" onClick={onClose}>
+          <CloseIcon />
+        </button>
+
         <div className="return-streak-copy">
-          <p>Streak</p>
           <h2 id="return-streak-title">Chuỗi ngày quay lại</h2>
-          <strong>{streak.currentStreak} ngày</strong>
+          <strong aria-label={`${streak.currentStreak} ngày`}>{streak.currentStreak}</strong>
         </div>
 
-        <div className="return-streak-milestones" aria-label="Ngày 1 đến ngày 7">
-          {streak.milestones.map((milestone) => (
-            <div className={streak.currentStreak >= milestone ? 'is-complete' : ''} key={milestone}>
-              <span>{milestone}</span>
-              <em>Ngày</em>
-            </div>
-          ))}
-        </div>
-
-        <button className="return-streak-close" type="button" onClick={onClose}>
-          Đồng ý
+        <button className="return-streak-confirm" type="button" onClick={onClose}>
+          Tiếp tục giữ chuỗi
         </button>
       </section>
     </div>
   )
 }
 
-function BottomToolbar({
-  activeRoom,
-  isHidden,
-  isHomeActive,
-  isProfileActive,
-  isQuickSpotifyOpen,
-  quickSpotifySrc,
-  onHomeNavigate,
-  onProfileNavigate,
-  onQuickSpotifyToggle,
-  onToggleHidden,
-  onRoomNavigate,
-  onShopOpen,
-}) {
-  const createRoomToolbarItem = (link) => ({
-    id: link.room,
-    label: link.label,
-    className: `bottom-toolbar-${link.room}`,
-    isActive: link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room'),
-    onClick: () => onRoomNavigate(link),
-  })
-  const toolbarItems = [
-    { id: 'home', label: 'Trang chủ', className: 'bottom-toolbar-home', isActive: isHomeActive, onClick: onHomeNavigate },
-    ...roomSwitcherLinks.map(createRoomToolbarItem),
-    { id: 'profile', label: 'Phòng cá nhân', className: 'bottom-toolbar-profile', isActive: isProfileActive, onClick: onProfileNavigate },
-    {
-      id: 'spotify',
-      label: 'Nghe nhạc',
-      className: 'bottom-toolbar-spotify',
-      isPressed: Boolean(quickSpotifySrc && isQuickSpotifyOpen),
-      onClick: onQuickSpotifyToggle,
-    },
-    { id: 'shop', label: 'Shop', className: 'bottom-toolbar-shop', onClick: onShopOpen },
-  ]
-  const activeItemIndex = toolbarItems.findIndex((item) => item.isActive)
-
-  return (
-    <nav className={`bottom-toolbar ${isHidden ? 'is-hidden' : ''}`} aria-label="Điều hướng nhanh">
-      <button
-        className="bottom-toolbar-peek"
-        type="button"
-        aria-label={isHidden ? 'Hiện thanh điều hướng' : 'Ẩn thanh điều hướng'}
-        aria-expanded={!isHidden}
-        onClick={onToggleHidden}
-      />
-
-      {quickSpotifySrc && isQuickSpotifyOpen && !isHidden ? (
-        <div className="bottom-toolbar-spotify-panel">
-          <iframe
-            className="bottom-toolbar-spotify-player"
-            title="Spotify mini"
-            src={quickSpotifySrc}
-            width="100%"
-            height="152"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        </div>
-      ) : null}
-
-      <div className="bottom-toolbar-track">
-        {activeItemIndex >= 0 ? (
-          <span
-            className="bottom-toolbar-active-indicator"
-            style={{
-              width: `calc((100% - 14px - ${toolbarItems.length - 1} * 4px) / ${toolbarItems.length})`,
-              transform: `translateX(calc(${activeItemIndex} * (100% + 4px)))`,
-            }}
-            aria-hidden="true"
-          />
-        ) : null}
-
-        {toolbarItems.map((item) => (
-          <button
-            className={`bottom-toolbar-item ${item.className} ${item.isActive ? 'is-active is-indicator-active' : ''} ${item.isPressed ? 'is-pressed' : ''}`}
-            type="button"
-            key={item.id}
-            aria-current={item.isActive ? 'page' : undefined}
-            aria-pressed={item.isPressed || undefined}
-            onClick={item.onClick}
-          >
-            <span className="bottom-toolbar-icon" aria-hidden="true" />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
-    </nav>
-  )
-}
-
 export function AppLayout({ state }) {
   const introSectionRef = useRef(null)
   const hasStartedAnalyticsRef = useRef(false)
+  const pageNavigationTimeoutRef = useRef(null)
+  const pageTransitionLockedRef = useRef(false)
+  const pageTransitionStartedAtRef = useRef(0)
+  const pageTransitionSequenceRef = useRef(0)
+  const pageTransitionTargetRef = useRef(null)
   const [isFloatingHeaderVisible, setIsFloatingHeaderVisible] = useState(false)
   const [activeRoom, setActiveRoom] = useState(getActiveRoomFromHash)
   const [isAnalyticsReportOpen, setIsAnalyticsReportOpen] = useState(getIsAnalyticsReportFromHash)
   const [isProfileOpen, setIsProfileOpen] = useState(getIsProfileFromHash)
-  const [activeRoomTransitionColor, setActiveRoomTransitionColor] = useState(null)
+  const [activePageTransition, setActivePageTransition] = useState(null)
   const [isBottomToolbarHidden, setIsBottomToolbarHidden] = useState(false)
   const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
   const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
@@ -601,6 +564,81 @@ export function AppLayout({ state }) {
   } = state
   const activeAnalyticsRoom = activeRoom === 'play-room' ? 'sound-room' : activeRoom || 'home'
   const isUtilityPageOpen = isAnalyticsReportOpen || isProfileOpen
+  const currentPageKey = isAnalyticsReportOpen ? 'analytics' : isProfileOpen ? 'profile' : activeRoom || 'home'
+  const currentPageKeyRef = useRef(currentPageKey)
+
+  useEffect(() => {
+    currentPageKeyRef.current = currentPageKey
+  }, [currentPageKey])
+
+  const beginPageTransition = useCallback(({ color, label, navigate, targetKey }) => {
+    if (pageTransitionLockedRef.current || targetKey === currentPageKey) return false
+
+    pageTransitionLockedRef.current = true
+    pageTransitionStartedAtRef.current = performance.now()
+    pageTransitionSequenceRef.current += 1
+    pageTransitionTargetRef.current = targetKey
+    setActivePageTransition({
+      color,
+      id: pageTransitionSequenceRef.current,
+      label,
+      phase: 'loading',
+      targetKey,
+    })
+
+    window.clearTimeout(pageNavigationTimeoutRef.current)
+    pageNavigationTimeoutRef.current = window.setTimeout(navigate, pageTransitionRouteDelay)
+    return true
+  }, [currentPageKey])
+
+  useEffect(() => {
+    const transitionId = activePageTransition?.id
+    if (!transitionId || activePageTransition.phase !== 'loading') return undefined
+    if (activePageTransition.targetKey !== currentPageKey) return undefined
+
+    let isCancelled = false
+    let minimumDurationTimeout
+
+    async function finishTransitionWhenReady() {
+      const pageRoot = document.querySelector('.landing-page')
+      await waitForPageContentReady(pageRoot, pageTransitionReadyTimeout)
+      if (isCancelled) return
+
+      const elapsed = performance.now() - pageTransitionStartedAtRef.current
+      const remainingMinimumDuration = Math.max(0, pageTransitionMinimumDuration - elapsed)
+
+      minimumDurationTimeout = window.setTimeout(() => {
+        if (isCancelled) return
+        setActivePageTransition((transition) => (
+          transition?.id === transitionId ? { ...transition, phase: 'leaving' } : transition
+        ))
+      }, remainingMinimumDuration)
+    }
+
+    finishTransitionWhenReady()
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(minimumDurationTimeout)
+    }
+  }, [activePageTransition, currentPageKey])
+
+  useEffect(() => {
+    const transitionId = activePageTransition?.id
+    if (!transitionId || activePageTransition.phase !== 'leaving') return undefined
+
+    const exitTimeout = window.setTimeout(() => {
+      setActivePageTransition((transition) => (transition?.id === transitionId ? null : transition))
+      pageTransitionLockedRef.current = false
+      pageTransitionTargetRef.current = null
+    }, pageTransitionExitDuration)
+
+    return () => window.clearTimeout(exitTimeout)
+  }, [activePageTransition])
+
+  useEffect(() => () => {
+    window.clearTimeout(pageNavigationTimeoutRef.current)
+  }, [])
 
   useEffect(() => {
     if (activeRoom || isUtilityPageOpen) {
@@ -765,6 +803,23 @@ export function AppLayout({ state }) {
 
   useEffect(() => {
     const handleHashChange = () => {
+      const targetKey = getPageKeyFromLocation()
+
+      if (targetKey !== currentPageKeyRef.current && targetKey !== pageTransitionTargetRef.current) {
+        const transitionMeta = pageTransitionMeta[targetKey] || pageTransitionMeta.home
+
+        pageTransitionLockedRef.current = true
+        pageTransitionStartedAtRef.current = performance.now()
+        pageTransitionSequenceRef.current += 1
+        pageTransitionTargetRef.current = targetKey
+        setActivePageTransition({
+          ...transitionMeta,
+          id: pageTransitionSequenceRef.current,
+          phase: 'loading',
+          targetKey,
+        })
+      }
+
       setActiveRoom(getActiveRoomFromHash())
       setIsAnalyticsReportOpen(getIsAnalyticsReportFromHash())
       setIsProfileOpen(getIsProfileFromHash())
@@ -805,16 +860,15 @@ export function AppLayout({ state }) {
   const handleRoomNavigate = useCallback((link) => {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return
 
-    setActiveRoomTransitionColor(link.color || '#F8DB8E')
-
-    window.setTimeout(() => {
-      window.location.hash = link.href
-    }, roomTransitionRouteDelay)
-
-    window.setTimeout(() => {
-      setActiveRoomTransitionColor(null)
-    }, roomTransitionDuration)
-  }, [activeRoom])
+    beginPageTransition({
+      color: link.color || '#F8DB8E',
+      label: link.label,
+      targetKey: link.room,
+      navigate: () => {
+        window.location.hash = link.href
+      },
+    })
+  }, [activeRoom, beginPageTransition])
 
   const handleQuickSpotifyToggle = useCallback(() => {
     if (quickSpotifySrc) {
@@ -827,25 +881,29 @@ export function AppLayout({ state }) {
   }, [quickSpotifySrc])
 
   const handleHomeNavigate = useCallback(() => {
-    setActiveRoom(null)
-    setIsAnalyticsReportOpen(false)
-    setIsProfileOpen(false)
-
-    if (window.location.pathname === '/tl') {
-      window.history.pushState(null, '', '/')
-      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    if (currentPageKey === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
-    window.location.hash = ''
-  }, [])
+    beginPageTransition({
+      ...pageTransitionMeta.home,
+      targetKey: 'home',
+      navigate: () => {
+        window.location.hash = ''
+      },
+    })
+  }, [beginPageTransition, currentPageKey])
 
   const handleProfileNavigate = useCallback(() => {
-    setActiveRoom(null)
-    setIsAnalyticsReportOpen(false)
-    setIsProfileOpen(true)
-    window.location.hash = '#profile'
-  }, [])
+    beginPageTransition({
+      ...pageTransitionMeta.profile,
+      targetKey: 'profile',
+      navigate: () => {
+        window.location.hash = '#profile'
+      },
+    })
+  }, [beginPageTransition])
 
   const handleShopOpen = useCallback(() => {
     window.open('https://138knitwear.com/', '_blank', 'noopener,noreferrer')
@@ -901,6 +959,8 @@ export function AppLayout({ state }) {
     <SiteHeader
       variant="static"
       onFeedbackOpen={handleFeedbackOpen}
+      onHomeNavigate={handleHomeNavigate}
+      onProfileNavigate={handleProfileNavigate}
     />
   )
 
@@ -1012,8 +1072,7 @@ export function AppLayout({ state }) {
     'healing-room': healingRoom,
     'sound-room': soundRoom,
     'play-room': soundRoom,
-    [privateRoomRoute]: <TlRoomSection />,
-          community: <CommunitySection />,
+    community: <CommunitySection />,
     'diary-room': (
       <RoomSection
         eyebrow="Phòng nhật ký"
@@ -1034,6 +1093,7 @@ export function AppLayout({ state }) {
       } ${
         draggingIcePosition && !draggingIcePosition.isDropping && !draggingIcePosition.isReturning ? 'is-dragging-ice' : ''
       }`}
+      aria-busy={Boolean(activePageTransition)}
       onClickCapture={handleInterfaceClick}
     >
       <AmbientVisualEffect activeSound={activeAmbientSound} />
@@ -1043,7 +1103,7 @@ export function AppLayout({ state }) {
           <AnalyticsReport />
         </>
       ) : isProfileOpen ? (
-        <UserProfileReport />
+        <UserProfileReport onHomeNavigate={handleHomeNavigate} />
       ) : activeRoom ? (
         <>
           <div className="room-page-header">{header}</div>
@@ -1063,17 +1123,21 @@ export function AppLayout({ state }) {
             <SiteHeader
               variant="floating"
               onFeedbackOpen={handleFeedbackOpen}
+              onHomeNavigate={handleHomeNavigate}
+              onProfileNavigate={handleProfileNavigate}
             />
           ) : null}
 
           <div className="home-roll-stack">
             <WheelNavSection onRoomNavigate={handleRoomNavigate} />
             <CommunityIntroSection onCommunityNavigate={handleRoomNavigate} />
-            <DiaryIntroSection onDiaryNavigate={handleRoomNavigate} />
+            <ProfileIntroSection onProfileNavigate={handleProfileNavigate} />
             <OfficialSiteIntroSection />
           </div>
         </>
       )}
+
+      <SiteFooter />
 
       {!isAnalyticsReportOpen ? (
         <BottomToolbar
@@ -1092,15 +1156,7 @@ export function AppLayout({ state }) {
         />
       ) : null}
 
-      {activeRoomTransitionColor ? (
-        <div
-          className="room-transition-overlay"
-          style={{ '--room-transition-color': activeRoomTransitionColor }}
-          aria-hidden="true"
-        >
-          <img className="room-transition-mascot" src={transitionMascotSrc} alt="" />
-        </div>
-      ) : null}
+      {activePageTransition ? <PageTransitionSkeleton {...activePageTransition} /> : null}
 
       <ShareSheet
         activeShareFrame={activeShareFrame}

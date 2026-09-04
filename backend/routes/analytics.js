@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { Router } from 'express'
 import { AnalyticsEvent } from '../models/AnalyticsEvent.js'
 import { Feedback } from '../models/Feedback.js'
@@ -6,6 +5,7 @@ import { Session } from '../models/Session.js'
 import { User } from '../models/User.js'
 import { Visitor } from '../models/Visitor.js'
 import { applySessionActivity, getAgeGroup, getDateRange } from '../utils/analytics.js'
+import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
 
@@ -32,61 +32,14 @@ function normalizeRoom(room) {
   return allowedRooms.has(room) ? room : 'home'
 }
 
-function getCookie(req, name) {
-  const cookies = req.get('cookie') || ''
-
-  return cookies.split(';').reduce((value, cookie) => {
-    const [cookieName, ...cookieValue] = cookie.trim().split('=')
-    return cookieName === name ? decodeURIComponent(cookieValue.join('=')) : value
-  }, '')
-}
-
-function getSessionSecret() {
-  return process.env.AUTH_SESSION_SECRET || 'development-only-change-me'
-}
-
-function sign(value) {
-  const signature = crypto.createHmac('sha256', getSessionSecret()).update(value).digest('base64url')
-  return `${value}.${signature}`
-}
-
-function verify(signedValue) {
-  const separatorIndex = signedValue.lastIndexOf('.')
-  if (separatorIndex < 1) return null
-
-  const value = signedValue.slice(0, separatorIndex)
-  const signature = signedValue.slice(separatorIndex + 1)
-  const expected = sign(value).slice(value.length + 1)
-
-  if (signature.length !== expected.length) return null
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? value : null
-}
-
-function readSession(req) {
-  try {
-    const payload = verify(getCookie(req, 'love_yourself_session'))
-    if (!payload) return null
-
-    const session = JSON.parse(Buffer.from(payload, 'base64url').toString())
-    return session.expiresAt > Date.now() ? session : null
-  } catch {
-    return null
-  }
-}
-
-function userProjection() {
-  return 'name email role age gender ageGroup'
-}
-
 async function requireAdmin(req, res, next) {
-  const session = readSession(req)
-  if (!session) {
+  const user = await getAuthenticatedUser(req)
+  if (!user) {
     res.status(401).json({ error: 'Unauthorized' })
     return
   }
 
-  const user = await User.findById(session.userId).select('role').lean()
-  if (user?.role !== 'admin') {
+  if (user.role !== 'admin') {
     res.status(403).json({ error: 'Admin only' })
     return
   }
@@ -95,13 +48,7 @@ async function requireAdmin(req, res, next) {
 }
 
 async function requireUser(req, res, next) {
-  const session = readSession(req)
-  if (!session) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return
-  }
-
-  const user = await User.findById(session.userId).select(userProjection()).lean()
+  const user = await getAuthenticatedUser(req)
   if (!user) {
     res.status(401).json({ error: 'Unauthorized' })
     return
@@ -109,11 +56,6 @@ async function requireUser(req, res, next) {
 
   req.user = user
   next()
-}
-
-async function getAuthenticatedUser(req) {
-  const session = readSession(req)
-  return session ? User.findById(session.userId).select(userProjection()).lean() : null
 }
 
 function roomDurationEntries(roomDurations) {

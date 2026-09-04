@@ -81,7 +81,7 @@ export function AnalyticsReport() {
   }, [])
 
   return (
-    <section className="analytics-report">
+    <section className="analytics-report" aria-busy={isCheckingAdmin}>
       <div className="analytics-controls">
         <label>
           <span>Chế độ</span>

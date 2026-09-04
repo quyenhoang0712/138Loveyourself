@@ -1,7 +1,8 @@
 import { HeartIcon, ShareIcon } from '../components/icons'
+import { assetUrl } from '../utils/assets'
 
-const closedLetterImage = '/letter-closed.png'
-const openLetterImage = '/letter-open.png'
+const closedLetterImage = assetUrl('letter-closed.png')
+const openLetterImage = assetUrl('letter-open.png')
 
 export function QuoteSection({
   copy,

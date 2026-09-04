@@ -34,3 +34,18 @@ strong {
 #root {
   min-height: 100vh;
 }
+
+img,
+picture,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+img,
+picture,
+video,
+canvas {
+  height: auto;
+}

@@ -3,10 +3,17 @@ import { LogoutIcon } from './icons'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 
-export function SiteHeader({ onIntroOpen, variant = 'sticky' }) {
+export function SiteHeader({ onHomeNavigate, onIntroOpen, onProfileNavigate, variant = 'sticky' }) {
   const [user, setUser] = useState(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const profileLabel = `Phòng của ${user?.name || 'bạn'}`
+
+  const handleNavigationClick = (event, navigate) => {
+    if (!navigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+
+    event.preventDefault()
+    navigate()
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -52,14 +59,23 @@ export function SiteHeader({ onIntroOpen, variant = 'sticky' }) {
         </button>
       ) : null}
 
-      <a className="brand" href="/" aria-label="Love Yourself 138knitwear">
+      <a
+        className="brand"
+        href="/"
+        aria-label="Love Yourself 138knitwear"
+        onClick={(event) => handleNavigationClick(event, onHomeNavigate)}
+      >
         <span>LOVE YOURSELF</span>
         <small>138knitwear</small>
       </a>
       {user ? (
         <div className="header-account-actions">
-          <a className="header-account-button" href="#profile">
-            {profileLabel}
+          <a
+            className="header-account-button"
+            href="#profile"
+            onClick={(event) => handleNavigationClick(event, onProfileNavigate)}
+          >
+            <span>{profileLabel}</span>
           </a>
           <button
             className="header-logout-button"
@@ -74,7 +90,7 @@ export function SiteHeader({ onIntroOpen, variant = 'sticky' }) {
         </div>
       ) : (
         <a className="header-account-button" href="/auth">
-          Đăng nhập / Đăng ký
+          Đăng nhập/Đăng ký
         </a>
       )}
     </header>

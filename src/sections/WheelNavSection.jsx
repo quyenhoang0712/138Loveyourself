@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import { assetUrl } from '../utils/assets'
 
 const wheelSpinDuration = 760
+const wheelLeftButtonUrl = assetUrl('wheel/nuttrai.svg')
+const wheelRightButtonUrl = assetUrl('wheel/nutphai.svg')
 
 const wheelLinks = [
-  { href: '#card-room', label: 'phòng thiệp', className: 'wheel-link-card-room', rotation: -90, color: '#4789C8' },
-  { href: '#sound-room', label: 'phòng nghe nhạc', className: 'wheel-link-sound-room', rotation: 0, color: '#F8DB8E' },
-  { href: '#healing-room', label: 'phòng thư giãn', className: 'wheel-link-healing-room', rotation: 180, color: '#F8DB8E' },
-  { href: '#focus-room', label: 'phòng tập trung', className: 'wheel-link-focus-room', rotation: 90, color: '#4789C8' },
+  { href: '#community', label: 'Phòng cộng đồng', className: 'wheel-link-community-room', rotation: -90, color: '#4789C8' },
+  { href: '#healing-room', label: 'Phòng thư giãn', className: 'wheel-link-healing-room', rotation: 180, color: '#F8DB8E' },
+  { href: '#card-room', label: 'Phòng thông điệp', className: 'wheel-link-card-room', rotation: 0, color: '#F8DB8E' },
+  { href: '#focus-room', label: 'Phòng tập trung', className: 'wheel-link-focus-room', rotation: 90, color: '#4789C8' },
 ]
 
 function normalizeRotation(rotation) {
@@ -54,7 +57,7 @@ export function WheelNavSection({ onRoomNavigate }) {
     <section className="wheel-nav-section" aria-label="Love yourself navigation">
       <div className="wheel-nav-stage">
         <div className="wheel-nav-disc" style={{ '--wheel-rotation': `${rotation}deg` }}>
-          <img className="wheel-nav-vector" src="/Vector.gif" alt="" aria-hidden="true" />
+          <img className="wheel-nav-vector" src={assetUrl('Vector.gif')} alt="" aria-hidden="true" />
         </div>
         <div className="wheel-spin-controls" aria-label="Xoay vòng">
           <button
@@ -63,11 +66,7 @@ export function WheelNavSection({ onRoomNavigate }) {
             aria-label="Xoay vòng sang trái"
             onClick={() => rotateWheel(-1)}
           >
-            <svg viewBox="0 0 190 150" aria-hidden="true" focusable="false">
-              <path d="M162 124C66 105 34 48 58 18" />
-              <path d="M58 18L28 24" />
-              <path d="M58 18L68 49" />
-            </svg>
+            <img src={wheelLeftButtonUrl} alt="" aria-hidden="true" />
           </button>
           <button
             className="wheel-spin-button wheel-spin-button-right"
@@ -75,11 +74,7 @@ export function WheelNavSection({ onRoomNavigate }) {
             aria-label="Xoay vòng sang phải"
             onClick={() => rotateWheel(1)}
           >
-            <svg viewBox="0 0 190 150" aria-hidden="true" focusable="false">
-              <path d="M28 124C124 105 156 48 132 18" />
-              <path d="M132 18L162 24" />
-              <path d="M132 18L122 49" />
-            </svg>
+            <img src={wheelRightButtonUrl} alt="" aria-hidden="true" />
           </button>
         </div>
         <nav className="wheel-nav-links" aria-label="Đi tới các phần">
@@ -98,6 +93,15 @@ export function WheelNavSection({ onRoomNavigate }) {
             )
           })}
         </nav>
+      </div>
+
+      <div className="wheel-nav-note">
+        <span aria-hidden="true" />
+        <p>
+          Nếu hôm nay bạn đang hơi rối hoặc không biết nên chọn gì, ghé vào đây thử nhé. Có quote mỗi ngày
+          và phần “xin dấu hiệu” để bạn có thêm một gợi ý nho nhỏ cho điều mình đang nghĩ.
+        </p>
+        <span aria-hidden="true" />
       </div>
     </section>
   )

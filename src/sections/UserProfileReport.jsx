@@ -7,6 +7,7 @@ import {
   returnStreakChangedEventName,
   updateReturnStreak,
 } from '../utils/analytics'
+import { assetUrl } from '../utils/assets'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
@@ -100,12 +101,12 @@ function getReadableDate(value) {
   return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-export function UserProfileReport() {
+export function UserProfileReport({ onHomeNavigate }) {
   const [user, setUser] = useState(null)
   const [form, setForm] = useState(getProfileForm)
   const [message, setMessage] = useState(null)
   const [passwordMessage, setPasswordMessage] = useState(null)
-  const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' })
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', password: '', confirmPassword: '' })
   const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [isSavingPassword, setIsSavingPassword] = useState(false)
@@ -250,7 +251,7 @@ export function UserProfileReport() {
     setIsPasswordEditorOpen(false)
     setMessage(null)
     setPasswordMessage(null)
-    setPasswordForm({ password: '', confirmPassword: '' })
+    setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
   }, [isSavingPassword, isSavingProfile])
 
   useEffect(() => {
@@ -288,7 +289,7 @@ export function UserProfileReport() {
     setForm(getProfileForm(user))
     setMessage(null)
     setPasswordMessage(null)
-    setPasswordForm({ password: '', confirmPassword: '' })
+    setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
     setIsPasswordEditorOpen(false)
     setIsProfileEditorOpen(true)
   }
@@ -365,11 +366,11 @@ export function UserProfileReport() {
     setPasswordMessage(null)
 
     try {
-      const password = passwordForm.password.trim()
-      const confirmPassword = passwordForm.confirmPassword.trim()
+      const password = passwordForm.password
+      const confirmPassword = passwordForm.confirmPassword
 
-      if (password.length < 6) {
-        throw new Error('Mật khẩu mới cần ít nhất 6 ký tự.')
+      if (password.length < 15 || password.length > 128) {
+        throw new Error('Mật khẩu mới cần từ 15 đến 128 ký tự.')
       }
 
       if (password !== confirmPassword) {
@@ -380,6 +381,7 @@ export function UserProfileReport() {
         name: user.name,
         age: user.age,
         gender: user.gender,
+        currentPassword: passwordForm.currentPassword,
         password,
       }
 
@@ -400,7 +402,7 @@ export function UserProfileReport() {
 
       setUser(savedUser)
       setForm(getProfileForm(savedUser))
-      setPasswordForm({ password: '', confirmPassword: '' })
+      setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
       setPasswordMessage({ type: 'success', text: 'Đã đổi mật khẩu.' })
       setIsPasswordEditorOpen(false)
       window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: savedUser } }))
@@ -509,9 +511,9 @@ export function UserProfileReport() {
   }
 
   return (
-    <section className="profile-report" aria-labelledby="profile-room-title">
+    <section className="profile-report" aria-labelledby="profile-room-title" aria-busy={isLoadingUser}>
       <div className="profile-hero-bar">
-        <SiteHeader variant="static" />
+        <SiteHeader variant="static" onHomeNavigate={onHomeNavigate} />
       </div>
 
       <div className="profile-room-content">
@@ -604,7 +606,7 @@ export function UserProfileReport() {
                   <div className="profile-letter-pocket">
                     {displayedLetters.map((letter) => (
                       <article className="profile-letter-card" key={letter.id}>
-                        <img src="/letter-closed.png" alt="" />
+                        <img src={assetUrl('letter-closed.png')} alt="" />
                         <strong>{letter.title}</strong>
                         <small>{letter.recipient || 'Cộng đồng'}</small>
                       </article>
@@ -744,17 +746,21 @@ export function UserProfileReport() {
                     <span>Bảo mật</span>
                     <strong>Mật khẩu được chỉnh riêng để tránh bấm nhầm.</strong>
                   </div>
-                  <button
-                    className="profile-password-open"
-                    type="button"
-                    onClick={() => {
-                      setPasswordMessage(null)
-                      setPasswordForm({ password: '', confirmPassword: '' })
-                      setIsPasswordEditorOpen(true)
-                    }}
-                  >
-                    Đổi mật khẩu
-                  </button>
+                  {user.hasPassword ? (
+                    <button
+                      className="profile-password-open"
+                      type="button"
+                      onClick={() => {
+                        setPasswordMessage(null)
+                        setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
+                        setIsPasswordEditorOpen(true)
+                      }}
+                    >
+                      Đổi mật khẩu
+                    </button>
+                  ) : (
+                    <span>Đăng nhập qua {user.authProvider === 'facebook' ? 'Facebook' : 'Google'}</span>
+                  )}
                 </div>
 
                 {message ? <p className={`profile-info-message is-${message.type}`}>{message.text}</p> : null}
@@ -792,11 +798,25 @@ export function UserProfileReport() {
                   </div>
 
                   <label>
+                    <span>Mật khẩu hiện tại</span>
+                    <input
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      maxLength="128"
+                      autoComplete="current-password"
+                      placeholder="Nhập mật khẩu đang dùng"
+                      required
+                      onChange={(event) => handlePasswordFieldChange('currentPassword', event.target.value)}
+                    />
+                  </label>
+
+                  <label>
                     <span>Mật khẩu mới</span>
                     <input
                       type="password"
                       value={passwordForm.password}
-                      minLength="6"
+                      minLength="15"
+                      maxLength="128"
                       autoComplete="new-password"
                       placeholder="Nhập mật khẩu mới"
                       required
@@ -809,7 +829,8 @@ export function UserProfileReport() {
                     <input
                       type="password"
                       value={passwordForm.confirmPassword}
-                      minLength="6"
+                      minLength="15"
+                      maxLength="128"
                       autoComplete="new-password"
                       placeholder="Nhập lại để chắc nha"
                       required

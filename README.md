@@ -19,21 +19,22 @@ npm run dev
 The API uses MongoDB. By default it connects to
 `mongodb://127.0.0.1:27017/love-yourself-analytics`.
 
-Optional environment variables:
-
-```bash
-cp .env.example .env
-```
-
-Then fill in the values in `.env`:
+Create `.env` and fill in the local values:
 
 ```bash
 MONGO_URI=mongodb://127.0.0.1:27017/love-yourself-analytics
 MONGODB_DB_PATH=/opt/homebrew/var/mongodb
 AUTH_SESSION_SECRET=replace-with-a-long-random-secret
+APP_ORIGIN=http://localhost:5173
+RESEND_API_KEY=re_...
+AUTH_EMAIL_FROM=LOVE YOURSELF <hello@your-verified-domain.com>
 ANALYTICS_ADMIN_TOKEN=change-me
 PORT=5001
 ```
+
+`AUTH_SESSION_SECRET` must contain at least 32 bytes in production. Password
+registration is disabled until both Resend variables are configured; Google,
+Facebook, and existing password accounts continue to work without them.
 
 Analytics report:
 
@@ -52,6 +53,9 @@ Set these Vercel environment variables before using analytics in production:
 ```bash
 MONGO_URI=mongodb+srv://...
 AUTH_SESSION_SECRET=your-long-random-secret
+APP_ORIGIN=https://your-production-domain.com
+RESEND_API_KEY=re_...
+AUTH_EMAIL_FROM=LOVE YOURSELF <hello@your-verified-domain.com>
 ANALYTICS_ADMIN_TOKEN=your-private-token
 ```
 

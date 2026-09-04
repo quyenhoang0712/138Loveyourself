@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
     authProvider: { type: String, enum: ['password', 'google', 'facebook'], default: 'password', index: true },
     googleId: { type: String, trim: true, sparse: true, unique: true },
     facebookId: { type: String, trim: true, sparse: true, unique: true },
+    emailVerifiedAt: { type: Date, default: null },
     returnStreak: {
       currentStreak: { type: Number, min: 0, default: 0 },
       lastVisitDate: { type: String, default: '' },

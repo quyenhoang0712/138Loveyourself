@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { LogoutIcon } from './icons'
+import { assetUrl } from '../utils/assets'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
+const authMascotUrl = assetUrl('auth/iconlogin-NvTpBPEY6tqLd9pXihFITfgFoQKBMh.svg')
+const authWaveUrl = assetUrl('auth/Vectorlogin-rVv7nKjyED6YWxbVTIoJInkW6qduLT.svg')
 
 function getStoredVisitorProfile() {
   if (typeof window === 'undefined') return null
@@ -58,6 +61,7 @@ export function AuthPage() {
   const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [authConfig, setAuthConfig] = useState(null)
   const isRegister = mode === 'register'
   const returnTo = getSafeReturnTo()
 
@@ -80,6 +84,15 @@ export function AuthPage() {
       })
       .finally(() => {
         if (!ignore) setIsCheckingSession(false)
+      })
+
+    fetch('/api/auth/config', { credentials: 'include', signal: controller.signal })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!ignore) setAuthConfig(data)
+      })
+      .catch(() => {
+        // Login with an existing password account remains available without config metadata.
       })
 
     return () => {
@@ -135,6 +148,7 @@ export function AuthPage() {
       password: formData.get('password'),
       age: profileToSync?.age,
       gender: profileToSync?.gender,
+      returnTo,
     }
 
     try {
@@ -157,6 +171,13 @@ export function AuthPage() {
         }
 
         throw new Error(data.error || 'Chưa thể xử lý yêu cầu.')
+      }
+
+      if (data.requiresVerification) {
+        setMode('login')
+        setMessage({ type: 'success', text: data.message })
+        form.reset()
+        return
       }
 
       setUser(data.user)
@@ -201,114 +222,145 @@ export function AuthPage() {
 
   return (
     <main className="auth-page">
-      <a className="auth-back-link" href="/">
-        ← Về trang chủ
-      </a>
-
-      <section className="auth-card" aria-labelledby="auth-title">
+      <header className="auth-page-header">
         <a className="auth-brand" href="/">
           <span>LOVE YOURSELF</span>
           <small>138knitwear</small>
         </a>
 
-        {isCheckingSession ? (
-          <div className="auth-profile" aria-live="polite">
-            <p>Tài khoản của bạn</p>
-            <h1 id="auth-title">Đang kiểm tra...</h1>
-            <span>Mình đang xem phiên đăng nhập còn hiệu lực không.</span>
-          </div>
-        ) : user ? (
-          <div className="auth-profile">
-            <p>Tài khoản của bạn</p>
-            <h1 id="auth-title">{user.name}</h1>
-            <span>{user.email}</span>
-            {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
-            <div>
-              <a href={returnTo}>{returnTo === '/' ? 'Vào trang chủ' : 'Tiếp tục'}</a>
-              <button
-                className="auth-logout-button"
-                type="button"
-                aria-label="Đăng xuất"
-                title="Đăng xuất"
-                disabled={isLoggingOut}
-                onClick={handleLogout}
-              >
-                <LogoutIcon />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-        <div className={`auth-tabs ${isRegister ? 'is-register' : 'is-login'}`} aria-label="Chọn hình thức tài khoản">
-          <button
-            className={mode === 'login' ? 'is-active' : ''}
-            type="button"
-            onClick={() => handleModeChange('login')}
-          >
-            Đăng nhập
-          </button>
-          <button
-            className={isRegister ? 'is-active' : ''}
-            type="button"
-            onClick={() => handleModeChange('register')}
-          >
-            Đăng ký
-          </button>
+        <a className="auth-back-link" href="/" aria-label="Về trang chủ" title="Về trang chủ">
+          <LogoutIcon />
+        </a>
+      </header>
+
+      <div className="auth-stage">
+        <img className="auth-page-wave" src={authWaveUrl} alt="" aria-hidden="true" />
+
+        <div className="auth-card-wrap">
+          <section className="auth-card" aria-labelledby="auth-title">
+            <span className="auth-card-pin" aria-hidden="true" />
+
+            {isCheckingSession ? (
+              <div className="auth-profile" aria-live="polite">
+                <p>Tài khoản của bạn</p>
+                <h1 id="auth-title">Đang kiểm tra...</h1>
+                <span>Mình đang xem phiên đăng nhập còn hiệu lực không.</span>
+              </div>
+            ) : user ? (
+              <div className="auth-profile">
+                <p>Tài khoản của bạn</p>
+                <h1 id="auth-title">{user.name}</h1>
+                <span>{user.email}</span>
+                {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
+                <div>
+                  <a href={returnTo}>{returnTo === '/' ? 'Vào trang chủ' : 'Tiếp tục'}</a>
+                  <button
+                    className="auth-logout-button"
+                    type="button"
+                    aria-label="Đăng xuất"
+                    title="Đăng xuất"
+                    disabled={isLoggingOut}
+                    onClick={handleLogout}
+                  >
+                    <LogoutIcon />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={`auth-tabs ${isRegister ? 'is-register' : 'is-login'}`} aria-label="Chọn hình thức tài khoản">
+                  <button
+                    className={mode === 'login' ? 'is-active' : ''}
+                    type="button"
+                    onClick={() => handleModeChange('login')}
+                  >
+                    Đăng nhập
+                  </button>
+                  <button
+                    className={isRegister ? 'is-active' : ''}
+                    type="button"
+                    onClick={() => handleModeChange('register')}
+                  >
+                    Đăng ký
+                  </button>
+                </div>
+
+                <div className="auth-heading">
+                  <h1 id="auth-title">{isRegister ? 'Chào bạn mới' : 'Mừng bạn quay lại'}</h1>
+                </div>
+
+                {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
+
+                <div className="auth-social-actions">
+                  <button
+                    className="auth-social-button"
+                    type="button"
+                    disabled={authConfig?.googleEnabled === false}
+                    title={authConfig?.googleEnabled === false ? 'Đăng nhập Google chưa được cấu hình' : undefined}
+                    onClick={handleGoogleAuth}
+                  >
+                    {isRegister ? 'Tạo tài khoản với Google' : 'Tiếp tục với Google'}
+                  </button>
+                  <button
+                    className="auth-social-button"
+                    type="button"
+                    disabled={authConfig?.facebookEnabled === false}
+                    title={authConfig?.facebookEnabled === false ? 'Đăng nhập Facebook chưa được cấu hình' : undefined}
+                    onClick={handleFacebookAuth}
+                  >
+                    {isRegister ? 'Tạo tài khoản với Facebook' : 'Tiếp tục với Facebook'}
+                  </button>
+                </div>
+
+                <div className="auth-divider">
+                  <span>
+                    {isRegister ? 'hoặc tạo tài khoản Love Yourself' : 'hoặc dùng tài khoản Love Yourself'}
+                  </span>
+                </div>
+
+                <form className="auth-form" onSubmit={handleSubmit}>
+                  {isRegister ? (
+                    <label>
+                      <span>Tên hiển thị:</span>
+                      <input
+                        name="name"
+                        type="text"
+                        autoComplete="name"
+                        placeholder="Nhập tên hiển thị"
+                        required
+                      />
+                    </label>
+                  ) : null}
+
+                  <label>
+                    <span>Tài khoản:</span>
+                    <input name="email" type="email" autoComplete="email" placeholder="Nhập email" required />
+                  </label>
+
+                  <label>
+                    <span>Mật khẩu:</span>
+                    <input
+                      type="password"
+                      name="password"
+                      autoComplete={isRegister ? 'new-password' : 'current-password'}
+                      placeholder="Nhập mật khẩu"
+                      minLength={isRegister ? 15 : 1}
+                      maxLength="128"
+                      required
+                    />
+                  </label>
+
+                  <button className="auth-submit" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Đang xử lý...' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}
+                  </button>
+                </form>
+              </>
+            )}
+          </section>
+
+          <img className="auth-card-mascot" src={authMascotUrl} alt="" aria-hidden="true" />
         </div>
-
-        <div className="auth-heading">
-          <p>{isRegister ? 'Chào bạn mới' : 'Mừng bạn quay lại'}</p>
-          <h1 id="auth-title">{isRegister ? 'Tạo một tài khoản nha.' : 'Mình gặp lại nhau rồi.'}</h1>
-        </div>
-
-        {message ? <p className={`auth-message is-${message.type}`}>{message.text}</p> : null}
-
-        <button className="auth-google-button" type="button" onClick={handleGoogleAuth}>
-          <span aria-hidden="true">G</span>
-          Tiếp tục với Google
-        </button>
-
-        <button className="auth-google-button" type="button" onClick={handleFacebookAuth}>
-          <span aria-hidden="true">f</span>
-          Tiếp tục với Facebook
-        </button>
-
-        <div className="auth-divider">
-          <span>hoặc dùng email cũ</span>
-        </div>
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {isRegister ? (
-            <label>
-              <span>Tên hiển thị</span>
-              <input name="name" type="text" autoComplete="name" placeholder="Mình nên gọi bạn là gì?" required />
-            </label>
-          ) : null}
-
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" autoComplete="email" placeholder="ban@email.com" required />
-          </label>
-
-          <label>
-            <span>Mật khẩu</span>
-            <input
-              type="password"
-              name="password"
-              autoComplete={isRegister ? 'new-password' : 'current-password'}
-              placeholder="Nhập mật khẩu"
-              minLength="6"
-              required
-            />
-          </label>
-
-          <button className="auth-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang xử lý...' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}
-          </button>
-        </form>
-          </>
-        )}
-      </section>
+      </div>
     </main>
   )
 }

@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrashIcon } from '../components/icons'
 import { roomIntroOpenEventName } from './RoomSection'
 import { trackAnalyticsEvent } from '../utils/analytics'
+import { assetUrl } from '../utils/assets'
 
-const closedLetterImage = '/letter-closed.png'
-const openLetterImage = '/letter-open.png'
+const closedLetterImage = assetUrl('letter-closed.png')
+const openLetterImage = assetUrl('letter-open.png')
 const envelopeColorOptions = [
   { id: 'blue', label: 'Xanh', swatch: '#4b91cf', filter: 'none' },
   { id: 'pink', label: 'Hồng', swatch: '#d77f9c', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
@@ -24,8 +25,8 @@ const sealColorOptions = [
   { id: 'lavender', label: 'Oải hương', color: '#cbc2eb' },
 ]
 const stampOptions = [
-  { id: 'letter-12', label: 'Tem thư mẫu 1', image: '/tem/Letter%20138knitwear-12.svg' },
-  { id: 'letter-14', label: 'Tem thư mẫu 2', image: '/tem/Letter%20138knitwear-14.svg' },
+  { id: 'letter-12', label: 'Tem thư mẫu 1', image: assetUrl('tem/Letter 138knitwear-12.svg') },
+  { id: 'letter-14', label: 'Tem thư mẫu 2', image: assetUrl('tem/Letter 138knitwear-14.svg') },
 ]
 const sentLettersPerPage = 10
 const defaultStampId = stampOptions[0].id
@@ -601,7 +602,12 @@ export function CommunitySection() {
   }
 
   return (
-    <section className="community-section" id="community" aria-label="Phòng cộng đồng">
+    <section
+      className="community-section"
+      id="community"
+      aria-label="Phòng cộng đồng"
+      aria-busy={isLoadingCommunityLetters || isCheckingUser}
+    >
       {isIntroOpen ? (
         <div className="room-intro-backdrop" role="presentation" onMouseDown={() => setIsIntroOpen(false)}>
           <section
