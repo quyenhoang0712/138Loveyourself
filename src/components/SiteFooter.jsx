@@ -4,17 +4,17 @@ import './SiteFooter.css'
 const socialLinks = [
   {
     label: 'Instagram của 138knitwear',
-    href: 'https://www.instagram.com/138knitwear/',
+    href: 'https://www.instagram.com/138.loveyourself',
     icon: assetUrl('footer/ig.svg'),
   },
   {
     label: 'Facebook của 138knitwear',
-    href: 'https://www.facebook.com/138knitwear',
+    href: 'https://www.facebook.com/profile.php?id=61592133620956',
     icon: assetUrl('footer/fb.svg'),
   },
   {
     label: 'TikTok của 138knitwear',
-    href: 'https://www.tiktok.com/@138knitwear',
+    href: 'https://www.tiktok.com/@138.loveyourself',
     icon: assetUrl('footer/tiktok.svg'),
   },
 ]
