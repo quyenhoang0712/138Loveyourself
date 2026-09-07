@@ -1,149 +1,122 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SiteHeader } from '../components/SiteHeader'
-import {
-  dailyJourneyChangedEventName,
-  getDailyJourney,
-  getReturnStreak,
-  returnStreakChangedEventName,
-  updateReturnStreak,
-} from '../utils/analytics'
-import { assetUrl } from '../utils/assets'
-
-const authChangedEventName = 'love-yourself-auth-changed'
-const visitorProfileStorageKey = 'love-yourself-visitor-profile'
-
-function getProfileForm(user) {
-  return {
-    age: user?.age || '',
-    gender: user?.gender || '',
-    name: user?.name || '',
-  }
-}
-
-function getGenderLabel(gender) {
-  if (gender === 'female') return 'Nữ'
-  if (gender === 'male') return 'Nam'
-  if (gender === 'other') return 'Khác'
-  return 'Chưa chọn'
-}
-
-function parseJsonText(text) {
-  if (!text) return null
-
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
-
-function getProfileSaveError(error) {
-  const message = error?.message || ''
-
-  if (
-    message === 'Failed to fetch'
-    || error instanceof SyntaxError
-    || message.includes('<!DOCTYPE html>')
-    || message.includes('Cannot PATCH')
-  ) {
-    return 'API lưu profile chưa chạy. Bạn mở backend rồi thử lại nha.'
-  }
-
-  return message || 'Chưa lưu được thông tin cá nhân.'
-}
-
-function storeVisitorProfileFromUser(user) {
-  if (typeof window === 'undefined') return
-  if (!Number.isInteger(user?.age) || !['male', 'female', 'other'].includes(user?.gender)) return
-
-  try {
-    window.localStorage.setItem(
-      visitorProfileStorageKey,
-      JSON.stringify({ age: user.age, gender: user.gender }),
-    )
-  } catch {
-    // The account profile is still saved in the database.
-  }
-}
-
-function getCalendarMonth() {
-  const today = new Date()
-  return {
-    label: today.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
-    month: today.getMonth(),
-    year: today.getFullYear(),
-  }
-}
-
-function getCalendarDateKey(year, month, day) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-}
-
-function getMonthCalendarDays(year, month) {
-  const firstDate = new Date(year, month, 1)
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const leadingBlankCount = (firstDate.getDay() + 6) % 7
-  const cells = Array.from({ length: leadingBlankCount }, (_, index) => ({ key: `blank-${index}`, day: null }))
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    cells.push({ key: getCalendarDateKey(year, month, day), day })
-  }
-
-  return cells
-}
-
-function getReadableDate(value) {
-  if (!value) return ''
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-
-  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
+import { ProfileRoomScene } from '../components/ProfileRoomScene'
+import { ProfileCalendar } from '../components/ProfileCalendar'
+import { ProfileFocusPopup } from '../components/ProfileFocusPopup'
+import { ProfileDiarySection } from '../components/ProfileDiarySection'
+import { ProfileTasksPopup } from '../components/ProfileTasksPopup'
 
 export function UserProfileReport({ onHomeNavigate }) {
   const [user, setUser] = useState(null)
-  const [form, setForm] = useState(getProfileForm)
-  const [message, setMessage] = useState(null)
-  const [passwordMessage, setPasswordMessage] = useState(null)
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', password: '', confirmPassword: '' })
   const [isLoadingUser, setIsLoadingUser] = useState(true)
-  const [isSavingProfile, setIsSavingProfile] = useState(false)
-  const [isSavingPassword, setIsSavingPassword] = useState(false)
-  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false)
-  const [isPasswordEditorOpen, setIsPasswordEditorOpen] = useState(false)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const [activePegboardPopup, setActivePegboardPopup] = useState(null)
-  const [returnStreak, setReturnStreak] = useState(getReturnStreak)
-  const [dailyJourney, setDailyJourney] = useState(getDailyJourney)
-  const [totalFocusMinutes, setTotalFocusMinutes] = useState(0)
-  const [writtenLetters, setWrittenLetters] = useState([])
+  const [activeRoomPopup, setActiveRoomPopup] = useState(null)
+  const roomPopupRef = useRef(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const editorRef = useRef(null)
+  const [today, setToday] = useState(() => new Date())
+  const [todayTasks, setTodayTasks] = useState(null)
+  const [taskRevision, setTaskRevision] = useState(0)
+  const [popupData, setPopupData] = useState(null)
+  const [popupError, setPopupError] = useState('')
+  const [popupLoading, setPopupLoading] = useState(false)
+  const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  const lampLit = Boolean(user && todayTasks?.userId === user.id && todayTasks?.date === dateKey && todayTasks.quoteOpened && todayTasks.meltedCubes >= 4 && todayTasks.diaryWritten)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setToday(new Date()), 30000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!user) return undefined
+    const controller = new AbortController()
+    fetch(`/api/analytics/daily-tasks?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`, { credentials: 'include', signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Không tải được nhiệm vụ')
+        const data = await response.json()
+        if (!controller.signal.aborted) setTodayTasks({ ...data, userId: user.id, date: dateKey })
+      })
+      .catch(() => { if (!controller.signal.aborted) setTodayTasks(null) })
+    return () => controller.abort()
+  }, [user, dateKey, taskRevision, activeRoomPopup])
+
+  useEffect(() => {
+    if (!activeRoomPopup || !user) return undefined
+    const controller = new AbortController()
+    const url = activeRoomPopup === 'focus' ? `/api/analytics/focus-total?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`
+      : activeRoomPopup === 'calendar' ? '/api/auth/me' : `/api/analytics/daily-tasks?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`
+    fetch(url, { credentials: 'include', signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error('Chưa tải được dữ liệu. Bạn đóng rồi mở lại nhé.')
+        if (!controller.signal.aborted) setPopupData(data)
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setPopupError(error.message === 'Failed to fetch' ? 'Không kết nối được máy chủ.' : error.message)
+      })
+      .finally(() => { if (!controller.signal.aborted) setPopupLoading(false) })
+    return () => controller.abort()
+  }, [activeRoomPopup, user, dateKey, taskRevision])
+
+  const openRoomPopup = (name) => {
+    setPopupData(null)
+    setPopupError('')
+    setPopupLoading(Boolean(user))
+    setActiveRoomPopup(name)
+    roomPopupRef.current.showModal()
+  }
+
+  const closeOnBackdrop = (event) => {
+    if (event.target !== event.currentTarget) return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+      event.currentTarget.close()
+    }
+  }
+
+  const handleProfileSave = async (event) => {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    setIsSaving(true)
+    setSaveError('')
+    try {
+      const response = await fetch('/api/auth/me', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.get('name'), age: Number(form.get('age')), gender: form.get('gender') }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Chưa lưu được thông tin.')
+      setUser(data.user)
+      window.dispatchEvent(new CustomEvent('love-yourself-auth-changed', { detail: { user: data.user } }))
+      editorRef.current.close()
+    } catch (error) {
+      setSaveError(error.message === 'Failed to fetch' ? 'Không kết nối được máy chủ. Bạn thử lại nhé.' : error.message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   useEffect(() => {
     let ignore = false
     const controller = new AbortController()
 
+    const handleAuthChanged = (event) => {
+      ignore = true
+      controller.abort()
+      setUser(event.detail?.user || null)
+      setIsLoadingUser(false)
+    }
+
+    window.addEventListener('love-yourself-auth-changed', handleAuthChanged)
+
     fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
-        if (ignore) return
-
-        setUser(data.user || null)
-        setForm(getProfileForm(data.user))
-
-        if (data.user?.returnStreak) {
-          setReturnStreak(data.user.returnStreak)
-        }
-
-        if (data.user) {
-          updateReturnStreak()
-            .then((streak) => {
-              if (!ignore) setReturnStreak(streak)
-            })
-            .catch(() => {
-              if (!ignore) setReturnStreak(getReturnStreak())
-            })
-        }
+        if (!ignore) setUser(data.user || null)
       })
       .catch((error) => {
         if (!ignore && error.name !== 'AbortError') setUser(null)
@@ -155,705 +128,52 @@ export function UserProfileReport({ onHomeNavigate }) {
     return () => {
       ignore = true
       controller.abort()
+      window.removeEventListener('love-yourself-auth-changed', handleAuthChanged)
     }
   }, [])
-
-  useEffect(() => {
-    if (!user) return undefined
-
-    let ignore = false
-    const controller = new AbortController()
-
-    fetch('/api/analytics/focus-total', { credentials: 'include', signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (!ignore) setTotalFocusMinutes(Number(data?.totalFocusMinutes || 0))
-      })
-      .catch(() => {
-        if (!ignore) setTotalFocusMinutes(dailyJourney.focusMinutes)
-      })
-
-    return () => {
-      ignore = true
-      controller.abort()
-    }
-  }, [dailyJourney.focusMinutes, user])
-
-  useEffect(() => {
-    if (!user) return undefined
-
-    let ignore = false
-    const controller = new AbortController()
-
-    fetch('/api/community-letters/mine', { credentials: 'include', signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (!ignore) setWrittenLetters(Array.isArray(data?.letters) ? data.letters.slice(0, 3) : [])
-      })
-      .catch(() => {
-        if (!ignore) setWrittenLetters([])
-      })
-
-    return () => {
-      ignore = true
-      controller.abort()
-    }
-  }, [user])
-
-  const profileName = user?.name || 'Bạn'
-  const profileAge = user?.age ? `${user.age} tuổi` : 'Chưa cập nhật'
-  const profileGender = getGenderLabel(user?.gender)
-  const calendarMonth = getCalendarMonth()
-  const calendarDays = getMonthCalendarDays(calendarMonth.year, calendarMonth.month)
-  const todayKey = getCalendarDateKey(calendarMonth.year, calendarMonth.month, new Date().getDate())
-  const visitedDateSet = new Set(returnStreak.visitedDates)
-  const totalVisitedDays = returnStreak.visitedDates.length
-  const dailyTasks = [
-    { isComplete: dailyJourney.quoteOpened, label: 'Mở một lá thiệp' },
-    { isComplete: dailyJourney.focusMinutes > 0, label: 'Bắt đầu tập trung' },
-    { isComplete: dailyJourney.musicListened, label: 'Ghé phòng âm thanh' },
-    { isComplete: dailyJourney.communityReadCount > 0, label: 'Đọc một lời nhắn cộng đồng' },
-    { isComplete: dailyJourney.communityWrittenCount > 0, label: 'Viết một lời nhắn' },
-    { isComplete: dailyJourney.relaxationPlayed, label: 'Ghé phòng chữa lành' },
-  ]
-  const isDailyLampLit = dailyTasks.every((task) => task.isComplete)
-  const displayedFocusMinutes = user ? totalFocusMinutes : 0
-  const displayedLetters = user ? writtenLetters : []
-  const focusHours = Math.floor(displayedFocusMinutes / 60)
-  const focusRemainingMinutes = displayedFocusMinutes % 60
-  const focusTimeLabel = focusHours > 0
-    ? `${focusHours} giờ ${focusRemainingMinutes} phút`
-    : `${focusRemainingMinutes} phút`
-  const stopwatchLabel = `${String(focusHours).padStart(2, '0')}:${String(focusRemainingMinutes).padStart(2, '0')}`
-
-  useEffect(() => {
-    const handleReturnStreakChanged = (event) => {
-      setReturnStreak(event.detail?.streak || getReturnStreak())
-    }
-
-    window.addEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
-    return () => window.removeEventListener(returnStreakChangedEventName, handleReturnStreakChanged)
-  }, [])
-
-  useEffect(() => {
-    const handleDailyJourneyChanged = (event) => {
-      setDailyJourney(event.detail?.journey || getDailyJourney())
-    }
-
-    window.addEventListener(dailyJourneyChangedEventName, handleDailyJourneyChanged)
-    return () => window.removeEventListener(dailyJourneyChangedEventName, handleDailyJourneyChanged)
-  }, [])
-
-  const closeProfileEditor = useCallback(() => {
-    if (isSavingProfile || isSavingPassword) return
-
-    setIsProfileEditorOpen(false)
-    setIsPasswordEditorOpen(false)
-    setMessage(null)
-    setPasswordMessage(null)
-    setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
-  }, [isSavingPassword, isSavingProfile])
-
-  useEffect(() => {
-    if (!isProfileEditorOpen) return undefined
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && !isSavingProfile && !isSavingPassword) {
-        if (isPasswordEditorOpen) {
-          setIsPasswordEditorOpen(false)
-          setPasswordMessage(null)
-          return
-        }
-
-        closeProfileEditor()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [closeProfileEditor, isPasswordEditorOpen, isProfileEditorOpen, isSavingPassword, isSavingProfile])
-
-  useEffect(() => {
-    if (!isCalendarOpen && !activePegboardPopup) return undefined
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setIsCalendarOpen(false)
-      if (event.key === 'Escape') setActivePegboardPopup(null)
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activePegboardPopup, isCalendarOpen])
-
-  const openProfileEditor = () => {
-    setForm(getProfileForm(user))
-    setMessage(null)
-    setPasswordMessage(null)
-    setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
-    setIsPasswordEditorOpen(false)
-    setIsProfileEditorOpen(true)
-  }
-
-  const openPegboardPopup = (popupName) => {
-    setActivePegboardPopup(popupName)
-  }
-
-  const handlePegboardPopupKeyDown = (event, popupName) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return
-
-    event.preventDefault()
-    openPegboardPopup(popupName)
-  }
-
-  const handleFieldChange = (field, value) => {
-    setForm((currentForm) => ({ ...currentForm, [field]: value }))
-    setMessage(null)
-  }
-
-  const handlePasswordFieldChange = (field, value) => {
-    setPasswordForm((currentForm) => ({ ...currentForm, [field]: value }))
-    setPasswordMessage(null)
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSavingProfile(true)
-    setMessage(null)
-
-    try {
-      const payload = {
-        name: form.name,
-        age: form.age,
-        gender: form.gender,
-      }
-
-      const response = await fetch('/api/auth/me', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const responseText = await response.text()
-      const data = parseJsonText(responseText)
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.detail || responseText || 'Chưa lưu được thông tin cá nhân.')
-      }
-
-      const currentUserResponse = await fetch('/api/auth/me', { credentials: 'include' })
-      const currentUserData = await currentUserResponse.json().catch(() => data)
-      const savedUser = currentUserData?.user || data.user
-
-      setUser(savedUser)
-      setForm(getProfileForm(savedUser))
-      storeVisitorProfileFromUser(savedUser)
-      setMessage({ type: 'success', text: data.message || 'Đã cập nhật thông tin cá nhân.' })
-      setIsProfileEditorOpen(false)
-      window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: savedUser } }))
-    } catch (error) {
-      setMessage({
-        type: 'error',
-        text: getProfileSaveError(error),
-      })
-    } finally {
-      setIsSavingProfile(false)
-    }
-  }
-
-  const handlePasswordSubmit = async (event) => {
-    event.preventDefault()
-    setIsSavingPassword(true)
-    setPasswordMessage(null)
-
-    try {
-      const password = passwordForm.password
-      const confirmPassword = passwordForm.confirmPassword
-
-      if (password.length < 15 || password.length > 128) {
-        throw new Error('Mật khẩu mới cần từ 15 đến 128 ký tự.')
-      }
-
-      if (password !== confirmPassword) {
-        throw new Error('Hai lần nhập mật khẩu chưa khớp.')
-      }
-
-      const payload = {
-        name: user.name,
-        age: user.age,
-        gender: user.gender,
-        currentPassword: passwordForm.currentPassword,
-        password,
-      }
-
-      const response = await fetch('/api/auth/me', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const responseText = await response.text()
-      const data = parseJsonText(responseText)
-
-      if (!response.ok) {
-        throw new Error(data?.error || data?.detail || responseText || 'Chưa đổi được mật khẩu.')
-      }
-
-      const savedUser = data.user || user
-
-      setUser(savedUser)
-      setForm(getProfileForm(savedUser))
-      setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
-      setPasswordMessage({ type: 'success', text: 'Đã đổi mật khẩu.' })
-      setIsPasswordEditorOpen(false)
-      window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: savedUser } }))
-    } catch (error) {
-      setPasswordMessage({
-        type: 'error',
-        text: getProfileSaveError(error),
-      })
-    } finally {
-      setIsSavingPassword(false)
-    }
-  }
-
-  const renderCalendarContent = () => (
-    <>
-      <p>Lịch sử ghé thăm</p>
-      <h2>{calendarMonth.label}</h2>
-
-      <div className="profile-calendar-grid" aria-label={`Lịch ${calendarMonth.label}`}>
-        {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((weekday) => (
-          <span className="profile-calendar-weekday" key={weekday}>{weekday}</span>
-        ))}
-        {calendarDays.map((date) => {
-          const isVisitedDate = visitedDateSet.has(date.key)
-          const isMissedDate = Boolean(date.day) && date.key < todayKey && !isVisitedDate
-
-          return (
-            <span
-              className={[
-                'profile-calendar-day',
-                date.day ? '' : 'is-empty',
-                isVisitedDate ? 'is-visited' : '',
-                isMissedDate ? 'is-missed' : '',
-              ].filter(Boolean).join(' ')}
-              key={date.key}
-            >
-              {date.day ? <span>{date.day}</span> : null}
-              {isVisitedDate ? <em aria-hidden="true">✓</em> : null}
-            </span>
-          )
-        })}
-      </div>
-
-      <div className="profile-calendar-summary">
-        <span>Tổng thời gian đồng hành</span>
-        <strong>Bạn đã đồng hành cùng chúng mình {totalVisitedDays} ngày.</strong>
-      </div>
-    </>
-  )
-
-  const renderPegboardPopupContent = () => {
-    if (activePegboardPopup === 'daily-tasks') {
-      return (
-        <>
-          <p>Nhiệm vụ hằng ngày</p>
-          <h2>{isDailyLampLit ? 'Đèn đã bật rồi.' : 'Làm nhiệm vụ để bật đèn'}</h2>
-          <div className="profile-pegboard-popup-task-list">
-            {dailyTasks.map((task) => (
-              <span className={task.isComplete ? 'is-complete' : ''} key={task.label}>
-                {task.label}
-              </span>
-            ))}
-          </div>
-        </>
-      )
-    }
-
-    if (activePegboardPopup === 'focus-clock') {
-      return (
-        <>
-          <p>Đồng hồ bấm giờ</p>
-          <h2>Bạn đã tập trung {focusTimeLabel}</h2>
-          <div className="profile-pegboard-popup-focus">
-            <strong>{stopwatchLabel}</strong>
-            <span>Tổng từ lúc tạo tài khoản đến giờ.</span>
-          </div>
-        </>
-      )
-    }
-
-    if (activePegboardPopup === 'letters') {
-      return (
-        <>
-          <p>Thư bạn đã viết</p>
-          <h2>{displayedLetters.length ? `${displayedLetters.length} lá thư gần nhất` : 'Chưa có lá thư nào'}</h2>
-          <div className="profile-pegboard-popup-letter-list">
-            {displayedLetters.length ? displayedLetters.map((letter) => (
-              <article key={letter.id}>
-                <span>{getReadableDate(letter.createdAt) || 'Một ngày dịu dàng'}</span>
-                <h3>{letter.title}</h3>
-                <p>{letter.body}</p>
-                <small>Gửi tới {letter.recipient || 'Cộng đồng'}</small>
-              </article>
-            )) : (
-              <article>
-                <h3>Hộp thư còn trống</h3>
-                <p>Những lá thư bạn gửi ở phòng cộng đồng sẽ nằm ở đây.</p>
-              </article>
-            )}
-          </div>
-        </>
-      )
-    }
-
-    return null
-  }
 
   return (
-    <section className="profile-report" aria-labelledby="profile-room-title" aria-busy={isLoadingUser}>
+    <section className="profile-report" aria-label="Phòng cá nhân" aria-busy={isLoadingUser}>
       <div className="profile-hero-bar">
         <SiteHeader variant="static" onHomeNavigate={onHomeNavigate} />
       </div>
 
-      <div className="profile-room-content">
-        {!user ? (
-          <div className="profile-login-card">
-            <p>{isLoadingUser ? 'Đang tải hồ sơ' : 'Hồ sơ cá nhân'}</p>
-            <h1 id="profile-room-title">{isLoadingUser ? 'Đợi mình một chút nha.' : 'Bạn chưa đăng nhập.'}</h1>
-            {!isLoadingUser ? <a href="/auth">Đăng nhập để xem profile</a> : null}
-          </div>
-        ) : null}
-
-        {user ? (
-          <div className="profile-shell">
-            <aside className="profile-summary-card" aria-label="Tóm tắt hồ sơ">
-              <p>Love Yourself member</p>
-              <h2>{profileName}</h2>
-              <span>{user.email}</span>
-
-              <dl className="profile-summary-list">
-                <div>
-                  <dt>Tuổi:</dt>
-                  <dd>{profileAge}</dd>
-                </div>
-                <div>
-                  <dt>Giới tính:</dt>
-                  <dd>{profileGender}</dd>
-                </div>
-              </dl>
-
-              <button className="profile-summary-action" type="button" onClick={openProfileEditor}>
-                Chỉnh sửa profile
-              </button>
-            </aside>
-
-            <section className="profile-pegboard" aria-label="Bảng pegboard">
-              <aside
-                className={`profile-desk-lamp-box ${isDailyLampLit ? 'is-lit' : ''}`}
-                role="button"
-                tabIndex={0}
-                aria-label={isDailyLampLit ? 'Đèn nhiệm vụ hằng ngày đã bật' : 'Đèn nhiệm vụ hằng ngày chưa bật'}
-                onClick={() => openPegboardPopup('daily-tasks')}
-                onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'daily-tasks')}
-              >
-                <span className="profile-desk-lamp" />
-              </aside>
-
-              <aside
-                className="profile-focus-clock-box"
-                role="button"
-                tabIndex={0}
-                aria-label={`Đồng hồ bấm giờ ghi nhận ${focusTimeLabel}`}
-                onClick={() => openPegboardPopup('focus-clock')}
-                onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'focus-clock')}
-              >
-                <div className="profile-focus-clock">
-                  <strong>{stopwatchLabel}</strong>
-                  <span />
-                </div>
-                <p className="profile-focus-clock-caption">Bạn đã tập trung {focusTimeLabel}</p>
-              </aside>
-
-              <aside className="profile-pegboard-whiteboard" aria-label="Bảng trắng" />
-
-              <aside
-                className="profile-calendar-card profile-calendar-card-pegboard"
-                role="button"
-                tabIndex={0}
-                aria-label="Phóng to lịch sử ghé thăm"
-                onClick={() => setIsCalendarOpen(true)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setIsCalendarOpen(true)
-                  }
-                }}
-              >
-                {renderCalendarContent()}
-              </aside>
-
-              {displayedLetters.length ? (
-                <aside
-                  className="profile-letter-holder"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Thư bạn đã viết"
-                  onClick={() => openPegboardPopup('letters')}
-                  onKeyDown={(event) => handlePegboardPopupKeyDown(event, 'letters')}
-                >
-                  <p>Thư bạn đã viết</p>
-                  <div className="profile-letter-pocket">
-                    {displayedLetters.map((letter) => (
-                      <article className="profile-letter-card" key={letter.id}>
-                        <img src={assetUrl('letter-closed.png')} alt="" />
-                        <strong>{letter.title}</strong>
-                        <small>{letter.recipient || 'Cộng đồng'}</small>
-                      </article>
-                    ))}
-                  </div>
-                  <div className="profile-letter-pocket-front" aria-hidden="true" />
-                </aside>
-              ) : null}
-            </section>
-          </div>
-        ) : null}
-
-        {user && isCalendarOpen ? (
-          <div className="profile-calendar-backdrop" role="presentation" onMouseDown={() => setIsCalendarOpen(false)}>
-            <div
-              className="profile-calendar-dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="profile-calendar-dialog-title"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <button
-                className="profile-calendar-close"
-                type="button"
-                aria-label="Đóng lịch"
-                onClick={() => setIsCalendarOpen(false)}
-              >
-                ×
-              </button>
-              <div className="profile-calendar-card profile-calendar-card-expanded">
-                <span className="profile-calendar-dialog-title" id="profile-calendar-dialog-title">
-                  Lịch sử ghé thăm
-                </span>
-                {renderCalendarContent()}
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {user && activePegboardPopup ? (
-          <div className="profile-calendar-backdrop" role="presentation" onMouseDown={() => setActivePegboardPopup(null)}>
-            <div
-              className="profile-calendar-dialog profile-pegboard-popup-dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="profile-pegboard-popup-title"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <button
-                className="profile-calendar-close"
-                type="button"
-                aria-label="Đóng nội dung pegboard"
-                onClick={() => setActivePegboardPopup(null)}
-              >
-                ×
-              </button>
-              <section className="profile-pegboard-popup-card">
-                <span className="profile-calendar-dialog-title" id="profile-pegboard-popup-title">
-                  Nội dung pegboard
-                </span>
-                {renderPegboardPopupContent()}
-              </section>
-            </div>
-          </div>
-        ) : null}
-
-        {user && isProfileEditorOpen ? (
-          <div className="profile-edit-overlay" role="presentation" onMouseDown={closeProfileEditor}>
-            <div
-              className="profile-edit-dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="profile-edit-title"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <form className="profile-info-card profile-info-popup-card" onSubmit={handleSubmit}>
-                <div className="profile-info-heading">
-                  <p>Chỉnh sửa profile</p>
-                  <h2 id="profile-edit-title">Thông tin cá nhân</h2>
-                </div>
-
-                <button
-                  className="profile-edit-close"
-                  type="button"
-                  aria-label="Đóng popup chỉnh sửa profile"
-                  disabled={isSavingProfile}
-                  onClick={closeProfileEditor}
-                >
-                  ×
-                </button>
-
-                <label>
-                  <span>Email</span>
-                  <input type="email" value={user.email} disabled readOnly />
-                </label>
-
-                <label>
-                  <span>Tên hiển thị</span>
-                  <input
-                    type="text"
-                    value={form.name}
-                    maxLength="80"
-                    required
-                    onChange={(event) => handleFieldChange('name', event.target.value)}
-                  />
-                </label>
-
-                <label>
-                  <span>Tuổi</span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="120"
-                    inputMode="numeric"
-                    value={form.age}
-                    required
-                    onChange={(event) => handleFieldChange('age', event.target.value)}
-                  />
-                </label>
-
-                <label>
-                  <span>Giới tính</span>
-                  <select
-                    value={form.gender}
-                    required
-                    onChange={(event) => handleFieldChange('gender', event.target.value)}
-                  >
-                    <option value="" disabled>Chọn một mục</option>
-                    <option value="female">Nữ</option>
-                    <option value="male">Nam</option>
-                    <option value="other">Khác</option>
-                  </select>
-                </label>
-
-                <div className="profile-security-row">
-                  <div>
-                    <span>Bảo mật</span>
-                    <strong>Mật khẩu được chỉnh riêng để tránh bấm nhầm.</strong>
-                  </div>
-                  {user.hasPassword ? (
-                    <button
-                      className="profile-password-open"
-                      type="button"
-                      onClick={() => {
-                        setPasswordMessage(null)
-                        setPasswordForm({ currentPassword: '', password: '', confirmPassword: '' })
-                        setIsPasswordEditorOpen(true)
-                      }}
-                    >
-                      Đổi mật khẩu
-                    </button>
-                  ) : (
-                    <span>Đăng nhập qua {user.authProvider === 'facebook' ? 'Facebook' : 'Google'}</span>
-                  )}
-                </div>
-
-                {message ? <p className={`profile-info-message is-${message.type}`}>{message.text}</p> : null}
-
-                <button type="submit" disabled={isSavingProfile}>
-                  {isSavingProfile ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-              </form>
-
-              {!isPasswordEditorOpen && passwordMessage ? (
-                <p className={`profile-info-message profile-password-toast is-${passwordMessage.type}`}>{passwordMessage.text}</p>
-              ) : null}
-            </div>
-
-            {isPasswordEditorOpen ? (
-              <div
-                className="profile-password-popup-overlay"
-                role="presentation"
-                onMouseDown={(event) => {
-                  event.stopPropagation()
-                  if (!isSavingPassword) setIsPasswordEditorOpen(false)
-                }}
-              >
-                <form
-                  className="profile-password-panel profile-password-popup"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Đổi mật khẩu"
-                  onMouseDown={(event) => event.stopPropagation()}
-                  onSubmit={handlePasswordSubmit}
-                >
-                  <div className="profile-info-heading">
-                    <p>Bảo mật</p>
-                    <h2>Đổi mật khẩu</h2>
-                  </div>
-
-                  <label>
-                    <span>Mật khẩu hiện tại</span>
-                    <input
-                      type="password"
-                      value={passwordForm.currentPassword}
-                      maxLength="128"
-                      autoComplete="current-password"
-                      placeholder="Nhập mật khẩu đang dùng"
-                      required
-                      onChange={(event) => handlePasswordFieldChange('currentPassword', event.target.value)}
-                    />
-                  </label>
-
-                  <label>
-                    <span>Mật khẩu mới</span>
-                    <input
-                      type="password"
-                      value={passwordForm.password}
-                      minLength="15"
-                      maxLength="128"
-                      autoComplete="new-password"
-                      placeholder="Nhập mật khẩu mới"
-                      required
-                      onChange={(event) => handlePasswordFieldChange('password', event.target.value)}
-                    />
-                  </label>
-
-                  <label>
-                    <span>Nhập lại mật khẩu</span>
-                    <input
-                      type="password"
-                      value={passwordForm.confirmPassword}
-                      minLength="15"
-                      maxLength="128"
-                      autoComplete="new-password"
-                      placeholder="Nhập lại để chắc nha"
-                      required
-                      onChange={(event) => handlePasswordFieldChange('confirmPassword', event.target.value)}
-                    />
-                  </label>
-
-                  {passwordMessage ? <p className={`profile-info-message is-${passwordMessage.type}`}>{passwordMessage.text}</p> : null}
-
-                  <div className="profile-password-actions">
-                    <button type="button" disabled={isSavingPassword} onClick={() => setIsPasswordEditorOpen(false)}>
-                      Hủy
-                    </button>
-                    <button type="submit" disabled={isSavingPassword}>
-                      {isSavingPassword ? 'Đang đổi...' : 'Lưu mật khẩu'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+      <div className="profile-room-content profile-illustrated-content">
+        <ProfileRoomScene
+          user={user}
+          isLoadingUser={isLoadingUser}
+          today={today}
+          lampLit={lampLit}
+          onEditProfile={() => { setSaveError(''); editorRef.current.showModal() }}
+          onOpenPopup={openRoomPopup}
+        />
       </div>
+
+      <ProfileDiarySection user={user} onSaved={() => setTaskRevision((value) => value + 1)} />
+
+      <dialog className={`profile-room-editor profile-room-detail-popup ${activeRoomPopup === 'calendar' ? 'is-calendar' : activeRoomPopup === 'focus' ? 'is-focus' : activeRoomPopup === 'lamp' ? 'is-tasks' : ''}`} ref={roomPopupRef} onClose={(event) => { if (!event.currentTarget.open) setActiveRoomPopup(null) }} onClick={closeOnBackdrop} aria-labelledby="profile-room-popup-title">
+        {activeRoomPopup === 'calendar' ? (
+          <ProfileCalendar user={popupData?.user || user} loading={popupLoading} error={popupError} onClose={() => roomPopupRef.current.close()} />
+        ) : activeRoomPopup === 'focus' ? (
+          <ProfileFocusPopup user={user} loading={popupLoading} error={popupError} seconds={popupData?.totalFocusSeconds} onClose={() => roomPopupRef.current.close()} />
+        ) : activeRoomPopup === 'lamp' ? (
+          <ProfileTasksPopup user={user} loading={popupLoading} error={popupError} tasks={popupData} onClose={() => roomPopupRef.current.close()} />
+        ) : null}
+      </dialog>
+
+      <dialog className="profile-room-editor" onClick={closeOnBackdrop} ref={editorRef} aria-labelledby="profile-editor-title">
+        {user ? <form onSubmit={handleProfileSave} key={user.updatedAt || user.name}>
+          <h2 id="profile-editor-title">Thông tin cá nhân</h2>
+          <label>Tên hiển thị<input name="name" defaultValue={user.name} required minLength={2} /></label>
+          <label>Tuổi<input name="age" type="number" defaultValue={user.age || ''} required min={1} max={120} /></label>
+          <label>Giới tính<select name="gender" defaultValue={user.gender || ''} required>
+            <option value="" disabled>Chọn giới tính</option>
+            <option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option>
+          </select></label>
+          {saveError ? <p role="alert">{saveError}</p> : null}
+          <div><button type="button" onClick={() => editorRef.current.close()}>Đóng</button><button type="submit" disabled={isSaving}>{isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}</button></div>
+        </form> : null}
+      </dialog>
     </section>
   )
 }

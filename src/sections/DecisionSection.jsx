@@ -14,32 +14,43 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
   return (
     <section className="decision-section" id="decision">
       <div className="decision-shell scroll-pop">
-        <p>{copy.decision.eyebrow}</p>
-        <h2>{copy.decision.title}</h2>
+        <div className="decision-banner" aria-hidden="true">
+          <div className="decision-character">
+            <img src="/Vector.svg" alt="" className="decision-mascot-body" />
+            <img src="/Vector-2.svg" alt="" className="decision-mascot-eye-left" />
+            <img src="/Vector-3.svg" alt="" className="decision-mascot-eye-right" />
+            <img src="/Vector-1.svg" alt="" className="decision-mascot-mouth" />
+          </div>
+          <div className="decision-speech">
+            <img src="/Line139.svg" alt="" className="decision-speech-top-line" />
+            <img src="/hoituidiroituitraloicho.svg" alt="hỏi tui đi rồi tui trả lời cho" className="decision-speech-text" />
+            <img src="/Line140.svg" alt="" className="decision-speech-bottom-line" />
+          </div>
+        </div>
 
         <div className={`decision-chat ${hasConversation ? 'has-conversation' : ''}`}>
-          <div className={`decision-chat-thread ${hasConversation ? '' : 'is-empty'}`} aria-live="polite" ref={threadRef}>
-            {hasConversation ? (
-              decisionThread.map((entry) => (
-                <div className="decision-chat-exchange" key={entry.id}>
-                  <div className="decision-message decision-message-user">
-                    <span>{entry.prompt}</span>
-                  </div>
+          <h3 className="decision-chat-title">Hộp thư thoại của LOVA</h3>
 
-                  <div className={`decision-message decision-message-oracle ${entry.isThinking ? 'is-typing' : ''}`}>
-                    {entry.isThinking ? (
-                      <span className="decision-typing" aria-label="Đang trả lời">
-                        <i />
-                        <i />
-                        <i />
-                      </span>
-                    ) : (
-                      <span>{entry.response || decisionMessage || copy.decision.idle}</span>
-                    )}
-                  </div>
+          <div className={`decision-chat-thread ${!hasConversation ? 'is-empty' : ''}`} aria-live="polite" ref={threadRef}>
+            {hasConversation && decisionThread.map((entry) => (
+              <div className="decision-chat-exchange" key={entry.id}>
+                <div className="decision-message decision-message-user">
+                  <span>{entry.prompt}</span>
                 </div>
-              ))
-            ) : null}
+
+                <div className={`decision-message decision-message-oracle ${entry.isThinking ? 'is-typing' : ''}`}>
+                  {entry.isThinking ? (
+                    <span className="decision-typing" aria-label="Đang trả lời">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  ) : (
+                    <span>{entry.response || decisionMessage || copy.decision.idle}</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
           <form className="decision-chat-form" onSubmit={(event) => {
@@ -51,27 +62,20 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
               setDecisionPrompt('')
             }
           }}>
-            <label htmlFor="decision-chat-input">Nhắn cho vị thần</label>
+            <label htmlFor="decision-chat-input" className="sr-only">Nhắn cho vị thần</label>
             <div className="decision-chat-input-row">
               <input
                 id="decision-chat-input"
                 type="text"
                 value={decisionPrompt}
                 maxLength="120"
-                placeholder="Nhập điều bạn muốn hỏi"
+                placeholder="Thắc mắc của bạn là gì?"
                 onChange={(event) => setDecisionPrompt(event.target.value)}
               />
               <button type="submit" aria-label="Gửi câu hỏi" disabled={isThinking || !decisionPrompt.trim()}>
-                gửi
+                Gửi
               </button>
             </div>
-            <button
-              className="decision-chat-suggestion"
-              type="button"
-              onClick={() => setDecisionPrompt('xin 1 dấu hiệu')}
-            >
-              xin 1 dấu hiệu
-            </button>
           </form>
         </div>
       </div>

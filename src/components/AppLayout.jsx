@@ -17,7 +17,6 @@ import { SiteHeader } from './SiteHeader'
 import { AmbientSection } from '../sections/AmbientSection'
 import { CommunitySection } from '../sections/CommunitySection'
 import { DecisionSection } from '../sections/DecisionSection'
-import { DiarySection } from '../sections/DiarySection'
 import { FocusSection } from '../sections/FocusSection'
 import { HealingSection } from '../sections/HealingSection'
 import { IntroVideoSection } from '../sections/IntroVideoSection'
@@ -41,7 +40,7 @@ import {
 import { assetUrl } from '../utils/assets'
 import { waitForPageContentReady } from '../utils/pageReady'
 
-const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community', 'diary-room']
+const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
 const pageTransitionRouteDelay = 100
 const pageTransitionMinimumDuration = 480
 const pageTransitionExitDuration = 220
@@ -65,14 +64,7 @@ const pageTransitionMeta = {
   'healing-room': { label: 'Phòng thư giãn', color: '#F8DB8E' },
   'sound-room': { label: 'Phòng âm nhạc', color: '#4789C8' },
   'play-room': { label: 'Phòng âm nhạc', color: '#4789C8' },
-  'diary-room': { label: 'Phòng kỷ niệm', color: '#F8DB8E' },
 }
-const visitorGenderOptions = [
-  { label: 'Nam', value: 'male' },
-  { label: 'Nữ', value: 'female' },
-  { label: 'Khác', value: 'other' },
-]
-
 function getTodayKey() {
   const today = new Date()
   const year = today.getFullYear()
@@ -466,14 +458,9 @@ export function AppLayout({ state }) {
   const [isBottomToolbarHidden, setIsBottomToolbarHidden] = useState(false)
   const [quickSpotifySrc, setQuickSpotifySrc] = useState('')
   const [isQuickSpotifyOpen, setIsQuickSpotifyOpen] = useState(false)
-  const [visitorAge, setVisitorAge] = useState('')
-  const [visitorGender, setVisitorGender] = useState('')
-  const [visitorProfileError, setVisitorProfileError] = useState('')
-  const [isVisitorProfileSaving, setIsVisitorProfileSaving] = useState(false)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
   const [returnStreak, setReturnStreak] = useState(getReturnStreak)
   const [isReturnStreakPopupOpen, setIsReturnStreakPopupOpen] = useState(false)
-  const [isVisitorPromptOpen, setIsVisitorPromptOpen] = useState(() => !getStoredVisitorProfile())
 
   const handleReturnStreakPopupOpen = useCallback(() => {
     if (!shouldShowReturnStreakPopup()) return
@@ -703,7 +690,6 @@ export function AppLayout({ state }) {
         if (hasCompleteUserProfile) {
           storeVisitorProfile(userProfile)
           identifyVisitor(userProfile).catch(() => undefined)
-          setIsVisitorPromptOpen(false)
           return
         }
 
@@ -719,7 +705,6 @@ export function AppLayout({ state }) {
             if (isCancelled) return
 
             const hasCompleteProfile = Number.isInteger(profile?.age) && Boolean(profile?.gender)
-            setIsVisitorPromptOpen(!hasCompleteProfile)
 
             if (hasCompleteProfile) {
               storeVisitorProfile(profile)
@@ -735,7 +720,6 @@ export function AppLayout({ state }) {
           return
         }
 
-        setIsVisitorPromptOpen(true)
       })
 
     return () => {
@@ -758,7 +742,6 @@ export function AppLayout({ state }) {
 
       storeVisitorProfile(userProfile)
       identifyVisitor(userProfile).catch(() => undefined)
-      setIsVisitorPromptOpen(false)
     }
 
     window.addEventListener('love-yourself-auth-changed', handleAuthChanged)
@@ -913,36 +896,6 @@ export function AppLayout({ state }) {
     setIsBottomToolbarHidden((isHidden) => !isHidden)
   }, [])
 
-  const handleVisitorProfileSubmit = useCallback(async (event) => {
-    event.preventDefault()
-
-    const normalizedAge = Number(visitorAge)
-    if (!Number.isInteger(normalizedAge) || normalizedAge < 1 || normalizedAge > 120) {
-      setVisitorProfileError('Anh nhập tuổi từ 1 đến 120 giúp em nha.')
-      return
-    }
-
-    if (!visitorGender) {
-      setVisitorProfileError('Anh chọn giới tính giúp em nha.')
-      return
-    }
-
-    setIsVisitorProfileSaving(true)
-    setVisitorProfileError('')
-
-    const localProfile = { age: normalizedAge, gender: visitorGender }
-    storeVisitorProfile(localProfile)
-
-    try {
-      await identifyVisitor(localProfile)
-      setIsVisitorPromptOpen(false)
-    } catch {
-      setIsVisitorPromptOpen(false)
-    } finally {
-      setIsVisitorProfileSaving(false)
-    }
-  }, [visitorAge, visitorGender])
-
   const handleFeedbackOpen = useCallback(() => {
     setIsFeedbackOpen(true)
   }, [])
@@ -1073,15 +1026,6 @@ export function AppLayout({ state }) {
     'sound-room': soundRoom,
     'play-room': soundRoom,
     community: <CommunitySection />,
-    'diary-room': (
-      <RoomSection
-        eyebrow="Phòng nhật ký"
-        id="diary-room"
-        title="Phòng nhật ký"
-      >
-        <DiarySection />
-      </RoomSection>
-    ),
   }[activeRoom]
 
   return (
@@ -1202,53 +1146,6 @@ export function AppLayout({ state }) {
         streak={returnStreak}
       />
 
-      {isVisitorPromptOpen && !isUtilityPageOpen ? (
-        <div className="visitor-prompt-backdrop">
-          <form className="visitor-prompt" aria-label="Thông tin người dùng" onSubmit={handleVisitorProfileSubmit}>
-            <div className="visitor-prompt-heading">
-              <p>Trước khi mình bắt đầu</p>
-              <h2>Cho mình biết thêm một chút nha.</h2>
-            </div>
-
-            <label className="visitor-field">
-              <span>Tuổi</span>
-              <input
-                type="number"
-                min="1"
-                max="120"
-                inputMode="numeric"
-                value={visitorAge}
-                onChange={(event) => setVisitorAge(event.target.value)}
-                placeholder="Nhập tuổi"
-              />
-            </label>
-
-            <fieldset className="visitor-field visitor-gender-field">
-              <legend>Giới tính</legend>
-              <div className="visitor-gender-options">
-                {visitorGenderOptions.map((option) => (
-                  <label className={visitorGender === option.value ? 'is-selected' : ''} key={option.value}>
-                    <input
-                      type="radio"
-                      name="visitor-gender"
-                      value={option.value}
-                      checked={visitorGender === option.value}
-                      onChange={(event) => setVisitorGender(event.target.value)}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            {visitorProfileError ? <p className="visitor-prompt-error">{visitorProfileError}</p> : null}
-
-            <button className="visitor-prompt-submit" type="submit" disabled={isVisitorProfileSaving}>
-              {isVisitorProfileSaving ? 'Đang lưu...' : 'Bắt đầu'}
-            </button>
-          </form>
-        </div>
-      ) : null}
 
     </main>
   )

@@ -24,8 +24,10 @@ export const ui = {
   },
   ambient: {
     label: 'Âm thanh nền',
+    roomTitle: 'Phòng tập trung',
+    subtitle: 'Chọn âm thanh để có thể tập trung làm việc hơn nha',
     eyebrow: 'Âm thanh nền',
-    title: 'Chọn âm thanh để bắt đầu tập trung.',
+    title: 'Chọn âm thanh để có thể tập trung làm việc hơn nha',
     sounds: {
       rain: 'Tiếng mưa',
       waves: 'Tiếng sóng',
@@ -39,7 +41,9 @@ export const ui = {
   },
   timer: {
     eyebrow: 'Hẹn giờ tập trung',
-    title: 'Bắt đầu một phiên tập trung.',
+    title: 'Hẹn giờ tập trung',
+    description:
+      'Bắt đầu một phiên tập trung bằng cách thả 1 viên đá vào ly, mỗi viên đã sẽ tan trong 30 phút bạn làm việc và hãy nhớ nghỉ ngơi 5-10phút sau khi 1 viên đá tan nhé',
     pause: 'TẠM DỪNG',
     start: 'BẮT ĐẦU',
     reset: 'Đặt lại',

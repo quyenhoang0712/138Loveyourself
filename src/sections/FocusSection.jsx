@@ -54,8 +54,8 @@ export function FocusSection({
     <section className="pomodoro-section" id="focus">
       <div className="pomodoro-shell scroll-pop">
         <div className="pomodoro-heading">
-          <p>{copy.timer.eyebrow}</p>
           <h2>{copy.timer.title}</h2>
+          <p>{copy.timer.description || copy.timer.eyebrow}</p>
         </div>
 
         <div className="pomodoro-card">

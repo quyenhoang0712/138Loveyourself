@@ -12,7 +12,6 @@ const activityLinks = [
   { href: '#card-room', label: 'Phòng thông điệp', room: 'card-room', color: '#9AB4EE' },
   { href: '#focus-room', label: 'Phòng tập trung', room: 'focus-room', color: '#9AB4EE' },
   { href: '#healing-room', label: 'Phòng thư giãn', room: 'healing-room', color: '#9AB4EE' },
-  { href: '#diary-room', label: 'Phòng kỷ niệm', room: 'diary-room', color: '#9AB4EE' },
 ]
 
 const activityRoomIds = new Set(activityLinks.map((link) => link.room))
@@ -185,8 +184,8 @@ export function BottomToolbar({
             <span
               className="bottom-toolbar-active-indicator"
               style={{
-                width: `calc((100% - 14px - ${toolbarItems.length - 1} * 4px) / ${toolbarItems.length})`,
-                transform: `translateX(calc(${activeItemIndex} * (100% + 4px)))`,
+                width: `calc((100% - 2 * var(--bottom-toolbar-padding, 7px) - ${toolbarItems.length - 1} * var(--bottom-toolbar-gap, 4px)) / ${toolbarItems.length})`,
+                transform: `translateX(calc(${activeItemIndex} * (100% + var(--bottom-toolbar-gap, 4px))))`,
               }}
               aria-hidden="true"
             />

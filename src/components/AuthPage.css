@@ -86,7 +86,7 @@
 .auth-page-wave {
   position: absolute;
   right: 0;
-  bottom: clamp(78px, 9vh, 104px);
+  bottom: calc(clamp(78px, 9vh, 104px) - 16px);
   left: 0;
   z-index: 0;
   display: block;
@@ -96,16 +96,18 @@
 }
 
 .auth-card-wrap {
+  --auth-mascot-overhang: 60px;
   position: relative;
   z-index: 2;
   isolation: isolate;
   width: min(500px, calc(100vw - 40px));
+  padding-bottom: var(--auth-mascot-overhang);
 }
 
 .auth-card-wrap::before,
 .auth-card-wrap::after {
   position: absolute;
-  inset: 0;
+  inset: 0 0 var(--auth-mascot-overhang);
   z-index: -2;
   border-radius: 17px;
   content: "";
@@ -147,8 +149,8 @@
 
 .auth-card-mascot {
   position: absolute;
-  bottom: -60px;
-  left: -42px;
+  bottom: 0;
+  left: -26px;
   z-index: 4;
   display: block;
   width: 118px;
@@ -370,6 +372,7 @@
   }
 
   .auth-card-wrap {
+    --auth-mascot-overhang: 52px;
     width: min(390px, calc(100vw - 28px));
   }
 
@@ -378,8 +381,7 @@
   }
 
   .auth-card-mascot {
-    bottom: -52px;
-    left: -7px;
+    left: 9px;
     width: 88px;
   }
 

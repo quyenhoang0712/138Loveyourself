@@ -165,7 +165,7 @@
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 960px) {
   .site-footer {
     min-height: 690px;
     border-width: 3px;
@@ -194,7 +194,9 @@
     bottom: 300px;
     width: max(100%, 780px);
     max-width: none;
-    transform: translateX(calc((100vw - 100%) / 2));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 
   .site-footer-meta {

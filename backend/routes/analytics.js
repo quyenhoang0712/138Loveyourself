@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { DiaryEntry } from '../models/DiaryEntry.js'
 import { AnalyticsEvent } from '../models/AnalyticsEvent.js'
 import { Feedback } from '../models/Feedback.js'
 import { Session } from '../models/Session.js'
@@ -23,6 +24,7 @@ const allowedEvents = new Set([
   'timer_start',
   'timer_pause',
   'timer_reset',
+  'ice_melt',
   'spotify_view',
   'community_letter_read',
   'community_letter_write',
@@ -322,12 +324,66 @@ router.get('/me-report', requireUser, async (req, res) => {
   })
 })
 
+router.get('/daily-tasks', requireUser, async (req, res) => {
+  let start, end
+  try {
+    const range = getDateRange('day', req.query.date)
+    const offset = Number(req.query.timezoneOffset || 0)
+    if (!Number.isInteger(offset) || offset < -840 || offset > 720) throw new Error('Invalid timezone')
+    start = new Date(range.start.getTime() + offset * 60000)
+    end = new Date(range.end.getTime() + offset * 60000)
+  } catch {
+    return res.status(400).json({ error: 'Invalid date' })
+  }
+  const userId = String(req.user._id)
+  const [events, diary] = await Promise.all([
+    AnalyticsEvent.aggregate([
+      { $match: { userId, createdAt: { $gte: start, $lt: end }, type: { $in: ['letter_open', 'ice_melt'] } } },
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+    ]),
+    DiaryEntry.exists({ userId, date: req.query.date, note: { $regex: /\S/ } }),
+  ])
+  const count = (type) => events.find((event) => event._id === type)?.count || 0
+  res.json({ quoteOpened: count('letter_open') > 0, meltedCubes: count('ice_melt'), diaryWritten: Boolean(diary) })
+})
+
+router.get('/diary', requireUser, async (req, res) => {
+  const entries = await DiaryEntry.find({ userId: String(req.user._id) }).select('date note mood updatedAt').lean()
+  res.json({ entries })
+})
+
+router.put('/diary', requireUser, async (req, res) => {
+  const { date, mood } = req.body
+  const note = String(req.body.note || '').trim()
+  const parsed = new Date(`${date}T00:00:00.000Z`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date || !note || note.length > 20000 || (mood != null && (!Number.isInteger(mood) || mood < 1 || mood > 5))) {
+    return res.status(400).json({ error: 'Ngày hoặc nội dung nhật ký chưa hợp lệ.' })
+  }
+  const entry = await DiaryEntry.findOneAndUpdate({ userId: String(req.user._id), date }, { $set: { note, mood: mood ?? null } }, { upsert: true, returnDocument: 'after', runValidators: true })
+  res.json({ entry })
+})
+
 router.get('/focus-total', requireUser, async (req, res) => {
   const userId = String(req.user._id)
+  let dateFilter = {}
+  if (req.query.date) {
+    try {
+      const { start, end } = getDateRange('day', req.query.date)
+      const timezoneOffset = Number(req.query.timezoneOffset || 0)
+      if (!Number.isInteger(timezoneOffset) || timezoneOffset < -840 || timezoneOffset > 720) throw new Error('Invalid timezone')
+      start.setUTCMinutes(start.getUTCMinutes() + timezoneOffset)
+      end.setUTCMinutes(end.getUTCMinutes() + timezoneOffset)
+      dateFilter = { createdAt: { $gte: start, $lt: end } }
+    } catch {
+      res.status(400).json({ error: 'Invalid date' })
+      return
+    }
+  }
   const [focusTotal] = await AnalyticsEvent.aggregate([
     {
       $match: {
         userId,
+        ...dateFilter,
         type: 'timer_start',
         room: 'focus-room',
         'metadata.phase': 'focus',

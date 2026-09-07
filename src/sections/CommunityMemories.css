@@ -1,0 +1,66 @@
+.community-memories { border-top: 12px solid #478dc9; border-bottom: 12px solid #f9dd8e; background: repeating-linear-gradient(90deg, #c3ced0 0 24px, #eee7d4 24px 48px); color: #796b50; padding: 28px 5.2% 52px; }
+.memory-inner { position: relative; max-width: 1100px; margin: auto; padding: 0 28px 22px; }
+.memory-inner > *:not(.memory-frame) { position: relative; z-index: 1; }
+.memory-frame { position: absolute; inset: 38px 0 0; width: 100%; height: calc(100% - 38px); display: block; pointer-events: none; overflow: visible; z-index: 0; }
+.memory-frame rect { fill: none; stroke: #178fd4; stroke-width: 3px; stroke-dasharray: 36px 23px; }
+.memory-upload { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 20px; background: #478dc9; color: white; padding: 4px 14px; box-shadow: 2px 2px #efa9b8; font: 13px var(--font-regular); cursor: pointer; }
+.memory-upload span { font-size: 23px; line-height: 1; }
+.community-memories h2 { position: relative; z-index: 1; display: table; margin: -8px auto 36px; border: 5px solid #168fd3; padding: 8px 30px; color: #478dc9; background: #eee7d4; font: 36px/1.2 var(--font-regular); text-align: center; }
+.memory-board { padding: 8px 5% 0; }
+.memory-feature { display: grid; grid-template-columns:  minmax(0, 3fr) minmax(0, 4.3fr); gap: 34px; align-items: end; }
+.memory-photo { position: relative; margin: 0; aspect-ratio: 3 / 4; border: 4px solid #478dc9; outline: 7px solid #efa9b8; background: #eee7d4; }
+.memory-photo > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.memory-photo figcaption { position: absolute; bottom: 12px; left: 12px; max-width: calc(100% - 24px); padding: 3px 7px; background: #eee7d4dc; font-size: 12px; }
+.memory-photo-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; color: #478dc9; font: 20px/1.5 var(--font-regular); }
+.memory-photo-empty img { width: 45%; height: auto; }
+.memory-date { margin: 0 0 26px; font: 16px/1.4 var(--font-regular); }
+.memory-note, .memory-thumbnail { border: 3px solid #796b50; outline: 5px solid #f9dd8e; border-radius: 5px; background: #eee7d4; }
+.memory-note { min-height: 245px; padding: 22px; font: 17px/1.6 var(--font-regular); white-space: pre-wrap; overflow-wrap: anywhere; }
+.memory-note p { margin: 0; }
+.memory-empty-note { opacity: .65; text-align: center; padding-top: 55px; }
+.memory-carousel { position: relative; margin-top: 28px; padding: 0 42px; }
+.memory-thumbnails { position: relative; padding: 6px; overflow: hidden; scrollbar-width: none; }
+.memory-thumbnail-track { display: flex; width: max-content; gap: 22px; animation: memoryThumbnailConveyor 32s linear infinite; }
+.memory-thumbnail-group { display: flex; gap: 22px; }
+.memory-thumbnails:hover .memory-thumbnail-track, .memory-thumbnails:focus-within .memory-thumbnail-track { animation-play-state: paused; }
+.memory-thumbnail { flex: 0 0 170px; height: 102px; padding: 0; overflow: hidden; cursor: pointer; }
+.memory-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.memory-thumbnail.is-active { border-color: #478dc9; outline-color: #efa9b8; }
+@keyframes memoryThumbnailConveyor { to { transform: translateX(calc(-50% - 11px)); } }
+@media (prefers-reduced-motion: reduce) { .memory-thumbnail-track { animation: none; } }
+.memory-arrow { position: absolute; z-index: 2; top: 50%; width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #eee7d4; box-shadow: 2px 2px 0 #efa9b8; color: #478dc9; font-size: 26px; padding: 0; cursor: pointer; transform: translateY(-50%); transition: transform 180ms ease, box-shadow 180ms ease; }
+.memory-arrow:first-child { left: 0; }
+.memory-arrow:last-child { right: 0; }
+.memory-arrow:hover:not(:disabled) { transform: translateY(-50%) scale(1.08); box-shadow: 3px 3px 0 #efa9b8; }
+.memory-arrow:active:not(:disabled) { transform: translateY(-50%) scale(0.95); }
+.memory-arrow:disabled { opacity: .4; cursor: default; }
+.memory-pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin-top: 24px; }
+.memory-pagination button { min-width: 34px; height: 34px; border: 2px solid #478dc9; border-radius: 50%; color: #478dc9; background: #eee7d4; font: 15px var(--font-regular); cursor: pointer; transition: color .2s ease, background .2s ease, transform .2s ease; }
+.memory-pagination button:hover:not(:disabled) { transform: translateY(-2px); }
+.memory-pagination button.is-active { color: white; background: #6ca58b; border-color: #6ca58b; box-shadow: 2px 2px #f9dd8e; }
+.memory-pagination button:disabled { opacity: .45; cursor: default; }
+.memory-status { min-height: 20px; text-align: center; margin: 20px 0 0; font-size: 14px; }
+.memory-form { display: flex; flex-direction: column; gap: 12px; }
+.memory-form label { font-size: 14px; }
+.memory-form textarea { resize: vertical; flex: 1; min-height: 100px; width: 100%; border: 0; border-bottom: 1px solid #c3ced0; color: #796b50; background: transparent; font: inherit; }
+.memory-form > div { display: flex; justify-content: flex-end; gap: 12px; }
+.memory-form button { border: 1px solid #478dc9; border-radius: 5px; color: #478dc9; background: transparent; padding: 6px 10px; cursor: pointer; }
+.memory-form button[type='submit'] { color: white; background: #478dc9; }
+.community-memories button:focus-visible, .memory-form textarea:focus-visible { outline: 3px solid #168fd3; outline-offset: 5px; }
+@media (max-width: 640px) {
+  .community-memories { padding: 24px 6% 30px; background-size: 32px 100%; background-image: repeating-linear-gradient(90deg, #c3ced0 0 16px, #eee7d4 16px 32px); }
+  .memory-inner { padding: 0 16px 18px; }
+  .memory-frame { inset: 55px 0 0; height: calc(100% - 55px); }
+  .memory-frame rect { rx: 22px; ry: 22px; stroke-width: 2.5px; stroke-dasharray: 26px 16px; }
+  .community-memories h2 { font-size: 28px; margin: 24px auto 30px; padding: 8px 20px; }
+  .memory-board { padding: 0 3%; }
+  .memory-feature { grid-template-columns: 1fr; gap: 28px; }
+  .memory-photo { width: min(100%, 330px); justify-self: center; }
+  .memory-date { margin-bottom: 18px; }
+  .memory-note { min-height: 190px; padding: 18px; }
+  .memory-carousel { padding: 0 34px; }
+  .memory-arrow { width: 32px; height: 32px; font-size: 20px; }
+  .memory-arrow:first-child { left: 0; right: auto; }
+  .memory-arrow:last-child { right: 0; left: auto; }
+  .memory-thumbnail { flex-basis: 125px; height: 82px; }
+}

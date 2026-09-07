@@ -1,0 +1,91 @@
+.write-letter-page { min-height: 100vh; color: #478dc9; background: #eee7d4; }
+.write-letter-header { position: relative; display: flex; align-items: center; justify-content: center; min-height: 88px; padding: 12px clamp(24px, 6vw, 80px); background: #478dc9; border-top: 12px solid #f9dd8e; box-shadow: 0 3px 5px rgba(73, 94, 112, .3); }
+.write-letter-brand { display: flex; flex-direction: column; color: #fff5de; text-align: center; text-decoration: none; }
+.write-letter-brand strong { font: 400 clamp(28px, 3vw, 40px)/1 var(--font-bold); letter-spacing: .08em; }
+.write-letter-brand span { margin-top: 4px; font: 700 15px/1 var(--font-regular); }
+.write-letter-account { position: absolute; right: clamp(24px, 6vw, 80px); display: flex; align-items: center; gap: 18px; }
+.write-letter-account > a:first-child { padding: 8px 15px; color: #478dc9; background: #fff5de; border-radius: 999px; box-shadow: 2px 2px #efa9b8; text-decoration: none; font: 16px var(--font-regular); }
+.write-letter-account > span { color: #fff5de; font: 17px var(--font-regular); }
+.write-letter-home { display: grid; place-items: center; width: 34px; height: 34px; color: #478dc9; background: #fff5de; border-radius: 50%; box-shadow: 2px 2px #efa9b8; text-decoration: none; font-size: 23px; }
+.write-letter-stage { min-height: 900px; padding: 58px 24px 72px; text-align: center; }
+.write-letter-stage h1 { margin: 0 auto 28px; color: #478dc9; font: 700 clamp(18px, 2vw, 25px)/1.35 var(--font-regular); }
+.write-letter-form { position: relative; display: flex; flex-direction: column; width: min(880px, 100%); height: min(880px, calc(100vh - 130px)); min-height: 680px; margin: 0 auto; padding: 16px 82px 36px 74px; overflow: hidden; color: #478dc9; background: url('https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg') center / 100% 100% no-repeat; text-align: left; }
+.write-letter-stamp { position: absolute; top: 28px; right: 68px; width: 92px; height: 122px; object-fit: contain; }
+.write-letter-form time { display: block; margin-bottom: 0; font: 13px/16px var(--font-regular); }
+.write-letter-form input, .write-letter-form textarea { color: #478dc9; border: 0; outline: 0; background: transparent; font-family: var(--font-bold); }
+.write-letter-title-input { width: calc(100% - 130px); height: 30px; font-size: 24px; line-height: 30px; }
+.write-letter-recipient { display: flex; align-items: center; width: calc(100% - 130px); height: 42px; margin-top: 36px; font: 18px var(--font-bold); }
+.write-letter-recipient span { flex: 0 0 auto; }
+.write-letter-recipient input { min-width: 0; width: 100%; padding-left: 7px; font-size: 18px; }
+.write-letter-form textarea { flex: 1; width: 100%; min-height: 0; padding: 0; resize: none; font-size: 18px; line-height: 36px; background: repeating-linear-gradient(to bottom, transparent 0 35px, rgba(71, 141, 201, .55) 35px 36px); }
+.write-letter-form input::placeholder, .write-letter-form textarea::placeholder { color: rgba(71, 141, 201, .52); opacity: 1; }
+.write-letter-submit { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 24px; padding: 10px 22px; border: 0; border-radius: 999px; color: #fff; background: #478dc9; box-shadow: 3px 3px #efa9b8; font: 18px var(--font-regular); text-decoration: none; cursor: pointer; }
+.write-letter-submit:disabled, .write-letter-submit.is-disabled { opacity: .6; cursor: default; }
+.write-letter-message { margin: 18px auto 0; color: #b95378; font: 16px var(--font-regular); }
+.write-letter-stage.is-packaging { min-height: 560px; padding-top: 54px; }
+.write-letter-package { display: flex; align-items: center; flex-direction: column; width: min(1120px, 100%); min-height: 0; margin: 0 auto; padding: 0 24px 30px; background: transparent; text-align: left; }
+.write-letter-package > h2 { margin: 0 0 26px; color: #478dc9; font: 700 21px/1.3 var(--font-regular); text-align: center; }
+.write-letter-package-layout { display: grid; grid-template-columns: minmax(320px, 420px) minmax(360px, 440px); align-items: center; justify-content: center; gap: 28px; width: 100%; }
+.write-letter-package .community-letter-send-card { width: min(420px, 100%); justify-self: center; }
+.write-letter-seal { position: absolute; top: 66.8%; left: 50%; z-index: 9; display: block; width: 21%; height: auto; opacity: 0; filter: var(--community-seal-filter, none); transform: translate(-50%, -50%); pointer-events: none; }
+.write-letter-package .community-letter-send-card.is-closed-letter .write-letter-seal { opacity: 1; }
+.write-letter-package-side { display: flex; align-items: center; flex-direction: column; gap: 20px; }
+.write-letter-package-options { display: grid; width: min(440px, 100%); padding: 8px 18px; color: #478dc9; border: 2px dashed #478dc9; border-radius: 8px; }
+.write-letter-package-options fieldset { display: grid; grid-template-columns: 116px 1fr; align-items: center; gap: 12px; margin: 0; padding: 10px 0; border: 0; }
+.write-letter-package-options fieldset + fieldset { border-top: 1px solid rgba(71, 141, 201, .65); }
+.write-letter-package-options legend { display: contents; font: 16px var(--font-bold); }
+.write-letter-package-options fieldset > div { display: flex; gap: 11px; }
+.write-letter-package-options button { width: 34px; height: 34px; padding: 0; border: 3px solid #fff; border-radius: 50%; background: var(--swatch-color); box-shadow: 0 0 0 1px rgba(49, 95, 145, .2); cursor: pointer; }
+.write-letter-package-options button.is-active { box-shadow: 0 0 0 2px #478dc9, 0 0 0 5px rgba(71, 137, 200, .14); }
+.write-letter-packaging-status { color: #478dc9; font: 20px var(--font-bold); }
+.write-letter-package-actions { display: flex; gap: 16px; }
+.write-letter-package-actions button { min-height: 48px; padding: 9px 24px; border: 0; border-radius: 999px; color: #478dc9; background: #fff5de; box-shadow: 3px 3px #efa9b8; font: 18px var(--font-regular); cursor: pointer; }
+.write-letter-package-actions button:last-child { color: #fff; background: #478dc9; }
+.write-letter-page .site-footer { border-right: 0; border-left: 0; border-bottom: 0; }
+@media (max-width: 900px) {
+  .write-letter-package-layout { grid-template-columns: minmax(0, 440px); gap: 20px; }
+  .write-letter-package .community-letter-send-card { width: min(360px, 100%); }
+}
+@media (max-width: 700px) {
+  .write-letter-header { min-height: 76px; justify-content: flex-start; padding-inline: 18px; }
+  .write-letter-brand strong { font-size: 23px; }
+  .write-letter-account { right: 18px; gap: 9px; }
+  .write-letter-account > a:first-child { padding: 7px 10px; font-size: 12px; }
+  .write-letter-account > span { display: none; }
+  .write-letter-stage { padding: 38px 12px 54px; }
+  .write-letter-stage h1 { font-size: 16px; }
+  .write-letter-form { height: 690px; min-height: 0; padding: 25px 28px 28px 43px; }
+  .write-letter-stamp { top: 24px; right: 24px; width: 62px; height: 84px; }
+  .write-letter-title-input, .write-letter-recipient { width: calc(100% - 78px); }
+  .write-letter-title-input { font-size: 21px; }
+  .write-letter-recipient { margin-top: 12px; }
+  .write-letter-recipient, .write-letter-recipient input { font-size: 16px; }
+  .write-letter-form textarea { font-size: 16px; }
+  .write-letter-stage.is-packaging { min-height: 680px; padding-top: 38px; }
+  .write-letter-package { min-height: 0; padding: 0 6px 24px; }
+  .write-letter-package > h2 { align-self: center; margin: 0 0 16px; font-size: 17px; text-align: center; }
+  .write-letter-package-layout { grid-template-columns: 1fr; gap: 18px; }
+  .write-letter-package .community-letter-send-card { width: 260px; }
+  .write-letter-package-options { padding: 8px 14px; }
+  .write-letter-package-options fieldset { grid-template-columns: 105px 1fr; gap: 8px; }
+  .write-letter-package-options legend { font-size: 15px; }
+  .write-letter-package-options button { width: 34px; height: 34px; }
+}
+@media (max-width: 480px) {
+  .write-letter-header { min-height: 112px; flex-direction: column; justify-content: center; gap: 10px; padding: 10px 12px; }
+  .write-letter-brand strong { font-size: clamp(20px, 7vw, 25px); }
+  .write-letter-account { position: static; gap: 12px; }
+  .write-letter-account > a:first-child { font-size: 13px; }
+  .write-letter-stage { padding-inline: 12px; }
+  .write-letter-stage h1 { max-width: 350px; margin-bottom: 28px; line-height: 1.45; }
+  .write-letter-package-options fieldset { grid-template-columns: 1fr; gap: 10px; }
+  .write-letter-package-options legend { display: block; }
+  .write-letter-package-options fieldset > div { flex-wrap: wrap; }
+  .write-letter-package-actions { flex-wrap: wrap; justify-content: center; }
+}
+@media (max-width: 350px) {
+  .write-letter-form { padding-right: 20px; padding-left: 34px; }
+  .write-letter-stamp { right: 18px; width: 56px; }
+  .write-letter-title-input, .write-letter-recipient { width: calc(100% - 68px); }
+  .write-letter-recipient, .write-letter-recipient input { font-size: 15px; }
+}

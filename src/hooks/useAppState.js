@@ -316,6 +316,8 @@ export function useAppState() {
     [canAddIceCube, handleIceCubeCountChange, iceCubeCount, secondsLeft],
   )
 
+  const recordedMeltSeconds = useRef(new Set())
+
   useEffect(() => {
     if (!isTimerRunning) return undefined
 
@@ -331,6 +333,10 @@ export function useAppState() {
             return iceCubeCount > 0 ? iceCubeCount * iceCubeSeconds : 0
           }
 
+          if (!recordedMeltSeconds.current.has(0)) {
+            recordedMeltSeconds.current.add(0)
+            trackAnalyticsEvent('ice_melt', 'focus-room')
+          }
           setRetainedWaterCubes((currentCubes) => {
             const nextCubes = Math.min(maxIceCubes, currentCubes + iceCubeCount)
             setTimerPhase(nextCubes >= maxIceCubes ? 'longBreakReady' : 'shortBreakReady')
@@ -350,7 +356,9 @@ export function useAppState() {
           completedFocusSeconds > 0 &&
           completedFocusSeconds % iceCubeSeconds === 0
 
-        if (hasMeltedOneCube) {
+        if (hasMeltedOneCube && !recordedMeltSeconds.current.has(nextSeconds)) {
+          recordedMeltSeconds.current.add(nextSeconds)
+          trackAnalyticsEvent('ice_melt', 'focus-room')
           playIceMeltNotice()
         }
 
@@ -795,6 +803,7 @@ export function useAppState() {
       setSecondsLeft(totalIceSeconds)
     }
 
+    if (secondsLeft === totalIceSeconds || secondsLeft === 0) recordedMeltSeconds.current.clear()
     setIsTimerRunning(true)
     trackAnalyticsEvent('timer_start', 'focus-room', { phase: 'focus', iceCubeCount })
   }

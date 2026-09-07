@@ -7,6 +7,7 @@ import analyticsRouter from './routes/analytics.js'
 import authRouter from './routes/auth.js'
 import communityLettersRouter from './routes/communityLetters.js'
 import feedbackRouter from './routes/feedback.js'
+import communityMemoriesRouter from './routes/communityMemories.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -142,6 +143,7 @@ export function createApp({ serveStatic = false } = {}) {
   app.use(['/api/analytics', '/analytics'], ensureDatabase, analyticsRouter)
   app.use('/api/auth', ensureDatabase, authRouter)
   app.use('/api/community-letters', ensureDatabase, communityLettersRouter)
+  app.use('/api/community-memories', ensureDatabase, communityMemoriesRouter)
   app.use('/api/feedback', ensureDatabase, feedbackRouter)
 
   if (serveStatic) {
