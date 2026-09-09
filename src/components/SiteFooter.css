@@ -9,6 +9,10 @@
   border-top: 13px solid var(--love-pink);
 }
 
+.landing-page-focus-room .site-footer {
+  border-top: 0;
+}
+
 .site-footer-brand {
   position: relative;
   z-index: 2;
@@ -233,19 +237,20 @@
 
 @media (max-width: 420px) {
   .site-footer {
-    min-height: 660px;
+    min-height: 690px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
   }
 
   .site-footer-brand > span {
-    font-size: 2.3rem;
+    font-size: clamp(1.85rem, 8.5vw, 2.3rem);
   }
 
   .site-footer-brand > small {
-    font-size: 1.45rem;
+    font-size: clamp(1.2rem, 5.5vw, 1.45rem);
   }
 
   .site-footer-meta {
-    bottom: 102px;
+    bottom: max(118px, calc(102px + env(safe-area-inset-bottom, 0px)));
     font-size: 0.8rem;
   }
 
@@ -254,8 +259,9 @@
   }
 
   .site-footer-socials a {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
+    touch-action: manipulation;
   }
 
   .site-footer-socials img {

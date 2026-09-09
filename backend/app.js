@@ -58,7 +58,7 @@ function enforceRequestOrigin(req, res, next) {
 
   const sourceOrigin = req.get('origin')
   if (!sourceOrigin) {
-    // Native/mobile clients do not send browser Origin or Fetch Metadata headers.
+    // Non-browser clients do not send Origin or Fetch Metadata headers.
     if (!fetchSite) {
       next()
       return

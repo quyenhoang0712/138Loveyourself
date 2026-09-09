@@ -402,6 +402,7 @@
 
   .auth-page .auth-form input,
   .auth-page .auth-form select {
-    font-size: 0.9rem;
+    min-height: 44px;
+    font-size: 16px;
   }
 }

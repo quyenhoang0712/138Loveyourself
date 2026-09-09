@@ -17,6 +17,9 @@
 .memory-note, .memory-thumbnail { border: 3px solid #796b50; outline: 5px solid #f9dd8e; border-radius: 5px; background: #eee7d4; }
 .memory-note { min-height: 245px; padding: 22px; font: 17px/1.6 var(--font-regular); white-space: pre-wrap; overflow-wrap: anywhere; }
 .memory-note p { margin: 0; }
+.memory-note.has-image { position: relative; height: 245px; padding: 0; overflow: hidden; display: grid; place-items: center; }
+.memory-note.has-image > img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.memory-note.has-image > p { position: absolute; right: 12px; bottom: 12px; left: 12px; max-height: calc(100% - 24px); overflow: auto; padding: 8px 10px; border-radius: 4px; background: #eee7d4e8; }
 .memory-empty-note { opacity: .65; text-align: center; padding-top: 55px; }
 .memory-carousel { position: relative; margin-top: 28px; padding: 0 42px; }
 .memory-thumbnails { position: relative; padding: 6px; overflow: hidden; scrollbar-width: none; }
@@ -58,9 +61,12 @@
   .memory-photo { width: min(100%, 330px); justify-self: center; }
   .memory-date { margin-bottom: 18px; }
   .memory-note { min-height: 190px; padding: 18px; }
+  .memory-note.has-image { height: 190px; padding: 0; }
   .memory-carousel { padding: 0 34px; }
-  .memory-arrow { width: 32px; height: 32px; font-size: 20px; }
+  .memory-arrow { width: 38px; height: 38px; font-size: 22px; }
   .memory-arrow:first-child { left: 0; right: auto; }
   .memory-arrow:last-child { right: 0; left: auto; }
   .memory-thumbnail { flex-basis: 125px; height: 82px; }
+  .memory-pagination button { min-width: 36px; height: 36px; }
+  .memory-form textarea { font-size: 16px; }
 }

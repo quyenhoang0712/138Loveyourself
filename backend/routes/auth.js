@@ -15,7 +15,6 @@ const googleStateCookieName = 'love_yourself_google_state'
 const facebookStateCookieName = 'love_yourself_facebook_state'
 const sessionDuration = 7 * 24 * 60 * 60 * 1000
 const googleStateDuration = 10 * 60 * 1000
-const mobileAuthTokenDuration = 2 * 60 * 1000
 const emailVerificationDuration = 30 * 60 * 1000
 const minimumPasswordLength = 15
 const maximumPasswordLength = 128
@@ -245,11 +244,6 @@ function createGoogleState(payload) {
   })
 }
 
-async function createMobileAuthToken(req, userId) {
-  const { signedToken } = await createStoredToken(req, userId, 'mobile-exchange', mobileAuthTokenDuration)
-  return signedToken
-}
-
 async function getAuthenticatedSession(req) {
   if (Object.hasOwn(req, 'authenticatedSession')) return req.authenticatedSession
 
@@ -271,17 +265,6 @@ async function getAuthenticatedSession(req) {
 
 function readGoogleState(req) {
   return readSignedPayload(getNamedCookie(req, googleStateCookieName))
-}
-
-async function consumeMobileAuthToken(token) {
-  const payload = readSignedPayload(token)
-  if (!payload?.token) return null
-
-  return AuthSession.findOneAndDelete({
-    tokenHash: hashToken(payload.token),
-    kind: 'mobile-exchange',
-    expiresAt: { $gt: new Date() },
-  }).lean()
 }
 
 export async function getAuthenticatedUser(req) {
@@ -461,18 +444,6 @@ function safeReturnTo(returnTo) {
   return value
 }
 
-function safeMobileReturnTo(returnTo) {
-  const value = String(returnTo || '').trim()
-  if (!value) return ''
-
-  try {
-    const url = new URL(value)
-    return ['exp:', '138-love-yourself:'].includes(url.protocol) ? value : ''
-  } catch {
-    return ''
-  }
-}
-
 function redirectWithAuthError(req, res, message) {
   res.redirect(`/auth?authError=${encodeURIComponent(message)}`)
 }
@@ -571,7 +542,6 @@ router.get('/google/start', async (req, res) => {
   const gender = normalizeGender(req.query.gender)
   const state = createGoogleState({
     returnTo: safeReturnTo(req.query.returnTo),
-    mobileReturnTo: safeMobileReturnTo(req.query.mobileReturnTo),
     age: Number.isInteger(age) && age >= 1 && age <= 120 ? age : null,
     gender,
   })
@@ -646,13 +616,6 @@ router.get('/google/callback', async (req, res) => {
 
     await user.save()
 
-    if (storedState.mobileReturnTo) {
-      const redirectUrl = new URL(storedState.mobileReturnTo)
-      redirectUrl.searchParams.set('authToken', await createMobileAuthToken(req, String(user._id)))
-      res.redirect(redirectUrl.toString())
-      return
-    }
-
     await setSessionCookie(req, res, String(user._id))
     res.redirect(safeReturnTo(storedState.returnTo))
   } catch (error) {
@@ -670,7 +633,6 @@ router.get('/facebook/start', async (req, res) => {
 
   const state = createGoogleState({
     returnTo: safeReturnTo(req.query.returnTo),
-    mobileReturnTo: safeMobileReturnTo(req.query.mobileReturnTo),
   })
 
   setFacebookStateCookie(req, res, state)
@@ -731,38 +693,11 @@ router.get('/facebook/callback', async (req, res) => {
 
     await user.save()
 
-    if (storedState.mobileReturnTo) {
-      const redirectUrl = new URL(storedState.mobileReturnTo)
-      redirectUrl.searchParams.set('authToken', await createMobileAuthToken(req, String(user._id)))
-      res.redirect(redirectUrl.toString())
-      return
-    }
-
     await setSessionCookie(req, res, String(user._id))
     res.redirect(safeReturnTo(storedState.returnTo))
   } catch (error) {
     redirectWithAuthError(req, res, error.message || 'Chưa đăng nhập được bằng Facebook.')
   }
-})
-
-router.post('/mobile/session', async (req, res) => {
-  if (!await enforceRateLimit(req, res, { scope: 'mobile-session', limit: 20, windowMs: 15 * 60 * 1000 })) return
-
-  const session = await consumeMobileAuthToken(req.body?.authToken)
-  if (!session) {
-    res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn.' })
-    return
-  }
-
-  const user = await User.findById(session.userId)
-    .select('name email role age gender ageGroup authProvider googleId facebookId emailVerifiedAt returnStreak +passwordHash')
-  if (!user) {
-    res.status(401).json({ error: 'Tài khoản không còn tồn tại.' })
-    return
-  }
-
-  await setSessionCookie(req, res, String(user._id))
-  res.json({ message: 'Đăng nhập thành công!', user: publicUser(user) })
 })
 
 router.post('/register', async (req, res) => {

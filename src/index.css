@@ -1,10 +1,13 @@
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
   --font-regular: Helvetica, Arial, sans-serif;
   --font-bold: "Patrick Hand", Helvetica, Arial, sans-serif;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-top: env(safe-area-inset-top, 0px);
   font-family: var(--font-regular);
   color: #4789C8;
   background: #EDE5D2;
@@ -17,6 +20,8 @@
 html {
   overflow-x: clip;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -24,6 +29,14 @@ body {
   min-width: 320px;
   margin: 0;
   background: #EDE5D2;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
 }
 
 b,

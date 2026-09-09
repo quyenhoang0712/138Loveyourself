@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { assetUrl } from '../utils/assets'
 
 export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, decisionMotion, decisionThread = [], onAskDecision }) {
   const threadRef = useRef(null)
@@ -16,15 +17,13 @@ export function DecisionSection({ copy, decisionAnimationKey, decisionMessage, d
       <div className="decision-shell scroll-pop">
         <div className="decision-banner" aria-hidden="true">
           <div className="decision-character">
-            <img src="/Vector.svg" alt="" className="decision-mascot-body" />
-            <img src="/Vector-2.svg" alt="" className="decision-mascot-eye-left" />
-            <img src="/Vector-3.svg" alt="" className="decision-mascot-eye-right" />
-            <img src="/Vector-1.svg" alt="" className="decision-mascot-mouth" />
+            <img src={assetUrl('Vector.svg')} alt="" className="decision-mascot-body" />
+            <img src={assetUrl('Vector-2.svg')} alt="" className="decision-mascot-eye-left" />
+            <img src={assetUrl('Vector-3.svg')} alt="" className="decision-mascot-eye-right" />
+            <img src={assetUrl('Vector-1.svg')} alt="" className="decision-mascot-mouth" />
           </div>
           <div className="decision-speech">
-            <img src="/Line139.svg" alt="" className="decision-speech-top-line" />
-            <img src="/hoituidiroituitraloicho.svg" alt="hỏi tui đi rồi tui trả lời cho" className="decision-speech-text" />
-            <img src="/Line140.svg" alt="" className="decision-speech-bottom-line" />
+            <img src={assetUrl('hoituidiroituitraloicho.svg')} alt="hỏi tui đi rồi tui trả lời cho" className="decision-speech-text" />
           </div>
         </div>
 

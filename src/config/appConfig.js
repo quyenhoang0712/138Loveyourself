@@ -1,3 +1,5 @@
+import { assetUrl } from '../utils/assets'
+
 export const heroVideoUrl = 'https://cdn.hstatic.net/files/200001082964/file/website.mp4'
 export const letterCount = 4
 export const lastQuoteStorageKey = 'lastOpenedQuote'
@@ -8,9 +10,9 @@ export const longBreakSeconds = 15 * 60
 export const maxIceCubes = 6
 
 export const ambientSoundOptions = [
-  { id: 'rain', label: 'Tiếng mưa', src: '/tieng-mua.mp3' },
-  { id: 'waves', label: 'Tiếng sóng', src: '/tieng-song.mp3' },
-  { id: 'fire', label: 'Tiếng lửa', src: '/tieng-lua.mp3' },
+  { id: 'rain', label: 'Tiếng mưa', src: assetUrl('tieng-mua.mp3') },
+  { id: 'waves', label: 'Tiếng sóng', src: assetUrl('tieng-song.mp3') },
+  { id: 'fire', label: 'Tiếng lửa', src: assetUrl('tieng-lua.mp3') },
 ]
 
 export const iceStackLayout = [

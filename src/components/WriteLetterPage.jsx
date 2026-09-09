@@ -164,7 +164,7 @@ export function WriteLetterPage() {
                 <img className="community-letter-send-envelope community-letter-send-envelope-open" src={openEnvelopeUrl} alt="" />
                 <img className="community-letter-send-envelope community-letter-send-envelope-front" src={openEnvelopeUrl} alt="" />
                 <img className="community-letter-send-envelope community-letter-send-envelope-closed" src={closedEnvelopeUrl} alt="" />
-                <img className="write-letter-seal" src="/condau.svg" alt="" aria-hidden="true" />
+                <img className="write-letter-seal" src={assetUrl('condau.svg')} alt="" aria-hidden="true" />
               </div>
 
               {!isPackaging ? <div className="write-letter-package-side">

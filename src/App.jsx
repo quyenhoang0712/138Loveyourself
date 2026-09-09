@@ -1,5 +1,6 @@
 import { AppLayout } from './components/AppLayout'
 import { AuthPage } from './components/AuthPage'
+import { NotFoundPage } from './components/NotFoundPage'
 import { WriteLetterPage } from './components/WriteLetterPage'
 import { useAppState } from './hooks/useAppState'
 import './App.css'
@@ -12,7 +13,8 @@ function HomePage() {
 function App() {
   if (window.location.pathname === '/auth') return <AuthPage />
   if (window.location.pathname === '/write-letter') return <WriteLetterPage />
-  return <HomePage />
+  if (window.location.pathname === '/') return <HomePage />
+  return <NotFoundPage />
 }
 
 export default App

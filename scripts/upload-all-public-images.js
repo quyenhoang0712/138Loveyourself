@@ -23,22 +23,27 @@ if (!token) {
 }
 
 const publicDir = path.join(rootDir, 'public')
-const files = fs.readdirSync(publicDir)
-const imageExtensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.ico']
-const imageFiles = files.filter((file) => {
-  const ext = path.extname(file).toLowerCase()
-  return imageExtensions.includes(ext)
-})
+const assetExtensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.ico', '.mp3']
+const assetFiles = fs.readdirSync(publicDir, { recursive: true, withFileTypes: true })
+  .filter((entry) => entry.isFile() && assetExtensions.includes(path.extname(entry.name).toLowerCase()))
+  .map((entry) => path.relative(publicDir, path.join(entry.parentPath, entry.name)))
+  .sort()
 
-console.log(`Tìm thấy ${imageFiles.length} file ảnh trong thư mục public:`, imageFiles)
+console.log(`Tìm thấy ${assetFiles.length} file tài sản trong thư mục public:`, assetFiles)
 
 async function uploadFile(fileName) {
   const filePath = path.join(publicDir, fileName)
   const content = fs.readFileSync(filePath)
   const ext = path.extname(fileName).toLowerCase()
-  const mimeType = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : 'application/octet-stream'
+  const mimeType = ext === '.svg'
+    ? 'image/svg+xml'
+    : ext === '.png'
+      ? 'image/png'
+      : ext === '.mp3'
+        ? 'audio/mpeg'
+        : 'application/octet-stream'
   
-  const blobPathname = `assets/public/${fileName}`
+  const blobPathname = `assets/${fileName.split(path.sep).join('/')}`
   const url = `https://blob.vercel-storage.com/${blobPathname}?addRandomSuffix=false`
 
   const response = await fetch(url, {
@@ -62,15 +67,12 @@ async function uploadFile(fileName) {
 
 async function run() {
   const uploadedUrls = {}
-  for (const file of imageFiles) {
+  for (const file of assetFiles) {
     try {
       const url = await uploadFile(file)
       uploadedUrls[file] = url
       console.log(`✓ Đã tải lên Blob: ${file} -> ${url}`)
       
-      // Xóa file ảnh trong public sau khi tải lên thành công
-      fs.unlinkSync(path.join(publicDir, file))
-      console.log(`🗑️ Đã xóa file cục bộ: public/${file}`)
     } catch (err) {
       console.error(`✗ Lỗi với ${file}:`, err.message)
     }
@@ -78,9 +80,9 @@ async function run() {
 
   // Lưu lại danh sách map URL để cập nhật code
   const mapPath = path.join(rootDir, 'scripts', 'uploaded-blob-map.json')
-  fs.writeFileSync(mapPath, JSON.stringify(uploadedUrls, null, 2), 'utf8')
+  const existingUrls = fs.existsSync(mapPath) ? JSON.parse(fs.readFileSync(mapPath, 'utf8')) : {}
+  fs.writeFileSync(mapPath, JSON.stringify({ ...existingUrls, ...uploadedUrls }, null, 2), 'utf8')
   console.log(`\nHoàn thành! Đã lưu ánh xạ URL vào: ${mapPath}`)
 }
 
 run()
-

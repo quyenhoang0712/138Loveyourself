@@ -1029,7 +1029,7 @@ export function CommunitySection() {
             onClick={(event) => event.stopPropagation()}
           >
             <span className="community-sent-letters-badge" aria-hidden="true">
-              <img src="/thu.svg" alt="" />
+              <img src={assetUrl('thu.svg')} alt="" />
             </span>
             <button className="community-sent-letters-close" type="button" aria-label="Đóng hộp thư" onClick={() => setIsSentLettersPopupOpen(false)}>×</button>
             <div className="community-sent-letters-summary">

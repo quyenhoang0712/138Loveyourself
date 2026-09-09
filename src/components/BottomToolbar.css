@@ -17,6 +17,7 @@
 }
 
 .bottom-toolbar-peek {
+  position: relative;
   display: block;
   width: 102px;
   height: 7px;
@@ -28,6 +29,16 @@
   border-radius: 999px;
   box-shadow: 0 2px 0 rgba(71, 137, 200, 0.22);
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bottom-toolbar-peek::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -16px;
+  right: -16px;
 }
 
 .bottom-toolbar-peek:hover,
@@ -377,7 +388,26 @@
     padding: 2px 2px 1px;
     flex: 1 1 0;
     gap: 1px;
-    font-size: clamp(0.75rem, 2.7vw, 1rem);
+    font-size: clamp(0.72rem, 2.7vw, 1rem);
+  }
+
+  .bottom-toolbar-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bottom-toolbar-activity-menu {
+    left: 50%;
+    bottom: calc(100% + 22px);
+    width: min(240px, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+
+  .bottom-toolbar-activity-tail {
+    left: 50%;
+    margin-left: -20px;
   }
 
   .bottom-toolbar-icon {
@@ -395,5 +425,12 @@
 
   .bottom-toolbar-spotify-player {
     height: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .bottom-toolbar-item {
+    font-size: 0.68rem;
+    padding: 2px 1px;
   }
 }

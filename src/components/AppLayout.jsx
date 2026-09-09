@@ -42,12 +42,12 @@ import { waitForPageContentReady } from '../utils/pageReady'
 
 const roomRoutes = ['card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community']
 const pageTransitionRouteDelay = 100
-const pageTransitionMinimumDuration = 480
-const pageTransitionExitDuration = 220
+const pageTransitionMinimumDuration = 1000
+const pageTransitionExitDuration = 440
 const pageTransitionReadyTimeout = 8000
 const visitorProfileStorageKey = 'love-yourself-visitor-profile'
 const returnStreakPopupSeenStorageKey = 'love-yourself-return-streak-popup-seen'
-const quickSpotifyEmbed = 'https://open.spotify.com/playlist/1pMn6rcoUT3mwTlZpGXIQX?si=7d2c0372d77b4613'
+const quickSpotifyEmbed = 'https://open.spotify.com/embed/playlist/1pMn6rcoUT3mwTlZpGXIQX?si=7d2c0372d77b4613&nd=1&dlsi=16d348666fc344ef'
 const homePriorityAssets = [
   assetUrl('Vector.gif'),
   assetUrl('PNG/giay.png'),
@@ -919,10 +919,7 @@ export function AppLayout({ state }) {
 
   const cardRoom = (
     <RoomSection
-      body="Phòng thiệp là nơi dành cho những lúc anh muốn nhận một lời nhắn nhẹ nhàng trước khi bước tiếp trong ngày. Mỗi phong thư giống như một mảnh giấy nhỏ được gửi đến đúng lúc: có thể là một câu an ủi, một lời nhắc để yêu bản thân hơn, hoặc một góc nhìn giúp mình bình tĩnh lại. Sau khi mở thư, nếu trong lòng vẫn còn phân vân, anh có thể kéo xuống hỏi vị thần quyết định để nhận thêm một dấu hiệu nhỏ, như một câu trả lời mềm mại thay vì phải tự ép mình chọn ngay."
-      eyebrow="Phòng thiệp"
       id="card-room"
-      title="Nhận một lời nhắn dành cho hôm nay."
     >
       <QuoteSection
         copy={copy}
@@ -949,10 +946,7 @@ export function AppLayout({ state }) {
 
   const focusRoom = (
     <RoomSection
-      body="Phòng tập trung được làm cho những lúc anh muốn quay lại với việc cần làm nhưng không muốn cảm giác quá căng thẳng. Anh có thể chọn một âm thanh nền hợp tâm trạng trước, rồi kéo từng viên đá vào ly để bắt đầu một phiên tập trung. Mỗi viên đá tan dần giống như một nhịp thời gian nhìn thấy được: mình học, làm việc, nghỉ ngơi, rồi quay lại tiếp theo cách rõ ràng hơn. Không cần phải hoàn hảo ngay, chỉ cần ở lại với một việc nhỏ đủ lâu."
-      eyebrow="Phòng tập trung"
       id="focus-room"
-      title="Bắt đầu một phiên tập trung nhẹ nhàng."
     >
       <AmbientSection
         activeAmbientSound={activeAmbientSound}
@@ -999,10 +993,7 @@ export function AppLayout({ state }) {
 
   const soundRoom = (
     <RoomSection
-      body="Phòng âm thanh là chỗ để anh đổi nhịp thật nhanh khi tâm trạng đang hơi chùng, hơi rối, hoặc đơn giản là muốn có một nền nhạc đi cùng mình. Anh chỉ cần chọn playlist Spotify, bật một bài hợp với khoảnh khắc hiện tại, rồi để âm nhạc mở ra một không khí mới trong vài phút. Phòng này không bắt mình phải làm gì nhiều; nó chỉ giữ một khoảng trống nhỏ để cơ thể thả lỏng, suy nghĩ dịu lại, và cảm xúc có thời gian tự mềm xuống."
-      eyebrow="Phòng âm thanh"
       id="sound-room"
-      title="Chọn nhạc cho tâm trạng lúc này."
     >
       <PlaylistSection copy={copy} />
     </RoomSection>
@@ -1010,10 +1001,7 @@ export function AppLayout({ state }) {
 
   const healingRoom = (
     <RoomSection
-      body="Phòng chữa lành là nơi để anh đặt cảm xúc xuống một chút khi trong lòng đang rối, mệt, buồn, hoặc thấy mình bị áp lực kéo đi quá xa. Phòng này không bắt anh phải vui lên ngay; nó chỉ đưa anh quay lại với cơ thể, với hơi thở, với vài điều đang có thật quanh mình. Từ đó mình có thể mềm hơn với bản thân, rồi chọn bước tiếp theo bằng một nhịp bình tĩnh hơn."
-      eyebrow="Phòng chữa lành"
       id="healing-room"
-      title="Quay lại với mình bằng một nhịp dịu hơn."
     >
       <HealingSection />
     </RoomSection>

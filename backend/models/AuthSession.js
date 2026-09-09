@@ -15,7 +15,7 @@ const authSessionSchema = new mongoose.Schema({
   },
   kind: {
     type: String,
-    enum: ['session', 'mobile-exchange'],
+    enum: ['session'],
     default: 'session',
     index: true,
   },

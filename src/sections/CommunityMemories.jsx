@@ -137,7 +137,12 @@ export function CommunityMemories({ user }) {
                 <label htmlFor="memory-caption">Lời nhắn cho kỷ niệm này</label>
                 <textarea id="memory-caption" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={900} placeholder="Hôm ấy có điều gì làm bạn nhớ mãi?" disabled={busy} />
                 <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
-              </form> : <div className="memory-note">{selected ? <p>{selected.caption}</p> : <p className="memory-empty-note">{loading ? 'Đang mở album kỷ niệm…' : 'Góc nhỏ chờ những khoảnh khắc của bạn.\nChia sẻ tấm hình đầu tiên nha!'}</p>}</div>}
+              </form> : <div className={`memory-note ${selected ? 'has-image' : ''}`}>
+                {selected ? <>
+                  <img src={selected.image} alt={selected.caption || 'Ảnh kỷ niệm của cộng đồng'} />
+                  {selected.caption ? <p>{selected.caption}</p> : null}
+                </> : <p className="memory-empty-note">{loading ? 'Đang mở album kỷ niệm…' : 'Góc nhỏ chờ những khoảnh khắc của bạn.\nChia sẻ tấm hình đầu tiên nha!'}</p>}
+              </div>}
             </div>
           </div>
           <div className="memory-carousel" aria-label="Album kỷ niệm">

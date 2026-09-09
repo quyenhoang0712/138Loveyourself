@@ -1,6 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import loadingArtwork from '../assets/loading.svg'
+
+const initialProgress = 15
+const maximumWaitingProgress = 90
+const waitingProgressDuration = 900
+const progressUpdateMilliseconds = 50
 
 export function PageTransitionSkeleton({ color, label, phase = 'loading' }) {
+  const [progress, setProgress] = useState(initialProgress)
+  const displayedProgress = phase === 'leaving' ? 100 : progress
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -10,44 +19,39 @@ export function PageTransitionSkeleton({ color, label, phase = 'loading' }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (phase === 'leaving') return undefined
+
+    const startedAt = performance.now()
+
+    const progressInterval = window.setInterval(() => {
+      const elapsed = performance.now() - startedAt
+      const waitingProgress = initialProgress
+        + ((maximumWaitingProgress - initialProgress) * elapsed) / waitingProgressDuration
+      setProgress(Math.min(maximumWaitingProgress, Math.round(waitingProgress)))
+    }, progressUpdateMilliseconds)
+
+    return () => window.clearInterval(progressInterval)
+  }, [phase])
+
   return (
     <div
       className={`page-transition-skeleton ${phase === 'leaving' ? 'is-leaving' : ''}`}
-      style={{ '--page-transition-accent': color }}
+      style={{ '--page-transition-accent': color, '--page-load-progress': `${displayedProgress}%` }}
       role="status"
       aria-live="polite"
       aria-busy={phase !== 'leaving'}
     >
-      <div className="page-transition-skeleton-header" aria-hidden="true">
-        <span className="page-transition-skeleton-block page-transition-skeleton-nav" />
-        <span className="page-transition-skeleton-block page-transition-skeleton-brand" />
-        <span className="page-transition-skeleton-block page-transition-skeleton-account" />
+      <div className="page-transition-loading-art" aria-hidden="true">
+        <span className="page-transition-loading-track">
+          <span className="page-transition-loading-fill" />
+        </span>
+        <img src={loadingArtwork} alt="" />
       </div>
 
-      <div className="page-transition-skeleton-content" aria-hidden="true">
-        <section className="page-transition-skeleton-copy">
-          <span className="page-transition-skeleton-block page-transition-skeleton-eyebrow" />
-          <span className="page-transition-skeleton-block page-transition-skeleton-title is-wide" />
-          <span className="page-transition-skeleton-block page-transition-skeleton-title" />
-
-          <div className="page-transition-skeleton-paragraph">
-            <span className="page-transition-skeleton-block" />
-            <span className="page-transition-skeleton-block" />
-            <span className="page-transition-skeleton-block" />
-          </div>
-        </section>
-
-        <div className="page-transition-skeleton-grid">
-          <span className="page-transition-skeleton-block page-transition-skeleton-card is-featured" />
-          <span className="page-transition-skeleton-block page-transition-skeleton-card" />
-          <span className="page-transition-skeleton-block page-transition-skeleton-card" />
-        </div>
-      </div>
-
-      <p className="page-transition-skeleton-status">
-        Đang chuẩn bị <strong>{label || 'trang mới'}</strong>
-        <span aria-hidden="true">...</span>
-      </p>
+      <span className="page-transition-skeleton-status">
+        Đang tải {label || 'trang mới'}: {displayedProgress}%
+      </span>
     </div>
   )
 }
