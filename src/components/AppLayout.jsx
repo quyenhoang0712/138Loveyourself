@@ -838,7 +838,7 @@ export function AppLayout({ state }) {
       window.cancelAnimationFrame(animationFrame)
       observer?.disconnect()
     }
-  }, [activeRoom])
+  }, [currentPageKey])
 
   const handleRoomNavigate = useCallback((link) => {
     if (link.room === activeRoom || (activeRoom === 'play-room' && link.room === 'sound-room')) return

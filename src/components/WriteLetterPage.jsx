@@ -83,12 +83,19 @@ export function WriteLetterPage() {
           stampId: 'letter-12',
         }),
       })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Chưa thể gửi lá thư.')
+      const data = await response.json().catch(() => null)
+      if (!response.ok) {
+        const message = response.status >= 500
+          ? 'Kết nối đang chập chờn, lá thư chưa được gửi. Bạn thử lại sau một chút nha.'
+          : data?.error || 'Chưa thể gửi lá thư.'
+        throw new Error(message)
+      }
 
       window.location.assign('/#community')
     } catch (error) {
-      setMessage(error.message)
+      setMessage(error.message === 'Failed to fetch'
+        ? 'Không kết nối được máy chủ, lá thư chưa được gửi. Bạn kiểm tra mạng rồi thử lại nha.'
+        : error.message)
     } finally {
       setIsSubmitting(false)
     }

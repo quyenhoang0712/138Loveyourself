@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const MOODS = [
   {
@@ -76,6 +76,8 @@ export function ProfileDiarySection({ user, onSaved }) {
   const [drafts, setDrafts] = useState({})
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState(null) // { type: 'success' | 'error', text: string }
+  const [pageTurn, setPageTurn] = useState('')
+  const pageTurnTimeoutRef = useRef(null)
 
   const dateKey = useMemo(() => formatToKey(currentDate), [currentDate])
   const displayDate = useMemo(() => formatDisplayDate(currentDate), [currentDate])
@@ -107,28 +109,33 @@ export function ProfileDiarySection({ user, onSaved }) {
     return () => controller.abort()
   }, [user])
 
+  useEffect(() => () => window.clearTimeout(pageTurnTimeoutRef.current), [])
+
   const activeEntry = drafts[dateKey] ?? entriesMap[dateKey] ?? { note: '', mood: null }
   const selectedMood = activeEntry.mood ?? null
   const noteContent = activeEntry.note ?? ''
 
-  const handlePrevDay = useCallback(() => {
+  const turnToDate = useCallback((direction, offset) => {
+    if (pageTurn) return
+    setPageTurn(direction)
     setCurrentDate((prev) => {
       const next = new Date(prev)
-      next.setDate(next.getDate() - 1)
+      next.setDate(next.getDate() + offset)
       return next
     })
     setSaveStatus(null)
-  }, [])
+    window.clearTimeout(pageTurnTimeoutRef.current)
+    pageTurnTimeoutRef.current = window.setTimeout(() => setPageTurn(''), 540)
+  }, [pageTurn])
+
+  const handlePrevDay = useCallback(() => {
+    turnToDate('is-turning-backward', -1)
+  }, [turnToDate])
 
   const handleNextDay = useCallback(() => {
-    setCurrentDate((prev) => {
-      const next = new Date(prev)
-      next.setDate(next.getDate() + 1)
-      if (formatToKey(next) > formatToKey(new Date())) return prev
-      return next
-    })
-    setSaveStatus(null)
-  }, [])
+    if (dateKey >= todayKey) return
+    turnToDate('is-turning-forward', 1)
+  }, [dateKey, todayKey, turnToDate])
 
   const handleMoodSelect = useCallback((moodId) => {
     if (isFuture) return
@@ -264,6 +271,7 @@ export function ProfileDiarySection({ user, onSaved }) {
             type="button"
             className="profile-diary-nav-btn is-prev"
             aria-label="Ngày trước đó"
+            disabled={Boolean(pageTurn)}
             onClick={handlePrevDay}
           >
             <svg viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -275,7 +283,7 @@ export function ProfileDiarySection({ user, onSaved }) {
             type="button"
             className="profile-diary-nav-btn is-next"
             aria-label="Ngày tiếp theo"
-            disabled={dateKey >= todayKey}
+            disabled={dateKey >= todayKey || Boolean(pageTurn)}
             onClick={handleNextDay}
           >
             <svg viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -285,7 +293,7 @@ export function ProfileDiarySection({ user, onSaved }) {
         </div>
 
         {/* Notebook sheet */}
-        <div className="profile-diary-sheet" aria-label={`Trang sổ ngày ${displayDate}`}>
+        <div key={dateKey} className={`profile-diary-sheet ${pageTurn}`} aria-label={`Trang sổ ngày ${displayDate}`}>
           <div className="profile-diary-sheet-inner">
             {/* Left margin red line */}
             <div className="profile-diary-margin-line" aria-hidden="true" />
@@ -338,4 +346,3 @@ export function ProfileDiarySection({ user, onSaved }) {
     </section>
   )
 }
-

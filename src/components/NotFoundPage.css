@@ -55,12 +55,12 @@
   }
 
   .not-found-illustration {
-    width: min(88vw, 440px);
+    width: min(100%, 440px);
     transform: none;
   }
 
   .not-found-message {
-    width: min(92vw, 480px);
+    width: min(100%, 480px);
     max-width: 480px;
     transform: none;
   }
