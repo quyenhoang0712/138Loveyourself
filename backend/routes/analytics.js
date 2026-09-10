@@ -5,13 +5,22 @@ import { Feedback } from '../models/Feedback.js'
 import { Session } from '../models/Session.js'
 import { User } from '../models/User.js'
 import { Visitor } from '../models/Visitor.js'
+import { rateLimit } from '../middleware/rateLimit.js'
 import { applySessionActivity, getAgeGroup, getDateRange } from '../utils/analytics.js'
+import { createVisitorId, isValidSessionId, readAnalyticsVisitorId, setAnalyticsVisitorCookie } from '../utils/analyticsIdentity.js'
 import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
 
 const allowedRooms = new Set(['home', 'card-room', 'focus-room', 'healing-room', 'sound-room', 'play-room', 'community'])
 const iceCubeSeconds = 30 * 60
+const minute = 60 * 1000
+const identifyLimit = rateLimit({ scope: 'analytics-identify', limit: 60, windowMs: minute })
+const sessionLimit = rateLimit({ scope: 'analytics-session', limit: 120, windowMs: minute })
+const eventLimit = rateLimit({ scope: 'analytics-event', limit: 60, windowMs: minute, key: (req) => req.body?.sessionId })
+const heartbeatLimit = rateLimit({ scope: 'analytics-heartbeat', limit: 6, windowMs: minute, key: (req) => req.body?.sessionId })
+const reportLimit = rateLimit({ scope: 'analytics-report', limit: 30, windowMs: minute })
+const diaryWriteLimit = rateLimit({ scope: 'diary-write', limit: 30, windowMs: minute })
 const allowedEvents = new Set([
   'profile_saved',
   'session_start',
@@ -32,6 +41,25 @@ const allowedEvents = new Set([
 
 function normalizeRoom(room) {
   return allowedRooms.has(room) ? room : 'home'
+}
+
+function ownsAnalyticsIdentity(req, visitorId) {
+  return Boolean(visitorId) && readAnalyticsVisitorId(req) === visitorId
+}
+
+function normalizeMetadata(metadata) {
+  if (!metadata || Object.getPrototypeOf(metadata) !== Object.prototype) return {}
+  return JSON.stringify(metadata).length <= 4000 ? metadata : null
+}
+
+function serializeVisitor(visitor) {
+  if (!visitor) return null
+  return { age: visitor.age, gender: visitor.gender, ageGroup: visitor.ageGroup }
+}
+
+function noStore(req, res, next) {
+  res.set('Cache-Control', 'no-store')
+  next()
 }
 
 async function requireAdmin(req, res, next) {
@@ -105,17 +133,27 @@ async function recordEvent({ visitorId, sessionId, userId = '', type, room, meta
   })
 }
 
-router.post('/identify', async (req, res) => {
+router.post('/identify', identifyLimit, async (req, res) => {
   const { visitorId, age, gender, sessionId } = req.body
   const normalizedAge = Number(age)
 
-  if (!visitorId || !Number.isInteger(normalizedAge) || normalizedAge < 1 || normalizedAge > 120) {
+  if (!ownsAnalyticsIdentity(req, visitorId) || !isValidSessionId(sessionId)) {
+    res.status(401).json({ error: 'Invalid analytics identity' })
+    return
+  }
+
+  if (!Number.isInteger(normalizedAge) || normalizedAge < 1 || normalizedAge > 120) {
     res.status(400).json({ error: 'Invalid visitor profile' })
     return
   }
 
   if (!['male', 'female', 'other'].includes(gender)) {
     res.status(400).json({ error: 'Invalid gender' })
+    return
+  }
+
+  if (!await Session.exists({ sessionId, visitorId })) {
+    res.status(401).json({ error: 'Invalid analytics session' })
     return
   }
 
@@ -153,27 +191,38 @@ router.post('/identify', async (req, res) => {
     })
   }
 
-  res.json({ visitor })
+  res.json({ visitor: serializeVisitor(visitor) })
 })
 
-router.get('/profile/:visitorId', async (req, res) => {
-  const visitor = await Visitor.findOne({ visitorId: req.params.visitorId }).lean()
+router.get(['/profile', '/profile/:visitorId'], noStore, reportLimit, async (req, res) => {
+  const visitorId = readAnalyticsVisitorId(req)
+  if (!visitorId || (req.params.visitorId && visitorId !== req.params.visitorId)) {
+    res.status(401).json({ error: 'Invalid analytics identity' })
+    return
+  }
+  const visitor = await Visitor.findOne({ visitorId }).lean()
 
   if (!visitor) {
     res.status(404).json({ visitor: null })
     return
   }
 
-  res.json({ visitor })
+  res.json({ visitor: serializeVisitor(visitor) })
 })
 
-router.post('/sessions', async (req, res) => {
-  const { visitorId, sessionId, room = 'home', referrer = '' } = req.body
+router.post('/sessions', sessionLimit, async (req, res) => {
+  const { sessionId, room = 'home', referrer = '' } = req.body
+  const visitorId = readAnalyticsVisitorId(req) || createVisitorId()
   const user = await getAuthenticatedUser(req)
   const userId = user ? String(user._id) : ''
 
-  if (!visitorId || !sessionId) {
-    res.status(400).json({ error: 'Missing visitorId or sessionId' })
+  if (!isValidSessionId(sessionId)) {
+    res.status(400).json({ error: 'Invalid sessionId' })
+    return
+  }
+
+  if (await Session.exists({ sessionId, visitorId: { $ne: visitorId } })) {
+    res.status(409).json({ error: 'Session identity conflict' })
     return
   }
 
@@ -189,7 +238,7 @@ router.post('/sessions', async (req, res) => {
         lastActiveAt: now,
         lastRoom: normalizeRoom(room),
         userAgent: req.get('user-agent') || '',
-        referrer,
+        referrer: String(referrer || '').slice(0, 500),
       },
     },
     { returnDocument: 'after', upsert: true },
@@ -197,27 +246,31 @@ router.post('/sessions', async (req, res) => {
 
   await recordEvent({ visitorId, sessionId, userId, type: 'session_start', room: normalizeRoom(room) })
 
-  res.json({ session })
+  setAnalyticsVisitorCookie(req, res, visitorId)
+  res.json({ session, visitorId })
 })
 
-router.post('/events', async (req, res) => {
+router.post('/events', eventLimit, async (req, res) => {
   const { visitorId, sessionId, type, room = 'home', metadata = {} } = req.body
   const user = await getAuthenticatedUser(req)
   const userId = user ? String(user._id) : ''
 
-  if (!visitorId || !sessionId || !type) {
+  const safeMetadata = normalizeMetadata(metadata)
+  if (!ownsAnalyticsIdentity(req, visitorId) || !isValidSessionId(sessionId) || !type || !safeMetadata) {
     res.status(400).json({ error: 'Missing event fields' })
     return
   }
 
-  const session = await Session.findOne({ sessionId }).select('userId lastActiveAt lastRoom roomDurations durationSeconds')
-  if (session) {
-    if (userId && !session.userId) session.userId = userId
-    applySessionActivity(session, normalizeRoom(room))
-    await session.save()
+  const session = await Session.findOne({ sessionId, visitorId }).select('userId lastActiveAt lastRoom roomDurations durationSeconds')
+  if (!session) {
+    res.status(401).json({ error: 'Invalid analytics session' })
+    return
   }
+  if (userId && !session.userId) session.userId = userId
+  applySessionActivity(session, normalizeRoom(room))
+  await session.save()
 
-  const event = await recordEvent({ visitorId, sessionId, userId, type, room, metadata })
+  const event = await recordEvent({ visitorId, sessionId, userId, type, room, metadata: safeMetadata })
   if (!event) {
     res.status(400).json({ error: 'Invalid event type' })
     return
@@ -226,17 +279,17 @@ router.post('/events', async (req, res) => {
   res.json({ event })
 })
 
-router.post('/heartbeat', async (req, res) => {
+router.post('/heartbeat', heartbeatLimit, async (req, res) => {
   const { visitorId, sessionId, room = 'home' } = req.body
   const user = await getAuthenticatedUser(req)
   const userId = user ? String(user._id) : ''
 
-  if (!visitorId || !sessionId) {
+  if (!ownsAnalyticsIdentity(req, visitorId) || !isValidSessionId(sessionId)) {
     res.status(400).json({ error: 'Missing heartbeat fields' })
     return
   }
 
-  const session = await Session.findOne({ sessionId }).select('userId lastActiveAt lastRoom roomDurations durationSeconds')
+  const session = await Session.findOne({ sessionId, visitorId }).select('userId lastActiveAt lastRoom roomDurations durationSeconds')
   if (!session) {
     res.status(404).json({ error: 'Session not found' })
     return
@@ -250,13 +303,13 @@ router.post('/heartbeat', async (req, res) => {
   res.json({ ok: true })
 })
 
-router.get('/me-report', requireUser, async (req, res) => {
+router.get('/me-report', noStore, reportLimit, requireUser, async (req, res) => {
   const visitorId = String(req.query.visitorId || '').trim()
   const period = ['day', 'week', 'month'].includes(req.query.period) ? req.query.period : 'week'
   let start
   let end
 
-  if (!visitorId) {
+  if (!ownsAnalyticsIdentity(req, visitorId)) {
     res.status(400).json({ error: 'Missing visitorId' })
     return
   }
@@ -271,10 +324,7 @@ router.get('/me-report', requireUser, async (req, res) => {
   }
 
   const userId = String(req.user._id)
-  const currentVisitorMatch = visitorId ? { visitorId } : null
-  const accountMatch = currentVisitorMatch
-    ? { $or: [{ userId }, currentVisitorMatch] }
-    : { userId }
+  const accountMatch = { userId }
   const eventMatch = { ...accountMatch, createdAt: { $gte: start, $lt: end } }
   const sessionMatch = { ...accountMatch, startedAt: { $gte: start, $lt: end } }
   const [visitor, roomEvents, topEvents, sessions] = await Promise.all([
@@ -309,7 +359,7 @@ router.get('/me-report', requireUser, async (req, res) => {
       gender: req.user.gender || '',
       ageGroup: req.user.ageGroup || '',
     },
-    visitor,
+    visitor: serializeVisitor(visitor),
     totals: {
       sessions: sessions.length,
       events: topEvents.reduce((sum, item) => sum + item.count, 0),
@@ -324,7 +374,7 @@ router.get('/me-report', requireUser, async (req, res) => {
   })
 })
 
-router.get('/daily-tasks', requireUser, async (req, res) => {
+router.get('/daily-tasks', noStore, reportLimit, requireUser, async (req, res) => {
   let start, end
   try {
     const range = getDateRange('day', req.query.date)
@@ -347,12 +397,12 @@ router.get('/daily-tasks', requireUser, async (req, res) => {
   res.json({ quoteOpened: count('letter_open') > 0, meltedCubes: count('ice_melt'), diaryWritten: Boolean(diary) })
 })
 
-router.get('/diary', requireUser, async (req, res) => {
+router.get('/diary', noStore, reportLimit, requireUser, async (req, res) => {
   const entries = await DiaryEntry.find({ userId: String(req.user._id) }).select('date note mood updatedAt').lean()
   res.json({ entries })
 })
 
-router.put('/diary', requireUser, async (req, res) => {
+router.put('/diary', noStore, diaryWriteLimit, requireUser, async (req, res) => {
   const { date, mood } = req.body
   const note = String(req.body.note || '').trim()
   const parsed = new Date(`${date}T00:00:00.000Z`)
@@ -363,7 +413,7 @@ router.put('/diary', requireUser, async (req, res) => {
   res.json({ entry })
 })
 
-router.get('/focus-total', requireUser, async (req, res) => {
+router.get('/focus-total', noStore, reportLimit, requireUser, async (req, res) => {
   const userId = String(req.user._id)
   let dateFilter = {}
   if (req.query.date) {
@@ -404,7 +454,7 @@ router.get('/focus-total', requireUser, async (req, res) => {
   })
 })
 
-router.get('/report', requireAdmin, async (req, res) => {
+router.get('/report', noStore, reportLimit, requireAdmin, async (req, res) => {
   const period = ['day', 'week', 'month'].includes(req.query.period) ? req.query.period : 'day'
   let start
   let end

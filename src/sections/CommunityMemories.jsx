@@ -3,8 +3,9 @@ import { assetUrl } from '../utils/assets'
 import './CommunityMemories.css'
 
 const vietnamOffset = 7 * 60 * 60 * 1000
-const memoryPhotoWidth = 900
-const memoryPhotoHeight = 1200
+const memoryPhotoWidth = 720
+const memoryPhotoHeight = 960
+const maximumEncodedImageLength = 300000
 const memoryPhotoRatio = memoryPhotoWidth / memoryPhotoHeight
 
 function getVietnamDateLabel(date = new Date()) {
@@ -63,22 +64,11 @@ async function cropImage(file, crop) {
 }
 
 function encodeCanvas(canvas) {
-  for (const quality of [0.8, 0.7, 0.6, 0.5]) {
+  for (const quality of [0.76, 0.68, 0.6, 0.52, 0.44]) {
     const image = canvas.toDataURL('image/jpeg', quality)
-    if (image.length <= 700000) return image
+    if (image.length <= maximumEncodedImageLength) return image
   }
   throw new Error('Ảnh còn hơi lớn, bạn chọn ảnh nhỏ hơn nha.')
-}
-
-async function prepareFullImage(file) {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height))
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale))
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale))
-  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-  bitmap.close()
-  return encodeCanvas(canvas)
 }
 
 export function CommunityMemories({ user }) {
@@ -86,7 +76,6 @@ export function CommunityMemories({ user }) {
   const [memories, setMemories] = useState([])
   const [active, setActive] = useState(0)
   const [draft, setDraft] = useState('')
-  const [draftOriginal, setDraftOriginal] = useState('')
   const [caption, setCaption] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -159,9 +148,7 @@ export function CommunityMemories({ user }) {
     setBusy(true)
     setMessage('')
     try {
-      const originalImage = await prepareFullImage(cropSource.file)
       const croppedImage = await cropImage(cropSource.file, crop)
-      setDraftOriginal(originalImage)
       setDraft(croppedImage)
       closeCropper()
     } catch (error) { setMessage(error.message) }
@@ -207,12 +194,11 @@ export function CommunityMemories({ user }) {
     try {
       const data = await fetch('/api/community-memories', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: draft, originalImage: draftOriginal, caption }),
+        body: JSON.stringify({ image: draft, caption }),
       }).then(readResponse)
       setMemories((items) => [data.memory, ...items].slice(0, 24))
       setActive(0)
       setDraft('')
-      setDraftOriginal('')
       setCaption('')
       setMessage('Kỷ niệm của bạn đã được chia sẻ.')
     } catch (error) { setMessage(error.message) }
@@ -278,7 +264,7 @@ export function CommunityMemories({ user }) {
             {draft ? <form className="memory-note memory-form" onSubmit={publish}>
                 <label htmlFor="memory-caption">Lời nhắn cho kỷ niệm này</label>
                 <textarea id="memory-caption" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={900} placeholder="Hôm ấy có điều gì làm bạn nhớ mãi?" disabled={busy} />
-                <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setDraftOriginal(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
+                <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
               </form> : selected ? (
                 selected.caption ? <p className="memory-caption">{selected.caption}</p> : null
               ) : <div className="memory-note">
@@ -336,7 +322,7 @@ export function CommunityMemories({ user }) {
             </div>
           </div>
           <p className="memory-crop-hint">Giữ và kéo ảnh để căn phần muốn đăng vào trong khung.</p>
-          <p>Phần nằm trong ô crop 3:4 sẽ được lưu thành ảnh 900 × 1200 px.</p>
+          <p>Phần nằm trong ô crop 3:4 sẽ được tối ưu thành ảnh 720 × 960 px.</p>
           <div className="memory-crop-actions"><button type="button" disabled={busy} onClick={() => { closeCropper(); fileRef.current?.click() }}>Chọn ảnh khác</button><button type="button" disabled={busy} onClick={confirmCrop}>{busy ? 'Đang xử lý…' : 'Dùng ảnh này'}</button></div>
         </div>
       </div> : null}

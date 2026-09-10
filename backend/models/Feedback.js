@@ -9,8 +9,11 @@ const feedbackSchema = new mongoose.Schema(
     sessionId: { type: String, trim: true, default: '', index: true },
     userAgent: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now, index: true },
+    expiresAt: { type: Date, default: () => new Date(Date.now() + 365 * 86400000) },
   },
   { versionKey: false },
 )
+
+feedbackSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 
 export const Feedback = mongoose.model('Feedback', feedbackSchema)

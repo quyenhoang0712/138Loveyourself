@@ -34,6 +34,7 @@
     "vite": "^8.0.12"
   },
   "overrides": {
-    "body-parser": "2.3.0"
+    "body-parser": "2.3.0",
+    "qs": "^6.16.0"
   }
 }

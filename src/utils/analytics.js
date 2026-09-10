@@ -6,6 +6,8 @@ const legacyVisitorProfileStorageKey = 'love-yourself-visitor-profile'
 const dailyJourneyStorageKey = 'love-yourself-daily-journey'
 const returnStreakStorageKey = 'love-yourself-return-streak'
 const returnStreakMilestones = [1, 2, 3, 4, 5, 6, 7]
+let analyticsSessionPromise = null
+let analyticsSessionId = ''
 
 export const dailyJourneyChangedEventName = 'love-yourself-daily-journey-changed'
 export const returnStreakChangedEventName = 'love-yourself-return-streak-changed'
@@ -220,6 +222,15 @@ export function getAnalyticsIds() {
   }
 }
 
+function storeVisitorId(visitorId) {
+  if (!visitorId) return
+  try {
+    localStorage.setItem(visitorIdStorageKey, visitorId)
+  } catch {
+    // The signed HttpOnly cookie still protects the server-side identity.
+  }
+}
+
 export function clearVisitorIdentity() {
   try {
     localStorage.removeItem(visitorIdStorageKey)
@@ -228,10 +239,13 @@ export function clearVisitorIdentity() {
   } catch {
     // Storage can be unavailable in privacy-restricted browsers.
   }
+  analyticsSessionPromise = null
+  analyticsSessionId = ''
 }
 
-function sendAnalytics(path, payload, { beacon = false } = {}) {
-  const body = JSON.stringify(payload)
+async function sendAnalytics(path, payload, { beacon = false } = {}) {
+  await ensureAnalyticsSession()
+  const body = JSON.stringify({ ...payload, visitorId: getAnalyticsIds().visitorId })
 
   if (beacon && navigator.sendBeacon) {
     const blob = new Blob([body], { type: 'application/json' })
@@ -248,6 +262,7 @@ function sendAnalytics(path, payload, { beacon = false } = {}) {
 }
 
 export async function identifyVisitor(profile) {
+  await ensureAnalyticsSession()
   const response = await fetch('/api/analytics/identify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -266,8 +281,8 @@ export async function identifyVisitor(profile) {
 }
 
 export async function getVisitorProfile() {
-  const { visitorId } = getAnalyticsIds()
-  const response = await fetch(`/api/analytics/profile/${encodeURIComponent(visitorId)}`)
+  await ensureAnalyticsSession()
+  const response = await fetch('/api/analytics/profile')
 
   if (response.status === 404) return null
   if (!response.ok) throw new Error('Unable to load visitor profile')
@@ -277,11 +292,32 @@ export async function getVisitorProfile() {
 }
 
 export function startAnalyticsSession(room = 'home') {
-  return sendAnalytics('/api/analytics/sessions', {
-    ...getAnalyticsIds(),
-    room,
-    referrer: document.referrer,
+  const ids = getAnalyticsIds()
+  if (analyticsSessionPromise && analyticsSessionId === ids.sessionId) return analyticsSessionPromise
+
+  analyticsSessionId = ids.sessionId
+  analyticsSessionPromise = fetch('/api/analytics/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...ids, room, referrer: document.referrer }),
+  }).then(async (response) => {
+    if (!response.ok) throw new Error('Unable to start analytics session')
+    const data = await response.json()
+    storeVisitorId(data.visitorId)
+    return data
+  }).catch((error) => {
+    analyticsSessionPromise = null
+    return { error }
   })
+
+  return analyticsSessionPromise
+}
+
+function ensureAnalyticsSession() {
+  const { sessionId } = getAnalyticsIds()
+  return analyticsSessionPromise && analyticsSessionId === sessionId
+    ? analyticsSessionPromise
+    : startAnalyticsSession('home')
 }
 
 export function trackAnalyticsEvent(type, room = 'home', metadata = {}) {

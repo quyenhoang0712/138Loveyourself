@@ -13,6 +13,7 @@ const sessionSchema = new mongoose.Schema(
     durationSeconds: { type: Number, default: 0 },
     userAgent: { type: String, default: '' },
     referrer: { type: String, default: '' },
+    expiresAt: { type: Date, default: () => new Date(Date.now() + 180 * 86400000) },
   },
   { versionKey: false },
 )
@@ -21,5 +22,6 @@ sessionSchema.index({ startedAt: -1 })
 sessionSchema.index({ userId: 1, startedAt: -1 })
 sessionSchema.index({ visitorId: 1, startedAt: -1 })
 sessionSchema.index({ lastActiveAt: -1 })
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 
 export const Session = mongoose.model('Session', sessionSchema)

@@ -1,12 +1,16 @@
 import mongoose from 'mongoose'
 import { Router } from 'express'
 import { CommunityLetter } from '../models/CommunityLetter.js'
+import { rateLimit } from '../middleware/rateLimit.js'
 import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
 const envelopeColors = new Set(['blue', 'pink', 'green', 'violet'])
 const sealColors = new Set(['cream', 'pink', 'mint', 'lavender'])
 const stampIds = new Set(['letter-12', 'letter-14'])
+const readLimit = rateLimit({ scope: 'letter-read', limit: 120, windowMs: 60 * 1000 })
+const publishLimit = rateLimit({ scope: 'letter-publish', limit: 12, windowMs: 60 * 60 * 1000 })
+const deleteLimit = rateLimit({ scope: 'letter-delete', limit: 30, windowMs: 60 * 60 * 1000 })
 
 function publicLetter(letter) {
   return {
@@ -25,7 +29,7 @@ function publicLetter(letter) {
   }
 }
 
-router.get('/', async (req, res) => {
+router.get('/', readLimit, async (req, res) => {
   const letters = await CommunityLetter.find({
     $or: [
       { recipient: 'Cộng đồng' },
@@ -37,6 +41,7 @@ router.get('/', async (req, res) => {
     .limit(50)
     .lean()
 
+  res.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=30')
   res.json({ letters: letters.map(publicLetter) })
 })
 
@@ -56,7 +61,7 @@ router.get('/mine', async (req, res) => {
   res.json({ letters: letters.map(publicLetter) })
 })
 
-router.post('/', async (req, res) => {
+router.post('/', publishLimit, async (req, res) => {
   const user = await getAuthenticatedUser(req)
   if (!user) {
     res.status(401).json({ error: 'Bạn cần đăng nhập để gửi thư.' })
@@ -97,7 +102,7 @@ router.post('/', async (req, res) => {
   res.status(201).json({ letter: publicLetter(letter) })
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', deleteLimit, async (req, res) => {
   const user = await getAuthenticatedUser(req)
   if (!user) {
     res.status(401).json({ error: 'Bạn cần đăng nhập để xóa thư.' })
