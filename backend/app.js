@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import { connectDatabase } from './db.js'
 import analyticsRouter from './routes/analytics.js'
 import authRouter from './routes/auth.js'
+import developerRouter from './routes/developer.js'
 import communityLettersRouter from './routes/communityLetters.js'
 import feedbackRouter from './routes/feedback.js'
 import communityMemoriesRouter from './routes/communityMemories.js'
@@ -142,6 +143,7 @@ export function createApp({ serveStatic = false } = {}) {
 
   app.use(['/api/analytics', '/analytics'], ensureDatabase, analyticsRouter)
   app.use('/api/auth', ensureDatabase, authRouter)
+  app.use('/api/developer', ensureDatabase, developerRouter)
   app.use('/api/community-letters', ensureDatabase, communityLettersRouter)
   app.use('/api/community-memories', ensureDatabase, communityMemoriesRouter)
   app.use('/api/feedback', ensureDatabase, feedbackRouter)
