@@ -20,6 +20,71 @@
   --love-button-radius: 999px;
 }
 
+.app-loading-screen {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-width: 320px;
+  padding: 28px;
+  color: var(--love-blue);
+  background: var(--love-page-cream);
+  text-align: center;
+}
+
+.app-loading-brand span {
+  display: block;
+  font: 400 clamp(2.3rem, 6vw, 4.8rem)/1 var(--font-bold);
+}
+
+.app-loading-brand small {
+  display: block;
+  margin-top: 10px;
+  font: 800 clamp(1rem, 2vw, 1.45rem)/1 var(--font-regular);
+}
+
+.app-loading-heart {
+  margin: clamp(28px, 6vh, 54px) 0 18px;
+  color: var(--love-pink);
+  font: 400 clamp(3rem, 8vw, 5.6rem)/1 var(--font-bold);
+  animation: app-loading-pulse 900ms ease-in-out infinite alternate;
+}
+
+.app-loading-track {
+  width: min(360px, 82vw);
+  height: 10px;
+  overflow: hidden;
+  background: #EDE5D2;
+  border: 2px solid var(--love-blue);
+  border-radius: 999px;
+}
+
+.app-loading-track span {
+  display: block;
+  height: 100%;
+  background: var(--love-pink);
+  transition: width 180ms ease;
+}
+
+.app-loading-screen p {
+  min-height: 24px;
+  margin: 14px 0 0;
+  font: 500 clamp(0.82rem, 2vw, 1rem)/1.4 var(--font-mono);
+}
+
+@keyframes app-loading-pulse {
+  from { opacity: .62; transform: scale(.92); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loading-heart { animation: none; }
+  .app-loading-track span { transition: none; }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
