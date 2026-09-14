@@ -5,7 +5,7 @@
 .memory-frame rect { fill: none; stroke: #178fd4; stroke-width: 3px; stroke-dasharray: 36px 23px; }
 .memory-upload { position: absolute; z-index: 3; top: 14px; right: 14px; display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 20px; background: #478dc9e8; color: var(--love-page-cream); padding: 4px 14px; box-shadow: 2px 2px #efa9b8; font: 13px var(--font-regular); cursor: pointer; backdrop-filter: blur(3px); }
 .memory-upload span { font-size: 23px; line-height: 1; }
-.community-memories h2 { position: relative; z-index: 1; display: table; margin: -8px auto 36px; border: 5px solid #168fd3; padding: 8px 30px; color: #478dc9; background: #eee7d4; font: 36px/1.2 var(--font-regular); text-align: center; }
+.community-memories h2 { position: relative; z-index: 1; display: table; margin: -8px auto 36px; border: 5px solid #168fd3; padding: 8px 30px; color: #478dc9; background: #eee7d4; font: 400 36px/1.2 "Patrick Hand", cursive; text-align: center; }
 .memory-board { padding: 8px 5% 0; }
 .memory-feature { display: grid; grid-template-columns: minmax(280px, 420px) minmax(260px, 420px); grid-template-rows: auto auto; justify-content: center; align-items: center; column-gap: clamp(44px, 7vw, 90px); row-gap: 30px; }
 .memory-photo { position: relative; width: min(100%, 420px); margin: 0; aspect-ratio: 3 / 4; border: 4px solid #478dc9; outline: 7px solid #efa9b8; background: #eee7d4; }
@@ -85,6 +85,7 @@
 .community-memories button:focus-visible, .memory-form textarea:focus-visible { outline: 3px solid #168fd3; outline-offset: 5px; }
 @media (max-width: 850px) {
   .memory-feature { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .memory-feature > .memory-feature-note { align-self: center; }
 }
 @media (max-width: 640px) {
   .community-memories { padding: 24px 6% 30px; background-size: 32px 100%; background-image: repeating-linear-gradient(90deg, #c3ced0 0 16px, #eee7d4 16px 32px); }

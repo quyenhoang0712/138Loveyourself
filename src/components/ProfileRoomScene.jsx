@@ -44,25 +44,20 @@ export function ProfileRoomScene({ user, isLoadingUser, today, lampLit, onEditPr
 
       <nav className="profile-room-mobile-shortcuts" aria-label="Lối tắt các tiện ích trong phòng">
         <button type="button" className="profile-room-shortcut-btn" onClick={() => onOpenPopup('focus')}>
-          <span className="profile-room-shortcut-icon">⏱️</span>
           <span>Tập trung</span>
         </button>
         <button type="button" className="profile-room-shortcut-btn" onClick={() => onOpenPopup('calendar')}>
-          <span className="profile-room-shortcut-icon">📅</span>
           <span>Lịch ({today.getDate()}/{today.getMonth() + 1})</span>
         </button>
         <button type="button" className={`profile-room-shortcut-btn ${lampLit ? 'is-lit' : ''}`} onClick={() => onOpenPopup('lamp')}>
-          <span className="profile-room-shortcut-icon">{lampLit ? '💡' : '🕯️'}</span>
           <span>Nhiệm vụ {lampLit ? '✓' : ''}</span>
         </button>
         {user ? (
           <button type="button" className="profile-room-shortcut-btn" onClick={onEditProfile}>
-            <span className="profile-room-shortcut-icon">✏️</span>
             <span>Sửa hồ sơ</span>
           </button>
         ) : (
           <a className="profile-room-shortcut-btn" href="/auth">
-            <span className="profile-room-shortcut-icon">🔑</span>
             <span>Đăng nhập</span>
           </a>
         )}

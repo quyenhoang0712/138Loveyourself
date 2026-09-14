@@ -37,7 +37,23 @@ export function QuoteSection({
         </div>
 
         <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} aria-label={copy.quote.gridLabel}>
-          {!openedLetter ? <img className="message-room-frame" src={assetUrl('thong-diep/hop.svg')} alt="" aria-hidden="true" /> : null}
+          {!openedLetter ? (
+            <svg
+              className="message-room-frame"
+              viewBox="0 0 1040 325"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path className="message-room-frame-box message-room-frame-desktop" d="M900 224 H14 Q4 224 4 214 V24 Q4 14 14 14 H1026 Q1036 14 1036 24 V214 Q1036 224 1026 224 H980" />
+              <path className="message-room-frame-tail message-room-frame-desktop" d="M900 224 C906 266 930 296 998 306 C964 278 958 248 980 224" />
+              <path className="message-room-frame-box message-room-frame-tablet" d="M820 224 H14 Q4 224 4 214 V24 Q4 14 14 14 H1026 Q1036 14 1036 24 V214 Q1036 224 1026 224 H900" />
+              <path className="message-room-frame-tail message-room-frame-tablet" d="M820 224 C824 264 842 294 886 306 C864 280 866 248 900 224" />
+              <path className="message-room-frame-box message-room-frame-pro" d="M820 250 H14 Q4 250 4 240 V24 Q4 14 14 14 H1026 Q1036 14 1036 24 V240 Q1036 250 1026 250 H900" />
+              <path className="message-room-frame-tail message-room-frame-pro" d="M820 250 C826 274 846 298 886 316 C866 292 868 268 900 250" />
+              <path className="message-room-frame-box message-room-frame-mobile" d="M840 292 H18 Q4 292 4 278 V28 Q4 14 18 14 H1022 Q1036 14 1036 28 V278 Q1036 292 1022 292 H940" />
+              <path className="message-room-frame-tail message-room-frame-mobile" d="M840 292 C852 310 874 320 900 322 C888 309 901 298 940 292" />
+            </svg>
+          ) : null}
           {(openedLetter ? [openedLetter] : quoteLetters).map((letter, index) => (
             <button
               className={`letter-card letter-color-${getLetterColorIndex(letter)} ${openedLetterId === letter.id ? 'is-open' : ''}`}

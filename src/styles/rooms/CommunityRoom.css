@@ -195,7 +195,7 @@
 .community-compose-backdrop .community-letter-reader > header h2 { min-height: 30px; margin: 0; padding: 0; border: 0; color: #478dc9; font: 24px/30px var(--font-bold); overflow-wrap: anywhere; }
 .community-compose-backdrop .community-letter-reader-recipient { margin: 0 0 16px; padding: 0; min-height: 0; font: 17px/1.45 var(--font-regular); color: #478dc9; }
 .community-compose-backdrop .community-letter-reader-recipient strong { font-family: var(--font-bold); font-weight: bold; color: #478dc9; }
-.community-compose-backdrop .community-letter-reader-body { flex: 1; min-height: 120px; margin: 0; padding: 0 8px 18px 0; background: repeating-linear-gradient(to bottom, transparent 0 34px, rgba(239, 169, 184, 0.62) 34px 36px); color: #478dc9; font: 18px/36px var(--font-regular); white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(71, 137, 200, 0.35) transparent; }
+.community-compose-backdrop .community-letter-reader-body { flex: 1; min-height: 120px; margin: 0; padding: 0 8px 18px 0; background: repeating-linear-gradient(to bottom, transparent 0 34px, rgba(239, 169, 184, 0.62) 34px 36px); color: #478dc9; font: 400 18px/36px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(71, 137, 200, 0.35) transparent; }
 .community-compose-backdrop .community-letter-reader-footer { margin-top: 18px; padding: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: transparent; border: 0; }
 .community-compose-backdrop .community-letter-reader-author { color: rgba(71, 137, 200, 0.7); font: 15px/1.4 var(--font-regular); }
 .community-compose-backdrop .community-letter-reader-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
@@ -430,4 +430,3 @@
   .community-sent-letters-popup .is-sent .community-sent-letter-track { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .community-sent-letters-write { margin-top: 20px; padding: 10px 22px; font-size: 19px; }
 }
-

@@ -5164,7 +5164,7 @@ input {
 
 .wheel-nav-note p {
   margin: 0;
-  font: 500 clamp(0.9rem, 1.25vw, 1.16rem)/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font: 400 clamp(0.9rem, 1.25vw, 1.16rem)/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @media (min-width: 761px) and (max-width: 1180px) {
@@ -5958,6 +5958,12 @@ input {
     left: 50%;
     width: min(92vw, 680px);
     transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .home-store-mascot {
+    top: 190px;
   }
 }
 
@@ -8458,9 +8464,9 @@ input {
 
 .room-section .ambient-heading p,
 .ambient-heading .ambient-subtitle {
-  font-family: var(--font-mono), monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: clamp(0.95rem, 1.2vw, 1.15rem);
-  font-weight: 500;
+  font-weight: 400;
   color: #554a3d;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -10709,9 +10715,9 @@ input {
   margin: 0 auto;
   max-width: 660px;
   color: #645a4b;
-  font-family: var(--font-mono);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: clamp(0.95rem, 1.2vw, 1.08rem);
-  font-weight: 450;
+  font-weight: 400;
   line-height: 1.6;
   text-transform: none;
 }
@@ -12697,19 +12703,32 @@ input {
 
   .room-section .ambient-controls {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    padding: 10px;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 22px;
+    box-sizing: border-box;
+  }
+
+  .room-section .ambient-stage {
+    width: min(600px, 100%);
   }
 
   .room-section .ambient-button {
-    min-height: 64px;
-    padding: 8px;
-    border-radius: 12px;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 1;
+    padding: 6px;
+    border-radius: 14px;
+    box-shadow: 0 5px 0 #ed9ea8;
   }
 
   .room-section .ambient-button .ambient-icon {
-    width: clamp(28px, 8vw, 36px);
-    height: clamp(28px, 8vw, 36px);
+    width: clamp(36px, 10vw, 48px);
+    height: clamp(36px, 10vw, 48px);
+  }
+
+  .room-section .ambient-mascot {
+    top: -8px;
   }
 
   .quote-section {
@@ -12913,13 +12932,13 @@ input {
     line-height: 1.45;
   }
 
-  .pomodoro-card {
+  .room-section .pomodoro-card {
     width: 100%;
     gap: 10px;
     padding: 16px 12px 18px;
     box-sizing: border-box;
     border-radius: 20px;
-    box-shadow: 4px 4px 0 #efa9b8;
+    box-shadow: none;
   }
 
   .ice-cup {
@@ -13392,6 +13411,10 @@ input {
   .wheel-link-focus-room {
     top: calc(34.7222vw + clamp(56px, 6vw, 68px));
   }
+
+  .wheel-nav-note {
+    margin-top: clamp(16px, 2vw, 24px);
+  }
 }
 
 @media (max-width: 760px) {
@@ -13402,7 +13425,7 @@ input {
   .wheel-nav-stage {
     height: auto;
     min-height: 0;
-    padding-top: clamp(250px, 42vw, 280px);
+    padding-top: clamp(175px, 28vw, 190px);
   }
 
   .wheel-nav-disc {
@@ -13688,6 +13711,23 @@ input {
 .profile-room-editor .profile-account-actions button:last-child { background: var(--love-yellow); }
 .profile-room-editor .profile-account-actions button:disabled { opacity: 0.65; cursor: wait; }
 
+@media (min-width: 601px) and (max-width: 900px) {
+  .profile-room-editor .profile-account-fields {
+    display: grid;
+    grid-template-columns: 1fr 0.45fr 0.65fr;
+    width: min(100%, 580px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .profile-account-provider {
+    box-sizing: border-box;
+    width: min(100%, 580px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 600px) {
   .profile-room-editor.profile-account-editor { width: calc(100% - 12px); padding-inline: 8px; }
   .profile-account-design { padding: 10px; border-radius: 22px; }
@@ -13732,7 +13772,7 @@ input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 0;
     min-height: 44px;
     padding: 8px 12px;
     background: #ede5d2;
@@ -13755,11 +13795,6 @@ input {
   .profile-room-shortcut-btn.is-lit {
     background: #ffeaae;
     border-color: #e09838;
-  }
-
-  .profile-room-shortcut-icon {
-    font-size: 1.15rem;
-    line-height: 1;
   }
 
   .profile-room-editor {
