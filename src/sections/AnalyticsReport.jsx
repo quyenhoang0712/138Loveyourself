@@ -12,14 +12,14 @@ import {
   roomLabels,
 } from './analyticsReportData'
 
-export function AnalyticsReport() {
+export function AnalyticsReport({ embeddedUser = null }) {
   const [period, setPeriod] = useState('day')
   const [date, setDate] = useState(getTodayKey)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(embeddedUser)
   const [report, setReport] = useState(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(!embeddedUser)
   const isAdmin = user?.role === 'admin'
 
   const loadReport = useCallback(async () => {
@@ -48,6 +48,7 @@ export function AnalyticsReport() {
   }, [date, period])
 
   useEffect(() => {
+    if (embeddedUser) return undefined
     let ignore = false
     const controller = new AbortController()
 
@@ -78,11 +79,16 @@ export function AnalyticsReport() {
       ignore = true
       controller.abort()
     }
-  }, [])
+  }, [embeddedUser])
+
+  useEffect(() => {
+    if (!isAdmin) return
+    Promise.resolve().then(loadReport)
+  }, [isAdmin, loadReport])
 
   return (
     <section className="analytics-report" aria-busy={isCheckingAdmin}>
-      <div className="analytics-controls">
+      <div className="analytics-controls" id="admin-overview">
         <label>
           <span>Chế độ</span>
           <select value={period} onChange={(event) => setPeriod(event.target.value)}>
@@ -121,7 +127,16 @@ export function AnalyticsReport() {
             <strong>{getReportRangeLabel(report)}</strong>
           </div>
 
+          <h2 className="analytics-section-title">Tổng quan</h2>
           <div className="analytics-summary">
+            <div>
+              <span>Tài khoản đăng ký</span>
+              <strong>{report.totals.registeredUsers || 0}</strong>
+            </div>
+            <div>
+              <span>Lượt đăng nhập</span>
+              <strong>{report.totals.logins || 0}</strong>
+            </div>
             <div>
               <span>Người dùng mới</span>
               <strong>{report.totals.visitors}</strong>
@@ -145,16 +160,33 @@ export function AnalyticsReport() {
           </div>
 
           <div className="analytics-grid">
+            <h2 className="analytics-section-title" id="admin-users">Người dùng</h2>
             <article>
-              <h2>Giới tính</h2>
+              <h2>Giới tính tài khoản</h2>
+              <DonutChart empty="Chưa có dữ liệu giới tính." items={report.usersByGender} labelFormatter={(value) => genderLabels[value] || 'Chưa cập nhật'} />
+            </article>
+
+            <article>
+              <h2>Độ tuổi tài khoản</h2>
+              <BarChart empty="Chưa có dữ liệu tuổi." items={report.usersByAge} labelFormatter={(value) => ageGroupLabels[value] || 'Chưa cập nhật'} />
+            </article>
+
+            <article>
+              <h2>Phương thức đăng nhập</h2>
+              <DonutChart empty="Chưa có lượt đăng nhập." items={report.loginsByProvider} labelFormatter={(value) => ({ password: 'Email & mật khẩu', google: 'Google', facebook: 'Facebook' })[value] || value} />
+            </article>
+
+            <article>
+              <h2>Giới tính khách truy cập mới</h2>
               <DonutChart empty="Chưa có dữ liệu giới tính." items={report.visitorsByGender} labelFormatter={(value) => genderLabels[value] || 'Không rõ'} />
             </article>
 
             <article>
-              <h2>Nhóm tuổi</h2>
+              <h2>Nhóm tuổi khách truy cập mới</h2>
               <BarChart empty="Chưa có dữ liệu tuổi." items={report.visitorsByAge} labelFormatter={(value) => ageGroupLabels[value] || 'Không rõ'} />
             </article>
 
+            <h2 className="analytics-section-title" id="admin-activity">Hoạt động trên website</h2>
             <article>
               <h2>Phòng được xem nhiều</h2>
               <BarChart empty="Chưa có lượt xem phòng." items={report.roomViews} labelFormatter={(value) => roomLabels[value] || value || 'Không rõ'} valueKey="views" />
@@ -182,27 +214,6 @@ export function AnalyticsReport() {
               <BarChart empty="Chưa có tương tác." items={report.events} labelFormatter={(value) => eventLabels[value] || value || 'Không rõ'} />
             </article>
 
-            <article className="analytics-feedback-card">
-              <h2>Góp ý mới nhất</h2>
-              {report.feedbacks?.length ? (
-                <div className="analytics-feedback-list">
-                  {report.feedbacks.map((feedback) => (
-                    <section className="analytics-feedback-item" key={feedback._id || feedback.createdAt}>
-                      <p>{feedback.message}</p>
-                      <div>
-                        <span>{feedback.name || 'Ẩn danh'}</span>
-                        {feedback.email ? <a href={`mailto:${feedback.email}`}>{feedback.email}</a> : null}
-                        <time dateTime={feedback.createdAt}>
-                          {new Date(feedback.createdAt).toLocaleString('vi-VN')}
-                        </time>
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              ) : (
-                <p className="analytics-empty">Chưa có góp ý trong khoảng thời gian này.</p>
-              )}
-            </article>
           </div>
         </>
       ) : null}

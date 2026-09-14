@@ -296,7 +296,10 @@ export function CommunityMemories({ user }) {
           <div className="memory-album-heading">
             <span>Album kỷ niệm hôm nay</span>
             <button type="button" disabled={busy} onClick={() => {
-              if (!user) { setMessage('Bạn đăng nhập để chia sẻ kỷ niệm nha.'); return }
+              if (!user) {
+                window.location.assign('/auth?returnTo=%2F%23community')
+                return
+              }
               setUploadTarget({ type: 'memory', slot: null })
               fileRef.current?.click()
             }}><span aria-hidden="true">＋</span> Chia sẻ ảnh</button>

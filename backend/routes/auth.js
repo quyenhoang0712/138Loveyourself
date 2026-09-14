@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import { AuthRateLimit } from '../models/AuthRateLimit.js'
 import { AuthSession } from '../models/AuthSession.js'
 import { EmailVerification } from '../models/EmailVerification.js'
+import { LoginEvent } from '../models/LoginEvent.js'
 import { User } from '../models/User.js'
 import { getAgeGroup } from '../utils/analytics.js'
 
@@ -284,6 +285,10 @@ async function setSessionCookie(req, res, userId) {
   if (cookieName !== sessionCookieName) {
     res.clearCookie(sessionCookieName, getCookieOptions(req))
   }
+}
+
+async function recordLogin(userId, provider) {
+  await LoginEvent.create({ userId, provider })
 }
 
 async function clearSession(req, res) {
@@ -616,8 +621,9 @@ router.get('/google/callback', async (req, res) => {
 
     await user.save()
 
+    await recordLogin(user._id, 'google')
     await setSessionCookie(req, res, String(user._id))
-    res.redirect(safeReturnTo(storedState.returnTo))
+    res.redirect(user.role === 'admin' ? '/admin' : safeReturnTo(storedState.returnTo))
   } catch (error) {
     redirectWithAuthError(req, res, error.message || 'Chưa đăng nhập được bằng Google.')
   }
@@ -693,8 +699,9 @@ router.get('/facebook/callback', async (req, res) => {
 
     await user.save()
 
+    await recordLogin(user._id, 'facebook')
     await setSessionCookie(req, res, String(user._id))
-    res.redirect(safeReturnTo(storedState.returnTo))
+    res.redirect(user.role === 'admin' ? '/admin' : safeReturnTo(storedState.returnTo))
   } catch (error) {
     redirectWithAuthError(req, res, error.message || 'Chưa đăng nhập được bằng Facebook.')
   }
@@ -880,6 +887,7 @@ router.post('/login', async (req, res) => {
   }
 
   await user.save()
+  await recordLogin(user._id, 'password')
   await setSessionCookie(req, res, String(user._id))
   res.json({ message: 'Đăng nhập thành công!', user: publicUser(user) })
 })

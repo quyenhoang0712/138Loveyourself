@@ -77,7 +77,12 @@ export function AuthPage() {
     fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
-        if (!ignore) setUser(data.user || null)
+        if (ignore) return
+        if (data.user?.role === 'admin') {
+          window.location.replace('/admin')
+          return
+        }
+        setUser(data.user || null)
       })
       .catch((error) => {
         if (!ignore && error.name !== 'AbortError') setUser(null)
@@ -185,6 +190,11 @@ export function AuthPage() {
       window.dispatchEvent(new CustomEvent(authChangedEventName, { detail: { user: data.user } }))
       setMessage({ type: 'success', text: data.message })
       form.reset()
+
+      if (data.user?.role === 'admin') {
+        window.location.assign('/admin')
+        return
+      }
 
       if (returnTo !== '/') {
         window.location.assign(returnTo)

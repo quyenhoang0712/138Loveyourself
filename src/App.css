@@ -2970,7 +2970,7 @@
 
 .analytics-summary {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
   gap: 1px;
   margin-top: 18px;
   overflow: hidden;
@@ -3016,6 +3016,13 @@
 .analytics-feedback-card {
   grid-column: 1 / -1;
 }
+
+.analytics-connections-card { grid-column: 1 / -1; }
+.analytics-connections { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.analytics-connections p { display: flex; justify-content: space-between; gap: 14px; margin: 0; padding: 13px 15px; background: rgba(255,253,246,.58); border: 1px solid rgba(71,137,200,.14); border-radius: 12px; }
+.analytics-connections strong { color: #b66d78; }
+.analytics-connections strong.is-connected { color: #39805c; }
+@media (max-width: 620px) { .analytics-connections { grid-template-columns: 1fr; } }
 
 .analytics-feedback-list {
   display: grid;

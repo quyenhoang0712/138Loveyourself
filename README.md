@@ -42,6 +42,18 @@ Analytics report:
 http://localhost:5173/#analytics
 ```
 
+Admin dashboard:
+
+```text
+http://localhost:5173/admin
+```
+
+Create or promote an admin account without storing its password in source:
+
+```bash
+ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD='a-strong-password-at-least-15-characters' npm run admin:create
+```
+
 ## Vercel Deploy
 
 Deploy the full app to Vercel from this repo. The Vite frontend builds to `dist/`,

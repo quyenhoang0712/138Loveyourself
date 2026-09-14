@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { DiaryEntry } from '../models/DiaryEntry.js'
 import { AnalyticsEvent } from '../models/AnalyticsEvent.js'
 import { Feedback } from '../models/Feedback.js'
+import { LoginEvent } from '../models/LoginEvent.js'
 import { Session } from '../models/Session.js'
 import { User } from '../models/User.js'
 import { Visitor } from '../models/Visitor.js'
@@ -468,7 +469,7 @@ router.get('/report', noStore, reportLimit, requireAdmin, async (req, res) => {
     return
   }
 
-  const [visitorsByGender, visitorsByAge, roomEvents, topEvents, sessions, feedbackCount, feedbacks] = await Promise.all([
+  const [visitorsByGender, visitorsByAge, roomEvents, topEvents, sessions, feedbackCount, feedbacks, registeredUsers, logins, usersByGender, usersByAge, loginsByProvider] = await Promise.all([
     Visitor.aggregate([
       { $match: { firstSeenAt: { $gte: start, $lt: end } } },
       { $group: { _id: '$gender', count: { $sum: 1 } } },
@@ -498,6 +499,23 @@ router.get('/report', noStore, reportLimit, requireAdmin, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(8)
       .lean(),
+    User.countDocuments({ role: 'user', createdAt: { $gte: start, $lt: end } }),
+    LoginEvent.countDocuments({ createdAt: { $gte: start, $lt: end } }),
+    User.aggregate([
+      { $match: { role: 'user' } },
+      { $group: { _id: '$gender', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]),
+    User.aggregate([
+      { $match: { role: 'user' } },
+      { $group: { _id: '$ageGroup', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+    LoginEvent.aggregate([
+      { $match: { createdAt: { $gte: start, $lt: end } } },
+      { $group: { _id: '$provider', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]),
   ])
 
   const { totalDurationSeconds, roomDurations, stoppedRooms } = applySessionStats(sessions)
@@ -510,11 +528,16 @@ router.get('/report', noStore, reportLimit, requireAdmin, async (req, res) => {
       visitors: visitorsByGender.reduce((sum, item) => sum + item.count, 0),
       sessions: sessions.length,
       feedbacks: feedbackCount,
+      registeredUsers,
+      logins,
       totalDurationSeconds,
       averageSessionSeconds: sessions.length ? Math.round(totalDurationSeconds / sessions.length) : 0,
     },
     visitorsByGender,
     visitorsByAge,
+    usersByGender,
+    usersByAge,
+    loginsByProvider,
     roomViews: roomEvents,
     roomDurations,
     stoppedRooms,

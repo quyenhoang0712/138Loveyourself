@@ -1,5 +1,6 @@
 import { AppLayout } from './components/AppLayout'
 import { AuthPage } from './components/AuthPage'
+import { AdminPage } from './components/AdminPage'
 import { NotFoundPage } from './components/NotFoundPage'
 import { WriteLetterPage } from './components/WriteLetterPage'
 import { useAppState } from './hooks/useAppState'
@@ -11,6 +12,7 @@ import './styles/rooms/CommunityRoom.css'
 import './styles/rooms/CardRoom.css'
 import './styles/rooms/HealingRoom.css'
 import './components/AuthPage.css'
+import './components/AdminPage.css'
 
 function HomePage() {
   return <AppLayout state={useAppState()} />
@@ -18,6 +20,7 @@ function HomePage() {
 
 function App() {
   if (window.location.pathname === '/auth') return <AuthPage />
+  if (window.location.pathname === '/admin') return <AdminPage />
   if (window.location.pathname === '/write-letter') return <WriteLetterPage />
   if (window.location.pathname === '/') return <HomePage />
   return <NotFoundPage />

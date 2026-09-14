@@ -8,6 +8,7 @@
     "dev:api": "node --env-file-if-exists=.env backend/index.js",
     "dev:front": "vite",
     "dev": "node scripts/dev.js",
+    "admin:create": "node --env-file-if-exists=.env scripts/create-admin.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
