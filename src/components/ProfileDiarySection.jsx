@@ -70,7 +70,7 @@ function saveStoredLocalDraft(dateKey, data) {
   }
 }
 
-export function ProfileDiarySection({ user, onSaved }) {
+export function ProfileDiarySection({ user, requestedDate, onSaved }) {
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [entriesMap, setEntriesMap] = useState(() => getStoredLocalDrafts())
   const [drafts, setDrafts] = useState({})
@@ -78,6 +78,7 @@ export function ProfileDiarySection({ user, onSaved }) {
   const [saveStatus, setSaveStatus] = useState(null) // { type: 'success' | 'error', text: string }
   const [pageTurn, setPageTurn] = useState('')
   const pageTurnTimeoutRef = useRef(null)
+  const handledDateRequestRef = useRef(null)
 
   const dateKey = useMemo(() => formatToKey(currentDate), [currentDate])
   const displayDate = useMemo(() => formatDisplayDate(currentDate), [currentDate])
@@ -110,6 +111,25 @@ export function ProfileDiarySection({ user, onSaved }) {
   }, [user])
 
   useEffect(() => () => window.clearTimeout(pageTurnTimeoutRef.current), [])
+
+  useEffect(() => {
+    if (!requestedDate?.dateKey) return
+    const syncTimeout = window.setTimeout(() => {
+      if (handledDateRequestRef.current === requestedDate.requestId) return
+      const [year, month, day] = requestedDate.dateKey.split('-').map(Number)
+      const nextDate = new Date(year, month - 1, day)
+      if (Number.isNaN(nextDate.getTime())) return
+
+      handledDateRequestRef.current = requestedDate.requestId
+      setPageTurn(requestedDate.dateKey < dateKey ? 'is-turning-backward' : 'is-turning-forward')
+      setCurrentDate(nextDate)
+      setSaveStatus(null)
+      window.clearTimeout(pageTurnTimeoutRef.current)
+      pageTurnTimeoutRef.current = window.setTimeout(() => setPageTurn(''), 540)
+    }, 0)
+
+    return () => window.clearTimeout(syncTimeout)
+  }, [dateKey, requestedDate])
 
   const activeEntry = drafts[dateKey] ?? entriesMap[dateKey] ?? { note: '', mood: null }
   const selectedMood = activeEntry.mood ?? null
@@ -222,7 +242,7 @@ export function ProfileDiarySection({ user, onSaved }) {
   }
 
   return (
-    <section className="profile-diary-section" aria-labelledby="profile-diary-title">
+    <section className="profile-diary-section" id="profile-diary" aria-labelledby="profile-diary-title">
       <div className="profile-diary-container">
         {/* Header */}
         <header className="profile-diary-header">

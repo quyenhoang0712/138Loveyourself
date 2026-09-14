@@ -910,7 +910,9 @@ export function AppLayout({ state }) {
 
   const header = (
     <SiteHeader
+      activeAmbientSound={activeAmbientSound}
       variant="static"
+      onAmbientSoundToggle={handleAmbientSoundToggle}
       onFeedbackOpen={handleFeedbackOpen}
       onHomeNavigate={handleHomeNavigate}
       onProfileNavigate={handleProfileNavigate}
@@ -1035,7 +1037,7 @@ export function AppLayout({ state }) {
           <AnalyticsReport />
         </>
       ) : isProfileOpen ? (
-        <UserProfileReport onHomeNavigate={handleHomeNavigate} />
+        <UserProfileReport activeAmbientSound={activeAmbientSound} onAmbientSoundToggle={handleAmbientSoundToggle} onHomeNavigate={handleHomeNavigate} />
       ) : activeRoom ? (
         <>
           <div className="room-page-header">{header}</div>
@@ -1053,7 +1055,9 @@ export function AppLayout({ state }) {
 
           {isFloatingHeaderVisible ? (
             <SiteHeader
+              activeAmbientSound={activeAmbientSound}
               variant="floating"
+              onAmbientSoundToggle={handleAmbientSoundToggle}
               onFeedbackOpen={handleFeedbackOpen}
               onHomeNavigate={handleHomeNavigate}
               onProfileNavigate={handleProfileNavigate}

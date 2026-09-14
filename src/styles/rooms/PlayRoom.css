@@ -1,0 +1,4 @@
+/* Play room currently reuses SoundRoom; keep route overrides here. */
+.landing-page-play-room {
+  --play-room-accent: var(--love-blue);
+}

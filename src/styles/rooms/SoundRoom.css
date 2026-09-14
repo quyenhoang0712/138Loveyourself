@@ -1,0 +1,4 @@
+/* Route-specific overrides for Phong am thanh. */
+.landing-page-sound-room {
+  --sound-room-accent: var(--love-blue);
+}

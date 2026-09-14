@@ -36,8 +36,8 @@
   display: block;
   width: 100%;
   color: var(--love-page-cream);
-  font: 700 clamp(3rem, 5.2vw, 5rem)/0.9 var(--font-bold);
-  letter-spacing: 0.045em;
+  font: 400 clamp(3rem, 5.2vw, 5rem)/0.9 var(--font-bold);
+  letter-spacing: 0;
   text-align: center;
   white-space: nowrap;
 }
@@ -48,7 +48,7 @@
   margin-top: clamp(12px, 1.3vw, 18px);
   color: var(--love-page-cream);
   font: 900 clamp(1.8rem, 3vw, 3rem)/1 var(--font-regular);
-  letter-spacing: -0.035em;
+  letter-spacing: 0;
   text-align: center;
 }
 
@@ -75,7 +75,7 @@
   grid-template-columns: minmax(210px, 0.8fr) minmax(360px, 1.4fr) minmax(190px, 1.1fr);
   gap: clamp(28px, 4vw, 70px);
   align-items: center;
-  color: #ffffff;
+  color: var(--love-page-cream);
   font: 500 clamp(0.8rem, 1.05vw, 1rem)/1.35 var(--font-regular);
 }
 

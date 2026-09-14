@@ -433,7 +433,7 @@ function publicUser(user) {
     ageGroup: user.ageGroup || '',
     authProvider: user.authProvider || 'password',
     emailVerified: Boolean(user.emailVerifiedAt),
-    hasPassword: Boolean(user.passwordHash) && !user.googleId && !user.facebookId,
+    hasPassword: Boolean(user.passwordHash),
     returnStreak: normalizeReturnStreak(user.returnStreak),
   }
 }
@@ -958,22 +958,19 @@ router.patch('/me', async (req, res) => {
     return
   }
 
+  const hasExistingPassword = Boolean(user.passwordHash && user.passwordSalt)
+
+  if (hasExistingPassword && user.authProvider === 'password' && password && (!currentPassword || !await isPasswordValid(currentPassword, user))) {
+    res.status(401).json({ error: 'Mật khẩu hiện tại chưa đúng.' })
+    return
+  }
+
   user.name = name
   user.age = age
   user.gender = gender
   user.ageGroup = getAgeGroup(age)
 
   if (password) {
-    if (!user.passwordHash || !user.passwordSalt || user.googleId || user.facebookId) {
-      res.status(400).json({ error: 'Tài khoản OAuth chưa thể đặt mật khẩu tại đây. Hãy tiếp tục đăng nhập bằng nhà cung cấp hiện tại.' })
-      return
-    }
-
-    if (!currentPassword || !await isPasswordValid(currentPassword, user)) {
-      res.status(401).json({ error: 'Mật khẩu hiện tại chưa đúng.' })
-      return
-    }
-
     const { hash, salt } = await hashPassword(password)
     user.passwordHash = hash
     user.passwordSalt = salt

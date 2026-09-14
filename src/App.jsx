@@ -4,6 +4,12 @@ import { NotFoundPage } from './components/NotFoundPage'
 import { WriteLetterPage } from './components/WriteLetterPage'
 import { useAppState } from './hooks/useAppState'
 import './App.css'
+import './styles/rooms/FocusRoom.css'
+import './styles/rooms/SoundRoom.css'
+import './styles/rooms/PlayRoom.css'
+import './styles/rooms/CommunityRoom.css'
+import './styles/rooms/CardRoom.css'
+import './styles/rooms/HealingRoom.css'
 import './components/AuthPage.css'
 
 function HomePage() {

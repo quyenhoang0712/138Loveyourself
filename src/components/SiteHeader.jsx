@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { LogoutIcon } from './icons'
+import { LogoutIcon, SoundOffIcon } from './icons'
 
 const authChangedEventName = 'love-yourself-auth-changed'
 
-export function SiteHeader({ onHomeNavigate, onIntroOpen, onProfileNavigate, variant = 'sticky' }) {
+export function SiteHeader({ activeAmbientSound, onAmbientSoundToggle, onHomeNavigate, onIntroOpen, variant = 'sticky' }) {
   const [user, setUser] = useState(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const profileLabel = `Phòng của ${user?.name || 'bạn'}`
 
   const handleNavigationClick = (event, navigate) => {
     if (!navigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -70,13 +69,15 @@ export function SiteHeader({ onHomeNavigate, onIntroOpen, onProfileNavigate, var
       </a>
       {user ? (
         <div className="header-account-actions">
-          <a
-            className="header-account-button"
-            href="#profile"
-            onClick={(event) => handleNavigationClick(event, onProfileNavigate)}
+          {activeAmbientSound ? <button
+            className="header-account-button header-sound-button"
+            type="button"
+            title="Tắt âm thanh Phòng tập trung"
+            onClick={() => onAmbientSoundToggle?.(activeAmbientSound)}
           >
-            <span>{profileLabel}</span>
-          </a>
+            <SoundOffIcon />
+            <span>Tắt tiếng</span>
+          </button> : null}
           <button
             className="header-logout-button"
             type="button"

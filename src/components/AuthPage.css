@@ -30,15 +30,16 @@
 
 .auth-page .auth-brand span {
   font-size: clamp(1.8rem, 2.6vw, 2.7rem);
-  line-height: 0.82;
-  letter-spacing: 0.08em;
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: 0;
 }
 
 .auth-page .auth-brand small {
   margin-top: 7px;
   color: #fff8df;
-  font: 850 clamp(0.9rem, 1.15vw, 1.05rem)/1 var(--font-bold);
-  letter-spacing: 0.01em;
+  font: 800 clamp(0.9rem, 1.15vw, 1.05rem)/1 var(--font-regular);
+  letter-spacing: 0;
 }
 
 .auth-page .auth-back-link {
@@ -86,7 +87,7 @@
 .auth-page-wave {
   position: absolute;
   right: 0;
-  bottom: calc(clamp(78px, 9vh, 104px) - 16px);
+  bottom: calc(clamp(78px, 9vh, 104px) + 24px);
   left: 0;
   z-index: 0;
   display: block;
@@ -200,7 +201,7 @@
 }
 
 .auth-page .auth-tabs button.is-active {
-  color: #fff;
+  color: var(--love-page-cream);
 }
 
 .auth-page .auth-heading {
@@ -312,7 +313,7 @@
 .auth-page .auth-submit {
   min-height: 48px;
   margin-top: 27px;
-  color: #fff;
+  color: var(--love-page-cream);
   background: var(--love-blue);
   border: 0;
   border-radius: var(--love-button-radius);

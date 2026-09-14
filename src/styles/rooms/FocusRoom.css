@@ -1,0 +1,12 @@
+/* Route-specific overrides for Phong tap trung. */
+.landing-page-focus-room {
+  background: var(--love-page-cream);
+}
+
+.landing-page-focus-room .room-section {
+  background: var(--love-page-cream);
+}
+
+.landing-page-focus-room .room-section .pomodoro-section {
+  border-top: 10px solid var(--love-blue);
+}

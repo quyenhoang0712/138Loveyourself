@@ -176,7 +176,7 @@
 }
 
 .bottom-toolbar-activity-menu > button.is-active {
-  color: #ffffff;
+  color: var(--love-page-cream);
 }
 
 .bottom-toolbar-activity-menu > button.is-active::before,
@@ -324,7 +324,7 @@
 }
 
 .bottom-toolbar-item.is-indicator-active {
-  color: #ffffff;
+  color: var(--love-page-cream);
   background: transparent;
   box-shadow: none;
   transform: none;
@@ -332,7 +332,7 @@
 
 .bottom-toolbar-item.is-indicator-active:hover,
 .bottom-toolbar-item.is-indicator-active:focus-visible {
-  color: #ffffff;
+  color: var(--love-page-cream);
   background: transparent;
   box-shadow: none;
 }

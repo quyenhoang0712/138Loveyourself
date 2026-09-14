@@ -30,6 +30,7 @@ export function WriteLetterPage() {
   const [isPackaging, setIsPackaging] = useState(false)
   const [envelopeColor, setEnvelopeColor] = useState('blue')
   const [sealColor, setSealColor] = useState('lavender')
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export function WriteLetterPage() {
           recipient,
           title,
           body,
-          isAnonymous: false,
+          isAnonymous,
           envelopeColor,
           sealColor,
           stampId: 'letter-12',
@@ -108,11 +109,6 @@ export function WriteLetterPage() {
           <strong>LOVE YOURSELF</strong>
           <span>138knitwear</span>
         </a>
-        <div className="write-letter-account">
-          {!isCheckingUser && !user ? <a href="/auth?returnTo=/write-letter">Đăng nhập/Đăng ký</a> : null}
-          {user ? <span>{user.name}</span> : null}
-          <a className="write-letter-home" href="/" aria-label="Về trang chủ">↪</a>
-        </div>
       </header>
 
       <section className={`write-letter-stage ${isPackaged ? 'is-packaging' : ''}`} aria-labelledby="write-letter-title">
@@ -160,7 +156,7 @@ export function WriteLetterPage() {
                 className={`community-letter-send-card ${!isPackaging ? 'is-closed-letter' : ''}`}
                 style={{
                   '--community-envelope-filter': envelopeOptions.find((option) => option.id === envelopeColor)?.filter || 'none',
-                  '--community-seal-filter': sealOptions.find((option) => option.id === sealColor)?.filter || 'none',
+                  '--community-seal-color': sealOptions.find((option) => option.id === sealColor)?.color || '#f8db8e',
                 }}
               >
                 <div className="community-letter-send-paper">
@@ -171,7 +167,7 @@ export function WriteLetterPage() {
                 <img className="community-letter-send-envelope community-letter-send-envelope-open" src={openEnvelopeUrl} alt="" />
                 <img className="community-letter-send-envelope community-letter-send-envelope-front" src={openEnvelopeUrl} alt="" />
                 <img className="community-letter-send-envelope community-letter-send-envelope-closed" src={closedEnvelopeUrl} alt="" />
-                <img className="write-letter-seal" src={assetUrl('condau.svg')} alt="" aria-hidden="true" />
+                <span className="community-letter-custom-seal" aria-hidden="true">♥</span>
               </div>
 
               {!isPackaging ? <div className="write-letter-package-side">
@@ -184,6 +180,11 @@ export function WriteLetterPage() {
                     <legend>Màu con dấu</legend>
                     <div>{sealOptions.map((option) => <button key={option.id} className={sealColor === option.id ? 'is-active' : ''} type="button" style={{ '--swatch-color': option.color }} aria-label={option.label} title={option.label} onClick={() => setSealColor(option.id)} />)}</div>
                   </fieldset>
+                  <label className="write-letter-anonymous">
+                    <input type="checkbox" checked={isAnonymous} onChange={(event) => setIsAnonymous(event.target.checked)} />
+                    <span aria-hidden="true">✓</span>
+                    Gửi ẩn danh
+                  </label>
                 </div>
                 <div className="write-letter-package-actions">
                   <button type="button" onClick={() => setIsPackaged(false)}>Viết lại</button>

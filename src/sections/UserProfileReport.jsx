@@ -6,7 +6,7 @@ import { ProfileFocusPopup } from '../components/ProfileFocusPopup'
 import { ProfileDiarySection } from '../components/ProfileDiarySection'
 import { ProfileTasksPopup } from '../components/ProfileTasksPopup'
 
-export function UserProfileReport({ onHomeNavigate }) {
+export function UserProfileReport({ activeAmbientSound, onAmbientSoundToggle, onHomeNavigate }) {
   const [user, setUser] = useState(null)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [activeRoomPopup, setActiveRoomPopup] = useState(null)
@@ -20,6 +20,7 @@ export function UserProfileReport({ onHomeNavigate }) {
   const [popupData, setPopupData] = useState(null)
   const [popupError, setPopupError] = useState('')
   const [popupLoading, setPopupLoading] = useState(false)
+  const [requestedDiaryDate, setRequestedDiaryDate] = useState(null)
   const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
   const lampLit = Boolean(user && todayTasks?.userId === user.id && todayTasks?.date === dateKey && todayTasks.quoteOpened && todayTasks.meltedCubes >= 4 && todayTasks.diaryWritten)
@@ -46,7 +47,7 @@ export function UserProfileReport({ onHomeNavigate }) {
     if (!activeRoomPopup || !user) return undefined
     const controller = new AbortController()
     const url = activeRoomPopup === 'focus' ? `/api/analytics/focus-total?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`
-      : activeRoomPopup === 'calendar' ? '/api/auth/me' : `/api/analytics/daily-tasks?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`
+      : activeRoomPopup === 'calendar' ? '/api/analytics/diary' : `/api/analytics/daily-tasks?date=${dateKey}&timezoneOffset=${new Date().getTimezoneOffset()}`
     fetch(url, { credentials: 'include', signal: controller.signal })
       .then(async (response) => {
         const data = await response.json()
@@ -76,9 +77,25 @@ export function UserProfileReport({ onHomeNavigate }) {
     }
   }
 
+  const handleCalendarDateSelect = (selectedDateKey) => {
+    setRequestedDiaryDate({ dateKey: selectedDateKey, requestId: Date.now() })
+    roomPopupRef.current.close()
+    window.setTimeout(() => {
+      document.getElementById('profile-diary')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  }
+
   const handleProfileSave = async (event) => {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
+    const password = String(form.get('password') || '')
+    const passwordConfirmation = String(form.get('passwordConfirmation') || '')
+
+    if (password !== passwordConfirmation) {
+      setSaveError('Mật khẩu mới nhập lại chưa khớp.')
+      return
+    }
+
     setIsSaving(true)
     setSaveError('')
     try {
@@ -86,7 +103,13 @@ export function UserProfileReport({ onHomeNavigate }) {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.get('name'), age: Number(form.get('age')), gender: form.get('gender') }),
+        body: JSON.stringify({
+          name: form.get('name'),
+          age: Number(form.get('age')),
+          gender: form.get('gender'),
+          currentPassword: form.get('currentPassword') || '',
+          password,
+        }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Chưa lưu được thông tin.')
@@ -135,7 +158,7 @@ export function UserProfileReport({ onHomeNavigate }) {
   return (
     <section className="profile-report" aria-label="Phòng cá nhân" aria-busy={isLoadingUser}>
       <div className="profile-hero-bar">
-        <SiteHeader variant="static" onHomeNavigate={onHomeNavigate} />
+        <SiteHeader activeAmbientSound={activeAmbientSound} variant="static" onAmbientSoundToggle={onAmbientSoundToggle} onHomeNavigate={onHomeNavigate} />
       </div>
 
       <div className="profile-room-content profile-illustrated-content">
@@ -149,11 +172,11 @@ export function UserProfileReport({ onHomeNavigate }) {
         />
       </div>
 
-      <ProfileDiarySection user={user} onSaved={() => setTaskRevision((value) => value + 1)} />
+      <ProfileDiarySection user={user} requestedDate={requestedDiaryDate} onSaved={() => setTaskRevision((value) => value + 1)} />
 
       <dialog className={`profile-room-editor profile-room-detail-popup ${activeRoomPopup === 'calendar' ? 'is-calendar' : activeRoomPopup === 'focus' ? 'is-focus' : activeRoomPopup === 'lamp' ? 'is-tasks' : ''}`} ref={roomPopupRef} onClose={(event) => { if (!event.currentTarget.open) setActiveRoomPopup(null) }} onClick={closeOnBackdrop} aria-labelledby="profile-room-popup-title">
         {activeRoomPopup === 'calendar' ? (
-          <ProfileCalendar user={popupData?.user || user} loading={popupLoading} error={popupError} onClose={() => roomPopupRef.current.close()} />
+          <ProfileCalendar user={user} entries={popupData?.entries} loading={popupLoading} error={popupError} onClose={() => roomPopupRef.current.close()} onSelectDate={handleCalendarDateSelect} />
         ) : activeRoomPopup === 'focus' ? (
           <ProfileFocusPopup user={user} loading={popupLoading} error={popupError} seconds={popupData?.totalFocusSeconds} onClose={() => roomPopupRef.current.close()} />
         ) : activeRoomPopup === 'lamp' ? (
@@ -161,18 +184,38 @@ export function UserProfileReport({ onHomeNavigate }) {
         ) : null}
       </dialog>
 
-      <dialog className="profile-room-editor" onClick={closeOnBackdrop} ref={editorRef} aria-labelledby="profile-editor-title">
-        {user ? <form onSubmit={handleProfileSave} key={user.updatedAt || user.name}>
-          <h2 id="profile-editor-title">Thông tin cá nhân</h2>
-          <label>Tên hiển thị<input name="name" defaultValue={user.name} required minLength={2} /></label>
-          <label>Tuổi<input name="age" type="number" defaultValue={user.age || ''} required min={1} max={120} /></label>
-          <label>Giới tính<select name="gender" defaultValue={user.gender || ''} required>
-            <option value="" disabled>Chọn giới tính</option>
-            <option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option>
-          </select></label>
-          {saveError ? <p role="alert">{saveError}</p> : null}
-          <div><button type="button" onClick={() => editorRef.current.close()}>Đóng</button><button type="submit" disabled={isSaving}>{isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}</button></div>
-        </form> : null}
+      <dialog className="profile-room-editor profile-account-editor" onClick={closeOnBackdrop} ref={editorRef} aria-labelledby="profile-editor-title">
+        {user ? <div className="profile-account-design">
+          <span className="profile-account-badge" aria-hidden="true">♡</span>
+          <button className="profile-account-dismiss" type="button" aria-label="Đóng chỉnh sửa thông tin" onClick={() => editorRef.current.close()}>
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="m10 10 20 20M30 10 10 30" /></svg>
+          </button>
+          <form className="profile-account-form" onSubmit={handleProfileSave} key={user.updatedAt || user.name}>
+            <h2 id="profile-editor-title">Thông tin cá nhân</h2>
+            <div className="profile-account-fields">
+              <label>Tên hiển thị<input name="name" defaultValue={user.name} required minLength={2} /></label>
+              <label>Tuổi<input name="age" type="number" defaultValue={user.age || ''} required min={1} max={120} /></label>
+              <label>Giới tính<select name="gender" defaultValue={user.gender || ''} required>
+                <option value="" disabled>Chọn giới tính</option>
+                <option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option>
+              </select></label>
+            </div>
+            {user.authProvider === 'google' || user.authProvider === 'facebook' ? (
+              <p className="profile-account-provider">
+                Bạn đã đăng nhập bằng {user.authProvider === 'google' ? 'Gmail' : 'Facebook'}
+              </p>
+            ) : (
+              <fieldset className="profile-account-password">
+                <legend>{user.hasPassword ? 'Đổi mật khẩu' : 'Tạo mật khẩu'}</legend>
+                {user.hasPassword ? <label>Mật khẩu hiện tại<input name="currentPassword" type="password" autoComplete="current-password" /></label> : null}
+                <label>Mật khẩu mới<input name="password" type="password" minLength="15" maxLength="128" autoComplete="new-password" /></label>
+                <label>Nhập lại mật khẩu mới<input name="passwordConfirmation" type="password" minLength="15" maxLength="128" autoComplete="new-password" /></label>
+              </fieldset>
+            )}
+            {saveError ? <p className="profile-account-error" role="alert">{saveError}</p> : null}
+            <div className="profile-account-actions"><button type="button" onClick={() => editorRef.current.close()}>Đóng</button><button type="submit" disabled={isSaving}>{isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}</button></div>
+          </form>
+        </div> : null}
       </dialog>
     </section>
   )

@@ -5,10 +5,13 @@ function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-export function ProfileCalendar({ user, loading, error, onClose }) {
+export function ProfileCalendar({ user, entries = [], loading, error, onClose, onSelectDate }) {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1))
   const today = dateKey(new Date())
   const visitedDates = new Set(user?.returnStreak?.visitedDates || [])
+  const writtenDates = new Set(
+    entries.filter((entry) => String(entry?.note || '').trim()).map((entry) => entry.date),
+  )
   const offset = (month.getDay() + 6) % 7
   const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
   const cells = Array.from({ length: Math.ceil((offset + daysInMonth) / 7) * 7 }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index - offset + 1))
@@ -39,14 +42,15 @@ export function ProfileCalendar({ user, loading, error, onClose }) {
             const key = dateKey(date)
             const isToday = key === today
             const visited = !loading && !error && visitedDates.has(key)
+            const written = !loading && !error && writtenDates.has(key)
             const outside = date.getMonth() !== month.getMonth()
             return (
-              <div key={key} className={`profile-calendar-cell ${outside ? 'is-outside' : ''}`} aria-label={`${date.toLocaleDateString('vi-VN')}${visited ? ', đã ghé thăm' : ''}`} aria-current={isToday ? 'date' : undefined}>
+              <button type="button" key={key} className={`profile-calendar-cell ${outside ? 'is-outside' : ''}`} aria-label={`${date.toLocaleDateString('vi-VN')}${visited ? ', đã đồng hành' : ''}${written ? ', đã viết nhật ký' : ''}`} aria-current={isToday ? 'date' : undefined} onClick={() => onSelectDate?.(key)}>
                 <span className={`profile-calendar-date ${visited ? 'is-visited' : ''} ${isToday ? 'is-today' : ''}`}>
                   {date.getDate()}
-                  {visited ? <svg className="profile-calendar-pencil" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 21 2-7L17 2l5 5-12 12-7 2Zm2-7 5 5M15 4l5 5M4 18l2 2M8 16 18 6" /></svg> : null}
+                  {written ? <svg className="profile-calendar-pencil" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 21 2-7L17 2l5 5-12 12-7 2Zm2-7 5 5M15 4l5 5M4 18l2 2M8 16 18 6" /></svg> : null}
                 </span>
-              </div>
+              </button>
             )
           })}
         </div>

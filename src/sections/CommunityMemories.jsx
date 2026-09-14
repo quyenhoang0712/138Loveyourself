@@ -5,8 +5,9 @@ import './CommunityMemories.css'
 const vietnamOffset = 7 * 60 * 60 * 1000
 const memoryPhotoWidth = 720
 const memoryPhotoHeight = 960
+const memoryNoteWidth = 960
+const memoryNoteHeight = 560
 const maximumEncodedImageLength = 300000
-const memoryPhotoRatio = memoryPhotoWidth / memoryPhotoHeight
 
 function getVietnamDateLabel(date = new Date()) {
   return new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }).format(date)
@@ -22,11 +23,12 @@ function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value))
 }
 
-function getCropBackgroundScale(source, zoom) {
+function getCropBackgroundScale(source, zoom, targetWidth, targetHeight) {
   const imageRatio = source.width / source.height
-  return imageRatio > memoryPhotoRatio
-    ? { width: zoom * imageRatio / memoryPhotoRatio, height: zoom }
-    : { width: zoom, height: zoom * memoryPhotoRatio / imageRatio }
+  const targetRatio = targetWidth / targetHeight
+  return imageRatio > targetRatio
+    ? { width: zoom * imageRatio / targetRatio, height: zoom }
+    : { width: zoom, height: zoom * targetRatio / imageRatio }
 }
 
 async function readResponse(response) {
@@ -40,10 +42,8 @@ function validateImage(file) {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) throw new Error('Bạn chọn ảnh JPG, PNG hoặc WebP dưới 10 MB nha.')
 }
 
-async function cropImage(file, crop) {
+async function cropImage(file, crop, targetWidth = memoryPhotoWidth, targetHeight = memoryPhotoHeight) {
   const bitmap = await createImageBitmap(file)
-  const targetWidth = memoryPhotoWidth
-  const targetHeight = memoryPhotoHeight
   const imageRatio = bitmap.width / bitmap.height
   const targetRatio = targetWidth / targetHeight
   const baseWidth = imageRatio > targetRatio ? bitmap.height * targetRatio : bitmap.width
@@ -74,6 +74,7 @@ function encodeCanvas(canvas) {
 export function CommunityMemories({ user }) {
   const memoriesPerPage = 4
   const [memories, setMemories] = useState([])
+  const [featuredImages, setFeaturedImages] = useState([])
   const [active, setActive] = useState(0)
   const [draft, setDraft] = useState('')
   const [caption, setCaption] = useState('')
@@ -82,10 +83,10 @@ export function CommunityMemories({ user }) {
   const [loading, setLoading] = useState(true)
   const [dateLabel, setDateLabel] = useState(() => getVietnamDateLabel())
   const [cropSource, setCropSource] = useState(null)
+  const [uploadTarget, setUploadTarget] = useState({ type: 'memory', slot: null })
   const [crop, setCrop] = useState({ zoom: 1, x: 50, y: 50 })
   const fileRef = useRef(null)
   const cropDragRef = useRef(null)
-  const selected = memories[active]
   const pageCount = Math.ceil(memories.length / memoriesPerPage)
   const activePage = Math.floor(active / memoriesPerPage)
 
@@ -101,6 +102,7 @@ export function CommunityMemories({ user }) {
     const controller = new AbortController()
     fetch('/api/community-memories', { signal: controller.signal }).then(readResponse).then((data) => {
       setMemories(data.memories || [])
+      setFeaturedImages(data.featuredImages || [])
       setActive(0)
       if (data.dateLabel) setDateLabel(data.dateLabel)
     }).catch((error) => {
@@ -148,8 +150,23 @@ export function CommunityMemories({ user }) {
     setBusy(true)
     setMessage('')
     try {
-      const croppedImage = await cropImage(cropSource.file, crop)
-      setDraft(croppedImage)
+      const isNoteSlot = uploadTarget.type === 'featured' && uploadTarget.slot === 1
+      const croppedImage = await cropImage(
+        cropSource.file,
+        crop,
+        isNoteSlot ? memoryNoteWidth : memoryPhotoWidth,
+        isNoteSlot ? memoryNoteHeight : memoryPhotoHeight,
+      )
+      if (uploadTarget.type === 'featured') {
+        const data = await fetch(`/api/community-memories/featured/${uploadTarget.slot}`, {
+          method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: croppedImage }),
+        }).then(readResponse)
+        setFeaturedImages(data.featuredImages || [])
+        setMessage(`Đã cập nhật ảnh nổi bật ${uploadTarget.slot + 1} của hôm nay.`)
+      } else {
+        setDraft(croppedImage)
+      }
       closeCropper()
     } catch (error) { setMessage(error.message) }
     finally { setBusy(false) }
@@ -170,7 +187,13 @@ export function CommunityMemories({ user }) {
     const drag = cropDragRef.current
     if (!drag || drag.pointerId !== event.pointerId || !cropSource) return
     const bounds = event.currentTarget.getBoundingClientRect()
-    const scale = getCropBackgroundScale(cropSource, crop.zoom)
+    const isNoteSlot = uploadTarget.type === 'featured' && uploadTarget.slot === 1
+    const scale = getCropBackgroundScale(
+      cropSource,
+      crop.zoom,
+      isNoteSlot ? memoryNoteWidth : memoryPhotoWidth,
+      isNoteSlot ? memoryNoteHeight : memoryPhotoHeight,
+    )
     const overflowX = bounds.width * (scale.width - 1)
     const overflowY = bounds.height * (scale.height - 1)
     setCrop((value) => ({
@@ -213,7 +236,9 @@ export function CommunityMemories({ user }) {
     setActive(page * memoriesPerPage)
   }
 
-  const cropBackgroundScale = cropSource ? getCropBackgroundScale(cropSource, crop.zoom) : { width: 1, height: 1 }
+  const cropWidth = uploadTarget.type === 'featured' && uploadTarget.slot === 1 ? memoryNoteWidth : memoryPhotoWidth
+  const cropHeight = uploadTarget.type === 'featured' && uploadTarget.slot === 1 ? memoryNoteHeight : memoryPhotoHeight
+  const cropBackgroundScale = cropSource ? getCropBackgroundScale(cropSource, crop.zoom, cropWidth, cropHeight) : { width: 1, height: 1 }
   const cropBackgroundSize = `${cropBackgroundScale.width * 100}% ${cropBackgroundScale.height * 100}%`
 
   const thumbnailItems = memories.length
@@ -252,25 +277,36 @@ export function CommunityMemories({ user }) {
         <h2 id="community-memories-title">Góc kỷ niệm</h2>
         <div className="memory-board">
           <div className="memory-feature">
-            <p className="memory-date">{draft ? 'Một kỷ niệm mới của bạn' : `Kỷ niệm ngày ${dateLabel}`}<br />{draft ? 'Viết vài dòng để nhớ về hôm ấy nha.' : 'của tụi mình nè mấy bạn.'}</p>
-            <figure className={`memory-photo ${!draft && !selected ? 'is-empty' : ''}`}>
-              <button className="memory-upload" type="button" disabled={busy} onClick={() => {
-                if (!user) { setMessage('Bạn đăng nhập để chia sẻ kỷ niệm nha.'); return }
+            <p className="memory-date">Kỷ niệm ngày {dateLabel}<br />của tụi mình nè mấy bạn.</p>
+            <figure className={`memory-photo ${!featuredImages[0] ? 'is-empty' : ''}`}>
+              {user?.role === 'admin' ? <button className="memory-upload" type="button" disabled={busy} onClick={() => {
+                setUploadTarget({ type: 'featured', slot: 0 })
                 fileRef.current?.click()
-              }}><span aria-hidden="true">＋</span> Up hình</button>
-              {draft || selected ? <img src={draft || selected.image} alt={draft ? 'Ảnh đang chuẩn bị chia sẻ' : selected.caption || 'Ảnh kỷ niệm của cộng đồng'} /> : <div className="memory-photo-empty"><img src={assetUrl('PNG/may-anh.png')} alt="" /><span>Một tấm hình,<br />một kỷ niệm thương.</span></div>}
-              {selected && !draft ? <figcaption>{selected.authorName || 'Một người bạn'}</figcaption> : null}
+              }}><span aria-hidden="true">＋</span> {featuredImages[0] ? 'Thay ảnh' : 'Up hình'}</button> : null}
+              {featuredImages[0] ? <img src={featuredImages[0]} alt="Ảnh nổi bật đầu tiên của hôm nay" /> : <div className="memory-photo-empty"><img src={assetUrl('PNG/may-anh.png')} alt="" /><span>Một tấm hình,<br />một kỷ niệm thương.</span></div>}
             </figure>
-            {draft ? <form className="memory-note memory-form" onSubmit={publish}>
-                <label htmlFor="memory-caption">Lời nhắn cho kỷ niệm này</label>
-                <textarea id="memory-caption" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={900} placeholder="Hôm ấy có điều gì làm bạn nhớ mãi?" disabled={busy} />
-                <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
-              </form> : selected ? (
-                selected.caption ? <p className="memory-caption">{selected.caption}</p> : null
-              ) : <div className="memory-note">
-                <p className="memory-empty-note">{loading ? 'Đang mở album kỷ niệm…' : 'Góc nhỏ chờ những khoảnh khắc của bạn.\nChia sẻ tấm hình đầu tiên nha!'}</p>
-              </div>}
+            <div className={`memory-note memory-feature-note ${!featuredImages[1] ? 'is-empty' : ''}`}>
+              {user?.role === 'admin' ? <button className="memory-upload" type="button" disabled={busy} onClick={() => {
+                setUploadTarget({ type: 'featured', slot: 1 })
+                fileRef.current?.click()
+              }}><span aria-hidden="true">＋</span> {featuredImages[1] ? 'Thay ảnh' : 'Up hình'}</button> : null}
+              {featuredImages[1] ? <img src={featuredImages[1]} alt="Ảnh nổi bật thứ hai của hôm nay" /> : <p className="memory-empty-note">{loading ? 'Đang mở góc kỷ niệm…' : 'Ảnh nổi bật thứ hai đang chờ admin đăng.'}</p>}
+            </div>
           </div>
+          <div className="memory-album-heading">
+            <span>Album kỷ niệm hôm nay</span>
+            <button type="button" disabled={busy} onClick={() => {
+              if (!user) { setMessage('Bạn đăng nhập để chia sẻ kỷ niệm nha.'); return }
+              setUploadTarget({ type: 'memory', slot: null })
+              fileRef.current?.click()
+            }}><span aria-hidden="true">＋</span> Chia sẻ ảnh</button>
+          </div>
+          {draft ? <form className="memory-note memory-form memory-album-form" onSubmit={publish}>
+            <img src={draft} alt="Ảnh đang chuẩn bị chia sẻ" />
+            <label htmlFor="memory-caption">Lời nhắn cho kỷ niệm này</label>
+            <textarea id="memory-caption" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={900} placeholder="Hôm ấy có điều gì làm bạn nhớ mãi?" disabled={busy} />
+            <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
+          </form> : null}
           <div className="memory-carousel" aria-label="Album kỷ niệm">
             <button className="memory-arrow" type="button" aria-label="Kỷ niệm trước" disabled={memories.length < 2 || Boolean(draft)} onClick={() => move(-1)}>←</button>
             <div className="memory-thumbnails">
@@ -300,7 +336,7 @@ export function CommunityMemories({ user }) {
       }}>
         <div className="memory-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="memory-crop-title">
           <div className="memory-crop-heading">
-            <div><h3 id="memory-crop-title">Cắt ảnh kỷ niệm</h3><p>Ảnh gốc: {cropSource.width} × {cropSource.height} px</p></div>
+            <div><h3 id="memory-crop-title">{uploadTarget.type === 'featured' ? `Cắt ảnh nổi bật ${uploadTarget.slot + 1}` : 'Cắt ảnh kỷ niệm'}</h3><p>Ảnh gốc: {cropSource.width} × {cropSource.height} px</p></div>
             <button type="button" aria-label="Đóng" disabled={busy} onClick={closeCropper}>×</button>
           </div>
           <div
@@ -312,17 +348,18 @@ export function CommunityMemories({ user }) {
             onPointerUp={stopCropDrag}
             onPointerCancel={stopCropDrag}
             style={{
+              aspectRatio: `${cropWidth} / ${cropHeight}`,
               backgroundImage: `url(${cropSource.url})`,
               backgroundPosition: `${crop.x}% ${crop.y}%`,
               backgroundSize: cropBackgroundSize,
             }}
           >
             <div className="memory-crop-guide" aria-hidden="true">
-              <span>Khung ảnh đăng · 3:4</span>
+              <span>Khung ảnh đăng · {cropWidth}:{cropHeight}</span>
             </div>
           </div>
           <p className="memory-crop-hint">Giữ và kéo ảnh để căn phần muốn đăng vào trong khung.</p>
-          <p>Phần nằm trong ô crop 3:4 sẽ được tối ưu thành ảnh 720 × 960 px.</p>
+          <p>Phần nằm trong ô crop sẽ được tối ưu thành ảnh {cropWidth} × {cropHeight} px.</p>
           <div className="memory-crop-actions"><button type="button" disabled={busy} onClick={() => { closeCropper(); fileRef.current?.click() }}>Chọn ảnh khác</button><button type="button" disabled={busy} onClick={confirmCrop}>{busy ? 'Đang xử lý…' : 'Dùng ảnh này'}</button></div>
         </div>
       </div> : null}
