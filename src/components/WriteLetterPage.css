@@ -22,7 +22,7 @@
 .write-letter-recipient input { min-width: 0; width: 100%; padding-left: 7px; font-size: 18px; }
 .write-letter-form textarea { flex: 1; width: 100%; min-height: 0; padding: 0; resize: none; font-size: 18px; line-height: 36px; background: repeating-linear-gradient(to bottom, transparent 0 35px, rgba(71, 141, 201, .55) 35px 36px); }
 .write-letter-form input::placeholder, .write-letter-form textarea::placeholder { color: rgba(71, 141, 201, .52); opacity: 1; }
-.write-letter-submit { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 24px; padding: 10px 22px; border: 0; border-radius: 999px; color: var(--love-page-cream); background: #478dc9; box-shadow: 3px 3px #efa9b8; font: 18px var(--font-regular); text-decoration: none; cursor: pointer; }
+.write-letter-submit { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 24px; padding: 10px 22px; border: 0; border-radius: 999px; color: var(--love-page-cream); background: #478dc9; box-shadow: 3px 3px #efa9b8; font: 400 20px/1.2 var(--font-bold); text-decoration: none; cursor: pointer; }
 .write-letter-submit:disabled, .write-letter-submit.is-disabled { opacity: .6; cursor: default; }
 .write-letter-message { margin: 18px auto 0; color: #b95378; font: 16px var(--font-regular); }
 .write-letter-stage.is-packaging { min-height: 560px; padding-top: 54px; }

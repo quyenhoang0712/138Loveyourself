@@ -261,7 +261,7 @@ function OfficialSiteIntroSection() {
           Nếu bạn muốn mang một chút cảm giác dễ thương ở đây về nhà, ghé qua gian hàng lưu niệm của mình
           nhaaa. Ở đó có những món đồ nhỏ để bạn tự tặng mình, hoặc gửi tặng một người bạn thương.
         </p>
-        <a href="https://138knitwear.vný/" target="_blank" rel="noreferrer">
+        <a href="https://138knitwear.vn/" target="_blank" rel="noreferrer">
           Ghé qua cửa hàng lưu niệm
         </a>
       </div>
