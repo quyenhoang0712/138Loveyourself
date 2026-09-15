@@ -127,13 +127,11 @@ function getOrigin(req) {
 }
 
 function getGoogleRedirectUri(req) {
-  return process.env.GOOGLE_REDIRECT_URI || `${getOrigin(req)}/api/auth/google/callback`
+  return `${getOrigin(req)}/api/auth/google/callback`
 }
 
 function getFacebookRedirectUri(req) {
-  return process.env.NODE_ENV === 'production' && process.env.FACEBOOK_REDIRECT_URI
-    ? process.env.FACEBOOK_REDIRECT_URI
-    : `${getOrigin(req)}/api/auth/facebook/callback`
+  return `${getOrigin(req)}/api/auth/facebook/callback`
 }
 
 function getFacebookApiVersion() {
@@ -360,16 +358,10 @@ async function enforceRateLimit(req, res, {
 }
 
 function getVerificationOrigin(req) {
-  const configuredOrigin = String(
-    process.env.APP_ORIGIN
-      || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : ''),
-  ).trim()
-  const origin = configuredOrigin || getOrigin(req)
-
   try {
-    return new URL(origin).origin
+    return new URL(getOrigin(req)).origin
   } catch {
-    throw new Error('APP_ORIGIN chưa hợp lệ.')
+    throw new Error('Origin hiện tại chưa hợp lệ.')
   }
 }
 

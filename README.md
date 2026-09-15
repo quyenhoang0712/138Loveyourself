@@ -32,6 +32,14 @@ ANALYTICS_ADMIN_TOKEN=change-me
 PORT=5001
 ```
 
+OAuth callbacks follow the domain serving the current request. Register these
+production callback URLs with the providers:
+
+```text
+https://138loveyourself.vn/api/auth/google/callback
+https://138loveyourself.vn/api/auth/facebook/callback
+```
+
 `AUTH_SESSION_SECRET` must contain at least 32 bytes in production. Password
 registration is disabled until both Resend variables are configured; Google,
 Facebook, and existing password accounts continue to work without them.
