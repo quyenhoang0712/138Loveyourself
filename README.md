@@ -29,6 +29,7 @@ APP_ORIGIN=http://localhost:5173
 RESEND_API_KEY=re_...
 AUTH_EMAIL_FROM=LOVE YOURSELF <hello@your-verified-domain.com>
 ANALYTICS_ADMIN_TOKEN=change-me
+OPENAI_API_KEY=sk-...
 PORT=5001
 ```
 
@@ -43,6 +44,10 @@ https://138loveyourself.vn/api/auth/facebook/callback
 `AUTH_SESSION_SECRET` must contain at least 32 bytes in production. Password
 registration is disabled until both Resend variables are configured; Google,
 Facebook, and existing password accounts continue to work without them.
+
+`OPENAI_API_KEY` is server-only and enables AI moderation for public community
+letters, shared memory photos/captions, and the two admin featured photos. If
+the moderation service is unavailable, new public content is not published.
 
 Analytics report:
 
@@ -77,6 +82,7 @@ APP_ORIGIN=https://your-production-domain.com
 RESEND_API_KEY=re_...
 AUTH_EMAIL_FROM=LOVE YOURSELF <hello@your-verified-domain.com>
 ANALYTICS_ADMIN_TOKEN=your-private-token
+OPENAI_API_KEY=your-server-only-openai-key
 ```
 
 Vercel runs the backend, but MongoDB stores the analytics data. Use MongoDB Atlas

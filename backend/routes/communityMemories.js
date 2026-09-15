@@ -2,6 +2,11 @@ import { Router } from 'express'
 import { CommunityMemory } from '../models/CommunityMemory.js'
 import { CommunityMemoryFeature } from '../models/CommunityMemoryFeature.js'
 import { rateLimit } from '../middleware/rateLimit.js'
+import {
+  moderateCommunityContent,
+  moderationRejectedMessage,
+  moderationUnavailableMessage,
+} from '../services/contentModeration.js'
 import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
@@ -34,6 +39,11 @@ function normalizeDateKey(value) {
   return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== dateKey ? '' : dateKey
 }
 
+function getVietnamDateEnd(dateKey) {
+  const vietnamMidnightUtc = Date.parse(`${dateKey}T00:00:00.000Z`) - vietnamOffset
+  return new Date(vietnamMidnightUtc + 24 * 60 * 60 * 1000)
+}
+
 function validateImage(image) {
   const jpegPattern = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/
   if (image.length > 300000 || !jpegPattern.test(image)) return false
@@ -58,8 +68,12 @@ router.get('/', readLimit, async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(12)
     .lean(),
-    CommunityMemoryFeature.findOne({ dateKey }).select('images').lean(),
+    CommunityMemoryFeature.findOne({ dateKey }).select('images expiresAt').lean(),
   ])
+  const featureExpiry = getVietnamDateEnd(dateKey)
+  if (feature && feature.expiresAt?.getTime() !== featureExpiry.getTime()) {
+    await CommunityMemoryFeature.updateOne({ _id: feature._id }, { $set: { expiresAt: featureExpiry } })
+  }
   res.set({
     'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
     'CDN-Cache-Control': 'no-store',
@@ -76,14 +90,20 @@ router.put('/featured/:slot', publishLimit, async (req, res) => {
   const image = typeof req.body.image === 'string' ? req.body.image : ''
   if (![0, 1].includes(slot) || !validateImage(image)) return res.status(400).json({ error: 'Ảnh nổi bật chưa hợp lệ.' })
 
+  try {
+    const moderation = await moderateCommunityContent({ image })
+    if (moderation.flagged) return res.status(422).json({ error: moderationRejectedMessage })
+  } catch {
+    return res.status(503).json({ error: moderationUnavailableMessage })
+  }
+
   const existing = await CommunityMemoryFeature.findOne({ dateKey }).lean()
   const images = existing?.images ? [...existing.images] : []
   images[slot] = image
-  const archiveExpiry = new Date(`${dateKey}T00:00:00.000Z`)
-  archiveExpiry.setUTCFullYear(archiveExpiry.getUTCFullYear() + 10)
+  const expiresAt = getVietnamDateEnd(dateKey)
   const feature = await CommunityMemoryFeature.findOneAndUpdate(
     { dateKey },
-    { $set: { images, updatedBy: user._id, expiresAt: archiveExpiry } },
+    { $set: { images, updatedBy: user._id, expiresAt } },
     { new: true, upsert: true, runValidators: true },
   )
   res.json({ featuredImages: feature.images })
@@ -96,6 +116,12 @@ router.post('/', publishLimit, async (req, res) => {
   const caption = typeof req.body.caption === 'string' ? req.body.caption.trim() : ''
   if (!validateImage(image) || caption.length > 900) {
     return res.status(400).json({ error: 'Ảnh hoặc lời nhắn chưa hợp lệ.' })
+  }
+  try {
+    const moderation = await moderateCommunityContent({ text: caption, image })
+    if (moderation.flagged) return res.status(422).json({ error: moderationRejectedMessage })
+  } catch {
+    return res.status(503).json({ error: moderationUnavailableMessage })
   }
   const { end } = getVietnamDayRange()
   const memory = await CommunityMemory.create({ authorId: user._id, authorName: user.name, image, caption, expiresAt: end })

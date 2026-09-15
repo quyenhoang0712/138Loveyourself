@@ -2,6 +2,11 @@ import mongoose from 'mongoose'
 import { Router } from 'express'
 import { CommunityLetter } from '../models/CommunityLetter.js'
 import { rateLimit } from '../middleware/rateLimit.js'
+import {
+  moderateCommunityContent,
+  moderationRejectedMessage,
+  moderationUnavailableMessage,
+} from '../services/contentModeration.js'
 import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
@@ -85,6 +90,19 @@ router.post('/', publishLimit, async (req, res) => {
   ) {
     res.status(400).json({ error: 'Tiêu đề hoặc nội dung lá thư chưa hợp lệ.' })
     return
+  }
+
+  if (recipient === 'Cộng đồng') {
+    try {
+      const moderation = await moderateCommunityContent({ text: `${title}\n${body}` })
+      if (moderation.flagged) {
+        res.status(422).json({ error: moderationRejectedMessage })
+        return
+      }
+    } catch {
+      res.status(503).json({ error: moderationUnavailableMessage })
+      return
+    }
   }
 
   const letter = await CommunityLetter.create({

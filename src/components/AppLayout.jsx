@@ -889,7 +889,7 @@ export function AppLayout({ state }) {
   }, [beginPageTransition])
 
   const handleShopOpen = useCallback(() => {
-    window.open('https://138knitwear.com/', '_blank', 'noopener,noreferrer')
+    window.open('https://138knitwear.vn/', '_blank', 'noopener,noreferrer')
   }, [])
 
   const handleBottomToolbarHiddenToggle = useCallback(() => {
