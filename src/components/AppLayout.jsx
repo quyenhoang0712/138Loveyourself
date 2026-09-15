@@ -297,7 +297,7 @@ function FeedbackPopup({ isOpen, onClose }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...getAnalyticsIds(),
+          ...getAnalyticsIds(), 
           name,
           email,
           message,

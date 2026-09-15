@@ -60,7 +60,11 @@ router.get('/', readLimit, async (req, res) => {
     .lean(),
     CommunityMemoryFeature.findOne({ dateKey }).select('images').lean(),
   ])
-  res.set('Cache-Control', 'public, s-maxage=20, stale-while-revalidate=40')
+  res.set({
+    'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
+    'CDN-Cache-Control': 'no-store',
+    'Vercel-CDN-Cache-Control': 'no-store',
+  })
   res.json({ memories: memories.map(serialize), featuredImages: feature?.images || [], dateLabel: requestedDate ? new Intl.DateTimeFormat('vi-VN').format(new Date(`${requestedDate}T12:00:00Z`)) : formatVietnamDate() })
 })
 

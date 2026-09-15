@@ -100,7 +100,7 @@ export function CommunityMemories({ user }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch('/api/community-memories', { signal: controller.signal }).then(readResponse).then((data) => {
+    fetch('/api/community-memories', { cache: 'no-store', signal: controller.signal }).then(readResponse).then((data) => {
       setMemories(data.memories || [])
       setFeaturedImages(data.featuredImages || [])
       setActive(0)

@@ -48,7 +48,7 @@ function DailyImages() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch(`/api/community-memories?date=${date}`, { credentials: 'include', signal: controller.signal })
+    fetch(`/api/community-memories?date=${date}`, { cache: 'no-store', credentials: 'include', signal: controller.signal })
       .then(readJson).then((data) => setImages(data.featuredImages || []))
       .catch((error) => { if (error.name !== 'AbortError') setMessage(error.message) })
       .finally(() => { if (!controller.signal.aborted) setBusy(false) })
