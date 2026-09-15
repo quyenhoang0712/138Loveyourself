@@ -88,6 +88,81 @@ function DailyImages() {
   </section>
 }
 
+const contentGroups = [
+  { key: 'quotes', type: 'quote', title: 'Quote', placeholder: 'Nhập quote mới…', maxLength: 600 },
+  { key: 'decisionMessages', type: 'decisionMessage', title: 'Decision message', placeholder: 'Nhập lời nhắn quyết định mới…', maxLength: 300 },
+]
+
+function ContentMessages() {
+  const [items, setItems] = useState({ quotes: [], decisionMessages: [] })
+  const [drafts, setDrafts] = useState({ quote: '', decisionMessage: '' })
+  const [busyType, setBusyType] = useState('')
+  const [status, setStatus] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/content-messages', { cache: 'no-store', credentials: 'include', signal: controller.signal })
+      .then(readJson)
+      .then((data) => setItems({ quotes: data.quotes || [], decisionMessages: data.decisionMessages || [] }))
+      .catch((error) => { if (error.name !== 'AbortError') setStatus(error.message) })
+    return () => controller.abort()
+  }, [])
+
+  async function addMessage(event, group) {
+    event.preventDefault()
+    const text = drafts[group.type].trim()
+    if (!text) return
+    setBusyType(group.type)
+    setStatus('')
+    try {
+      const data = await fetch('/api/content-messages', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: group.type, text }),
+      }).then(readJson)
+      setItems((current) => ({ ...current, [group.key]: [data.message, ...current[group.key]] }))
+      setDrafts((current) => ({ ...current, [group.type]: '' }))
+      setStatus(`Đã thêm ${group.title.toLowerCase()}.`)
+    } catch (error) { setStatus(error.message) }
+    finally { setBusyType('') }
+  }
+
+  async function removeMessage(group, id) {
+    setBusyType(id)
+    setStatus('')
+    try {
+      await fetch(`/api/content-messages/${id}`, { method: 'DELETE', credentials: 'include' }).then(readJson)
+      setItems((current) => ({ ...current, [group.key]: current[group.key].filter((item) => item.id !== id) }))
+      setStatus(`Đã xóa ${group.title.toLowerCase()}.`)
+    } catch (error) { setStatus(error.message) }
+    finally { setBusyType('') }
+  }
+
+  return <section className="admin-content-messages" id="admin-messages">
+    <div className="admin-section-heading"><div><h2>Quote &amp; decision messages</h2><p>Thêm nội dung mới cho Phòng thông điệp và Hộp thư thoại LOVA.</p></div></div>
+    <div className="admin-message-grid">
+      {contentGroups.map((group) => <article key={group.type}>
+        <header><div><h3>{group.title}</h3><span>{items[group.key].length} nội dung bổ sung</span></div></header>
+        <form onSubmit={(event) => addMessage(event, group)}>
+          <textarea
+            value={drafts[group.type]}
+            maxLength={group.maxLength}
+            placeholder={group.placeholder}
+            onChange={(event) => setDrafts((current) => ({ ...current, [group.type]: event.target.value }))}
+          />
+          <div><small>{drafts[group.type].length}/{group.maxLength}</small><button type="submit" disabled={Boolean(busyType) || !drafts[group.type].trim()}>Thêm</button></div>
+        </form>
+        <div className="admin-message-list">
+          {items[group.key].length ? items[group.key].map((item) => <div key={item.id}>
+            <p>{item.text}</p>
+            <button type="button" disabled={Boolean(busyType)} onClick={() => removeMessage(group, item.id)}>Xóa</button>
+          </div>) : <p className="admin-message-empty">Chưa có nội dung bổ sung.</p>}
+        </div>
+      </article>)}
+    </div>
+    <p className="admin-message-status" role="status">{status}</p>
+  </section>
+}
+
 export function AdminPage() {
   const [user, setUser] = useState(undefined)
   useEffect(() => {
@@ -104,6 +179,7 @@ export function AdminPage() {
         <a href="#admin-users"><span>02</span>Người dùng</a>
         <a href="#admin-activity"><span>03</span>Hoạt động</a>
         <a href="#admin-images"><span>04</span>Ảnh theo ngày</a>
+        <a href="#admin-messages"><span>05</span>Quote &amp; lời nhắn</a>
       </nav>
       <a className="admin-sidebar-home" href="/">← Về trang chính</a>
     </aside>
@@ -111,6 +187,7 @@ export function AdminPage() {
       <header className="admin-content-header"><div><span>ADMIN DASHBOARD</span><h2>Trang quản trị</h2></div><p>Dữ liệu hệ thống và nội dung kỷ niệm</p></header>
       <AnalyticsReport embeddedUser={user} />
       <DailyImages />
+      <ContentMessages />
     </div>
   </main>
 }

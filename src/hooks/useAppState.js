@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { decisionMessages } from '../decisionMessages'
+import { decisionMessages as defaultDecisionMessages } from '../decisionMessages'
 import { ui } from '../i18n/ui'
 import {
   ambientSoundOptions,
@@ -15,11 +15,11 @@ import { trackAnalyticsEvent } from '../utils/analytics'
 import { createShareImageBlob, getShareQuoteFontSize } from '../utils/shareImage'
 import { formatTime } from '../utils/time'
 
-function getNextDecisionMessage(currentMessage = '') {
+function getNextDecisionMessage(currentMessage = '', messages = defaultDecisionMessages) {
   const nextOptions =
-    decisionMessages.length > 1
-      ? decisionMessages.filter((message) => message !== currentMessage)
-      : decisionMessages
+    messages.length > 1
+      ? messages.filter((message) => message !== currentMessage)
+      : messages
 
   return nextOptions[Math.floor(Math.random() * nextOptions.length)]
 }
@@ -27,6 +27,8 @@ function getNextDecisionMessage(currentMessage = '') {
 export function useAppState() {
   const [quoteLetters] = useState(getQuoteLetters)
   const [randomQuote] = useState(getRandomQuote)
+  const [additionalQuotes, setAdditionalQuotes] = useState([])
+  const [decisionMessages, setDecisionMessages] = useState(defaultDecisionMessages)
   const [quote, setQuote] = useState('')
   const [openedLetterId, setOpenedLetterId] = useState(null)
   const [savedQuotes, setSavedQuotes] = useState(() => {
@@ -75,6 +77,23 @@ export function useAppState() {
   const iceCupRef = useRef(null)
   const audioContextRef = useRef(null)
   const ambientAudioRef = useRef(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/content-messages', { cache: 'no-store', signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!data) return
+        const nextQuotes = Array.isArray(data.quotes) ? data.quotes.map((item) => item.text).filter(Boolean) : []
+        const nextDecisionMessages = Array.isArray(data.decisionMessages)
+          ? data.decisionMessages.map((item) => item.text).filter(Boolean)
+          : []
+        setAdditionalQuotes(nextQuotes)
+        setDecisionMessages([...defaultDecisionMessages, ...nextDecisionMessages])
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   const isQuoteSaved = useMemo(() => savedQuotes.includes(quote), [quote, savedQuotes])
   const isFocusPhase = timerPhase === 'focus'
@@ -369,24 +388,7 @@ export function useAppState() {
     return () => window.clearInterval(timerId)
   }, [iceCubeCount, isBreakPhase, isTimerRunning, playIceMeltNotice, playTimerDone, totalIceSeconds])
 
-  useEffect(() => {
-    stopAmbientSound()
-    if (!activeAmbientSound) return undefined
-
-    const selectedSound = ambientSoundOptions.find((sound) => sound.id === activeAmbientSound)
-    if (!selectedSound) return undefined
-
-    const audio = new Audio(selectedSound.src)
-    audio.loop = true
-    audio.volume = 0.62
-    ambientAudioRef.current = audio
-
-    audio.play().catch(() => {
-      stopAmbientSound()
-    })
-
-    return stopAmbientSound
-  }, [activeAmbientSound, stopAmbientSound])
+  useEffect(() => stopAmbientSound, [stopAmbientSound])
 
   useEffect(() => {
     const animatedElements = document.querySelectorAll('.scroll-pop')
@@ -465,7 +467,7 @@ export function useAppState() {
 
   const handleOpenLetter = (letter) => {
     setOpenedLetterId(letter.id)
-    setQuote(randomQuote)
+    setQuote(additionalQuotes.length ? getRandomQuote(additionalQuotes) : randomQuote)
     trackAnalyticsEvent('letter_open', 'card-room', { letterId: letter.id })
   }
 
@@ -821,12 +823,34 @@ export function useAppState() {
   }
 
   const handleAmbientSoundToggle = (soundId) => {
-    setActiveAmbientSound((currentSound) => (currentSound === soundId ? null : soundId))
-    trackAnalyticsEvent('ambient_toggle', 'focus-room', { soundId })
+    if (activeAmbientSound === soundId) {
+      stopAmbientSound()
+      setActiveAmbientSound(null)
+      trackAnalyticsEvent('ambient_toggle', 'focus-room', { soundId, playing: false })
+      return
+    }
+
+    const selectedSound = ambientSoundOptions.find((sound) => sound.id === soundId)
+    if (!selectedSound) return
+
+    stopAmbientSound()
+    const audio = new Audio(selectedSound.src)
+    audio.loop = true
+    audio.volume = 0.62
+    ambientAudioRef.current = audio
+    setActiveAmbientSound(soundId)
+
+    audio.play().catch(() => {
+      if (ambientAudioRef.current !== audio) return
+      stopAmbientSound()
+      setActiveAmbientSound(null)
+      showToast('Trình duyệt chưa cho phép phát âm thanh. Bạn thử bấm lại nha.')
+    })
+    trackAnalyticsEvent('ambient_toggle', 'focus-room', { soundId, playing: true })
   }
 
   const revealDecisionMessage = (currentMessage = '') => {
-    const nextMessage = getNextDecisionMessage(currentMessage)
+    const nextMessage = getNextDecisionMessage(currentMessage, decisionMessages)
 
     setDecisionMessage(nextMessage)
     setDecisionThread((currentThread) => {

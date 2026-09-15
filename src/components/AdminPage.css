@@ -44,3 +44,22 @@
 .admin-image-grid button { position: absolute; right: 12px; bottom: 12px; padding: 9px 15px; color: #fffaf0; background: var(--love-blue); border: 0; border-radius: 999px; cursor: pointer; }
 .admin-image-grid article { padding-bottom: 62px; }
 .admin-image-status { min-height: 22px; margin: 12px 0 0; text-align: center; }
+.admin-content-messages { width: min(1180px,100%); margin: 28px auto 0; padding: 28px; background: rgba(255,251,239,.55); border: 1px solid rgba(71,137,200,.22); border-radius: 18px; box-shadow: 0 22px 60px rgba(37,58,70,.08); }
+.admin-message-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; margin-top: 20px; }
+.admin-message-grid > article { min-width: 0; padding: 18px; background: rgba(237,229,210,.62); border: 2px dashed rgba(71,137,200,.55); border-radius: 14px; }
+.admin-message-grid header h3, .admin-message-grid header span { margin: 0; }
+.admin-message-grid header h3 { font: 400 1.35rem var(--font-regular); }
+.admin-message-grid header span { display: block; margin-top: 4px; font-size: .82rem; opacity: .68; }
+.admin-message-grid form { display: grid; gap: 10px; margin-top: 16px; }
+.admin-message-grid textarea { width: 100%; min-height: 112px; padding: 13px 14px; resize: vertical; color: inherit; background: var(--love-page-cream); border: 1px solid rgba(71,137,200,.28); border-radius: 12px; font: 400 .95rem/1.5 var(--font-mono); }
+.admin-message-grid form > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-message-grid form small { opacity: .62; }
+.admin-message-grid button { padding: 8px 15px; color: #fffaf0; background: var(--love-blue); border: 0; border-radius: 999px; cursor: pointer; }
+.admin-message-grid button:disabled { cursor: wait; opacity: .5; }
+.admin-message-list { display: grid; gap: 8px; max-height: 330px; margin-top: 18px; overflow: auto; }
+.admin-message-list > div { display: flex; align-items: start; gap: 12px; padding: 11px 12px; background: rgba(255,251,239,.7); border: 1px solid rgba(71,137,200,.16); border-radius: 10px; }
+.admin-message-list p { min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-message-list > div p { flex: 1; }
+.admin-message-list > div button { padding: 5px 10px; color: #a14f68; background: rgba(241,162,183,.2); }
+.admin-message-empty { padding: 18px; text-align: center; opacity: .62; }
+.admin-message-status { min-height: 22px; margin: 12px 0 0; text-align: center; }

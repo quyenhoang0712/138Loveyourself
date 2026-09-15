@@ -76,6 +76,7 @@ export function CommunityMemories({ user }) {
   const [memories, setMemories] = useState([])
   const [featuredImages, setFeaturedImages] = useState([])
   const [active, setActive] = useState(0)
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [caption, setCaption] = useState('')
   const [message, setMessage] = useState('')
@@ -89,6 +90,7 @@ export function CommunityMemories({ user }) {
   const cropDragRef = useRef(null)
   const pageCount = Math.ceil(memories.length / memoriesPerPage)
   const activePage = Math.floor(active / memoriesPerPage)
+  const selectedMemory = memories[active]
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -123,6 +125,20 @@ export function CommunityMemories({ user }) {
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [busy, cropSource])
+
+  useEffect(() => {
+    if (!isViewerOpen) return undefined
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsViewerOpen(false)
+    }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isViewerOpen])
 
   async function selectImage(event) {
     const file = event.target.files?.[0]
@@ -259,7 +275,10 @@ export function CommunityMemories({ user }) {
           aria-pressed={active === index}
           disabled={Boolean(draft)}
           tabIndex={isDuplicate ? -1 : undefined}
-          onClick={() => setActive(index)}
+          onClick={() => {
+            setActive(index)
+            setIsViewerOpen(true)
+          }}
         >
           <img src={memory.image} alt="" loading="lazy" />
         </button>
@@ -365,6 +384,26 @@ export function CommunityMemories({ user }) {
           <p>Phần nằm trong ô crop sẽ được tối ưu thành ảnh {cropWidth} × {cropHeight} px.</p>
           <div className="memory-crop-actions"><button type="button" disabled={busy} onClick={() => { closeCropper(); fileRef.current?.click() }}>Chọn ảnh khác</button><button type="button" disabled={busy} onClick={confirmCrop}>{busy ? 'Đang xử lý…' : 'Dùng ảnh này'}</button></div>
         </div>
+      </div> : null}
+      {isViewerOpen && selectedMemory ? <div className="memory-viewer-backdrop" role="presentation" onMouseDown={(event) => {
+        if (event.target === event.currentTarget) setIsViewerOpen(false)
+      }}>
+        <article className="memory-viewer" role="dialog" aria-modal="true" aria-labelledby="memory-viewer-title">
+          <header>
+            <div>
+              <span>Kỷ niệm của</span>
+              <h3 id="memory-viewer-title">{selectedMemory.authorName || 'Một người bạn'}</h3>
+            </div>
+            <button type="button" aria-label="Đóng ảnh chi tiết" onClick={() => setIsViewerOpen(false)}>×</button>
+          </header>
+          <img src={selectedMemory.image} alt={selectedMemory.caption || `Kỷ niệm của ${selectedMemory.authorName || 'một người bạn'}`} />
+          {selectedMemory.caption ? <p>{selectedMemory.caption}</p> : <p className="memory-viewer-empty">Một khoảnh khắc được chia sẻ trong hôm nay.</p>}
+          {memories.length > 1 ? <nav aria-label="Chuyển ảnh chi tiết">
+            <button type="button" onClick={() => move(-1)}>← Ảnh trước</button>
+            <span>{active + 1}/{memories.length}</span>
+            <button type="button" onClick={() => move(1)}>Ảnh sau →</button>
+          </nav> : null}
+        </article>
       </div> : null}
     </section>
   )

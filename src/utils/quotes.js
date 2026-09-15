@@ -5,8 +5,8 @@ function cleanQuote(quoteText) {
   return quoteText.replaceAll('"', '').replaceAll('\n', ' ').trim()
 }
 
-export function getRandomQuote() {
-  const availableQuotes = quotes.map(cleanQuote).filter(Boolean)
+export function getRandomQuote(additionalQuotes = []) {
+  const availableQuotes = [...quotes, ...additionalQuotes].map(cleanQuote).filter(Boolean)
   if (availableQuotes.length === 0) return ''
 
   let lastQuote = ''
