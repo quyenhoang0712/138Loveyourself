@@ -5761,6 +5761,7 @@ input {
 
   .home-profile-intro-art {
     width: min(620px, 94vw);
+    order: -1;
   }
 
   .home-profile-intro-rule {
@@ -5773,6 +5774,17 @@ input {
       transparent 24px 40px
     );
   }
+}
+
+@media (max-width: 640px) {
+  .home-profile-intro {
+    padding-top: 44px;
+  }
+
+  .home-profile-intro-inner {
+    gap: 30px;
+  }
+
 }
 
 .home-store-intro {
@@ -5974,6 +5986,12 @@ input {
     left: 50%;
     width: min(92vw, 680px);
     transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .home-store-bubble {
+    top: 57px;
   }
 }
 
