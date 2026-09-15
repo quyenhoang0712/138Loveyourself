@@ -10,8 +10,14 @@ function todayKey() {
 }
 
 async function readJson(response) {
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error || 'Chưa xử lý được yêu cầu.')
+  const contentType = response.headers.get('content-type') || ''
+  const data = contentType.includes('application/json') ? await response.json().catch(() => ({})) : {}
+  if (!response.ok) {
+    const fallback = response.status === 404
+      ? 'Đường dẫn upload chưa được triển khai. Hãy deploy phiên bản mới rồi thử lại.'
+      : `Chưa xử lý được yêu cầu (HTTP ${response.status}).`
+    throw new Error(data.error || fallback)
+  }
   return data
 }
 

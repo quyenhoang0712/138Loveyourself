@@ -96,7 +96,7 @@ function getHelmetOptions() {
         frameAncestors: ["'none'"],
         frameSrc: ['https://open.spotify.com'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-        mediaSrc: ["'self'", 'blob:', 'https://cdn.hstatic.net'],
+        mediaSrc: ["'self'", 'blob:', 'https://cdn.hstatic.net', 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com'],
         objectSrc: ["'none'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
