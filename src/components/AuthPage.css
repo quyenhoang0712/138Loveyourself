@@ -28,6 +28,15 @@
   text-decoration: none;
 }
 
+.auth-page .auth-brand-logo {
+  display: block;
+  width: clamp(220px, 30vw, 340px);
+  height: auto;
+  max-height: 68px;
+  filter: brightness(0) saturate(100%) invert(96%) sepia(12%) saturate(625%) hue-rotate(334deg) brightness(106%) contrast(102%);
+  object-fit: contain;
+}
+
 .auth-page .auth-brand span {
   font-size: clamp(1.8rem, 2.6vw, 2.7rem);
   font-weight: 400;

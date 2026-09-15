@@ -1,7 +1,9 @@
 :root { --dev-bg:#111923; --dev-panel:#182330; --dev-line:#2b3c4d; --dev-text:#d8e4ee; --dev-muted:#8195a8; --dev-green:#61d095; --dev-red:#ef7e87; --dev-cyan:#68b8e8; }
 .developer-page { display:grid; grid-template-columns:260px minmax(0,1fr); min-width:1100px; min-height:100svh; color:var(--dev-text); background:var(--dev-bg); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
 .developer-sidebar { position:sticky; top:0; display:flex; height:100svh; padding:26px 20px; flex-direction:column; background:#0c131b; border-right:1px solid var(--dev-line); }
-.developer-brand { display:flex; gap:12px; align-items:center; padding-bottom:24px; border-bottom:1px solid var(--dev-line); }
+.developer-brand { display:grid; gap:10px; align-items:center; padding-bottom:24px; border-bottom:1px solid var(--dev-line); }
+.developer-brand img { display:block; width:100%; max-width:190px; height:auto; filter:brightness(0) saturate(100%) invert(86%) sepia(26%) saturate(847%) hue-rotate(92deg) brightness(91%) contrast(88%); object-fit:contain; }
+.developer-brand>strong { color:var(--dev-green); font-size:.78rem; letter-spacing:.14em; }
 .developer-brand>span { display:grid; width:44px; aspect-ratio:1; place-items:center; color:#0c131b; background:var(--dev-green); border-radius:10px; font-weight:900; }
 .developer-brand div,.developer-identity { display:grid; gap:3px; }.developer-brand small,.developer-identity small { color:var(--dev-muted); }
 .developer-identity { padding:24px 4px; }.developer-identity>span { width:max-content; padding:3px 7px; color:var(--dev-green); background:#193329; border-radius:5px; font-size:.7rem; text-transform:uppercase; }.developer-identity small { overflow-wrap:anywhere; }

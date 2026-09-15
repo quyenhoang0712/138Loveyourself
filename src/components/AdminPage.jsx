@@ -97,7 +97,7 @@ export function AdminPage() {
   if (user?.role !== 'admin') return <main className="admin-page admin-access"><h1>Khu vực quản trị</h1><p>Bạn cần đăng nhập bằng tài khoản admin.</p><a href="/auth?returnTo=/admin">Đăng nhập admin</a></main>
   return <main className="admin-page">
     <aside className="admin-sidebar">
-      <div className="admin-sidebar-brand"><span>LOVE YOURSELF</span><strong>138knitwear</strong></div>
+      <div className="admin-sidebar-brand"><img src="/logo.svg" alt="LOVE YOURSELF 138knitwear" /></div>
       <div className="admin-sidebar-user"><span>Quản trị viên</span><h1>{user.name}</h1><p>{user.email}</p></div>
       <nav aria-label="Điều hướng trang quản trị">
         <a href="#admin-overview"><span>01</span>Tổng quan</a>

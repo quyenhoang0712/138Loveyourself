@@ -29,8 +29,7 @@ export function SiteFooter() {
           alt=""
           aria-hidden="true"
         />
-        <span>LOVE YOURSELF</span>
-        <small>138knitwear</small>
+        <img className="site-footer-logo" src="/logo.svg" alt="LOVE YOURSELF 138knitwear" />
       </div>
 
       <img

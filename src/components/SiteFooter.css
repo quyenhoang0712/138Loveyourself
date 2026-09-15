@@ -24,11 +24,19 @@
   text-align: center;
 }
 
+.site-footer-logo {
+  display: block;
+  width: min(460px, 88%);
+  height: auto;
+  filter: brightness(0) saturate(100%) invert(96%) sepia(12%) saturate(625%) hue-rotate(334deg) brightness(106%) contrast(102%);
+  object-fit: contain;
+}
+
 .site-footer-mascot {
   display: block;
-  width: clamp(210px, 24vw, 325px);
+  width: clamp(190px, 14vw, 250px);
   height: auto;
-  margin-bottom: -8px;
+  margin-bottom: clamp(20px, 1.5vw, 26px);
   object-fit: contain;
 }
 
@@ -182,6 +190,10 @@
 
   .site-footer-brand {
     margin-top: 30px;
+  }
+
+  .site-footer-logo {
+    width: min(460px, 88%);
   }
 
   .site-footer-mascot {

@@ -4032,6 +4032,15 @@
   transition: color 520ms ease;
 }
 
+.brand-logo {
+  display: block;
+  width: clamp(180px, 18vw, 280px);
+  height: auto;
+  max-height: 58px;
+  filter: brightness(0) saturate(100%) invert(96%) sepia(12%) saturate(625%) hue-rotate(334deg) brightness(106%) contrast(102%);
+  object-fit: contain;
+}
+
 .brand span {
   display: block;
   font-size: clamp(1.55rem, 2.2vw, 2.35rem);
@@ -6136,7 +6145,11 @@ input {
 }
 
 .community-letter-form.is-locked .community-letter-stamp-picker {
-  opacity: 0.32;
+  opacity: 1;
+}
+
+.community-letter-form.is-locked .community-letter-stamp-picker button {
+  pointer-events: auto;
 }
 
 .community-letter-form.is-folding-letter {

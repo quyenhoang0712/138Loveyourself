@@ -2,6 +2,7 @@
 .admin-page > p { grid-column: 1/-1; align-self: center; text-align: center; }
 .admin-sidebar { position: sticky; top: 0; display: flex; height: 100svh; padding: 34px 26px 28px; flex-direction: column; color: var(--love-page-cream); background: var(--love-blue); border-right: 7px solid var(--love-pink); }
 .admin-sidebar-brand { display: grid; gap: 3px; padding-bottom: 28px; border-bottom: 1px dashed rgba(255,251,239,.44); text-align: center; }
+.admin-sidebar-brand img { display: block; width: 100%; height: auto; max-height: 48px; filter: brightness(0) saturate(100%) invert(96%) sepia(12%) saturate(625%) hue-rotate(334deg) brightness(106%) contrast(102%); object-fit: contain; }
 .admin-sidebar-brand span { font: 400 1.42rem var(--font-regular); }
 .admin-sidebar-brand strong { color: var(--love-yellow); font: 700 .8rem var(--font-regular); }
 .admin-sidebar-user { padding: 30px 4px 24px; }

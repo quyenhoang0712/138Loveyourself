@@ -234,8 +234,7 @@ export function AuthPage() {
     <main className="auth-page">
       <header className="auth-page-header">
         <a className="auth-brand" href="/">
-          <span>LOVE YOURSELF</span>
-          <small>138knitwear</small>
+          <img className="auth-brand-logo" src="/logo.svg" alt="LOVE YOURSELF 138knitwear" />
         </a>
 
         <a className="auth-back-link" href="/" aria-label="Về trang chủ" title="Về trang chủ">

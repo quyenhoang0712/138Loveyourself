@@ -71,7 +71,7 @@ export function DeveloperPage() {
 
   return <main className="developer-page">
     <aside className="developer-sidebar">
-      <div className="developer-brand"><span>138</span><div><strong>DEV CONSOLE</strong><small>LOVE YOURSELF</small></div></div>
+      <div className="developer-brand"><img src="/logo.svg" alt="LOVE YOURSELF 138knitwear" /><strong>DEV CONSOLE</strong></div>
       <div className="developer-identity"><span>{user.role}</span><strong>{user.name}</strong><small>{user.email}</small></div>
       <nav aria-label="Developer navigation">
         <a href="#dev-status">System Status</a><a href="#dev-connections">Connections</a><a href="#dev-api">API Explorer</a><a href="#dev-database">Database</a><a href="#dev-logs">Logs</a><a href="#dev-visual">Visual Editor</a>

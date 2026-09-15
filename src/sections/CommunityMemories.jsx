@@ -246,7 +246,7 @@ export function CommunityMemories({ user }) {
         memory: memories[position % memories.length],
         index: position % memories.length,
       }))
-    : Array.from({ length: 8 }, (_, index) => ({ memory: null, index }))
+    : Array.from({ length: 6 }, (_, index) => ({ memory: null, index }))
 
   const renderThumbnailGroup = (isDuplicate = false) => (
     <div className="memory-thumbnail-group" aria-hidden={isDuplicate || undefined}>
@@ -310,15 +310,15 @@ export function CommunityMemories({ user }) {
             <textarea id="memory-caption" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={900} placeholder="Hôm ấy có điều gì làm bạn nhớ mãi?" disabled={busy} />
             <div><button type="button" disabled={busy} onClick={() => { setDraft(''); setCaption('') }}>Hủy</button><button type="submit" disabled={busy}>{busy ? 'Đang đăng…' : 'Chia sẻ kỷ niệm'}</button></div>
           </form> : null}
-          <div className="memory-carousel" aria-label="Album kỷ niệm">
-            <button className="memory-arrow" type="button" aria-label="Kỷ niệm trước" disabled={memories.length < 2 || Boolean(draft)} onClick={() => move(-1)}>←</button>
+          <div className={`memory-carousel ${memories.length ? 'has-memories' : 'is-empty'}`} aria-label="Album kỷ niệm">
+            {memories.length > 1 ? <button className="memory-arrow" type="button" aria-label="Kỷ niệm trước" disabled={Boolean(draft)} onClick={() => move(-1)}>←</button> : null}
             <div className="memory-thumbnails">
               <div className="memory-thumbnail-track">
                 {renderThumbnailGroup()}
-                {renderThumbnailGroup(true)}
+                {memories.length ? renderThumbnailGroup(true) : null}
               </div>
             </div>
-            <button className="memory-arrow" type="button" aria-label="Kỷ niệm sau" disabled={memories.length < 2 || Boolean(draft)} onClick={() => move(1)}>→</button>
+            {memories.length > 1 ? <button className="memory-arrow" type="button" aria-label="Kỷ niệm sau" disabled={Boolean(draft)} onClick={() => move(1)}>→</button> : null}
           </div>
           {pageCount > 1 ? <nav className="memory-pagination" aria-label="Chuyển trang album kỷ niệm">
             {Array.from({ length: pageCount }, (_, page) => <button

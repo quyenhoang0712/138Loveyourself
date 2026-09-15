@@ -64,8 +64,7 @@ export function SiteHeader({ activeAmbientSound, onAmbientSoundToggle, onHomeNav
         aria-label="Love Yourself 138knitwear"
         onClick={(event) => handleNavigationClick(event, onHomeNavigate)}
       >
-        <span>LOVE YOURSELF</span>
-        <small>138knitwear</small>
+        <img className="brand-logo" src="/logo.svg" alt="LOVE YOURSELF 138knitwear" />
       </a>
       {user ? (
         <div className="header-account-actions">

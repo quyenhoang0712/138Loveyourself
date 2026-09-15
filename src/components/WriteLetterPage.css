@@ -1,12 +1,19 @@
 .write-letter-page { min-height: 100vh; color: #478dc9; background: #eee7d4; }
 .write-letter-header { position: relative; display: flex; align-items: center; justify-content: center; min-height: 88px; padding: 12px clamp(24px, 6vw, 80px); background: #478dc9; border-top: 12px solid #f9dd8e; box-shadow: 0 3px 5px rgba(73, 94, 112, .3); }
 .write-letter-brand { display: flex; flex-direction: column; color: #fff5de; text-align: center; text-decoration: none; }
+.write-letter-brand img { display: block; width: clamp(210px, 24vw, 300px); height: auto; max-height: 60px; filter: brightness(0) saturate(100%) invert(96%) sepia(12%) saturate(625%) hue-rotate(334deg) brightness(106%) contrast(102%); object-fit: contain; }
 .write-letter-brand strong { font: 400 clamp(28px, 3vw, 40px)/.9 var(--font-bold); letter-spacing: 0; }
 .write-letter-brand span { margin-top: 7px; font: 800 15px/1 var(--font-regular); }
 .write-letter-stage { min-height: 900px; padding: 58px 24px 72px; text-align: center; }
 .write-letter-stage h1 { margin: 0 auto 28px; color: #478dc9; font: 700 clamp(18px, 2vw, 25px)/1.35 var(--font-regular); }
 .write-letter-form { position: relative; display: flex; flex-direction: column; width: min(880px, 100%); height: min(880px, calc(100vh - 130px)); min-height: 680px; margin: 0 auto; padding: 16px 82px 36px 74px; overflow: hidden; color: #478dc9; background: url('https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg') center / 100% 100% no-repeat; text-align: left; }
-.write-letter-stamp { position: absolute; top: 28px; right: 68px; width: 92px; height: 122px; object-fit: contain; }
+.write-letter-stamp-picker { position: absolute; z-index: 5; top: 28px; right: 68px; width: 92px; }
+.write-letter-stamp { display: block; width: 92px; height: 122px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.write-letter-stamp > img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.write-letter-stamp-options { position: absolute; top: calc(100% + 8px); right: 0; display: flex; gap: 8px; padding: 9px; border: 2px solid #478dc9; border-radius: 10px; background: #fff5de; box-shadow: 4px 4px 0 #efa9b8; }
+.write-letter-stamp-options button { display: grid; width: 64px; height: 84px; padding: 4px; place-items: center; border: 2px solid transparent; border-radius: 6px; background: #eee7d4; cursor: pointer; }
+.write-letter-stamp-options button.is-active { border-color: #478dc9; }
+.write-letter-stamp-options img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .write-letter-form time { display: block; margin-bottom: 0; font: 13px/16px var(--font-regular); }
 .write-letter-form input, .write-letter-form textarea { color: #478dc9; border: 0; outline: 0; background: transparent; font-family: var(--font-bold); }
 .write-letter-title-input { width: calc(100% - 130px); height: 30px; font-size: 24px; line-height: 30px; }
@@ -59,7 +66,8 @@
   .write-letter-stage { padding: 38px 12px 54px; }
   .write-letter-stage h1 { font-size: 16px; }
   .write-letter-form { height: 690px; min-height: 0; padding: 25px 28px 28px 43px; }
-  .write-letter-stamp { top: 24px; right: 24px; width: 62px; height: 84px; }
+  .write-letter-stamp-picker { top: 24px; right: 24px; width: 62px; }
+  .write-letter-stamp { width: 62px; height: 84px; }
   .write-letter-title-input, .write-letter-recipient { width: calc(100% - 78px); }
   .write-letter-title-input { font-size: 21px; }
   .write-letter-recipient { margin-top: 12px; }
@@ -84,7 +92,8 @@
 }
 @media (max-width: 350px) {
   .write-letter-form { padding-right: 20px; padding-left: 34px; }
-  .write-letter-stamp { right: 18px; width: 56px; }
+  .write-letter-stamp-picker { right: 18px; width: 56px; }
+  .write-letter-stamp { width: 56px; }
   .write-letter-title-input, .write-letter-recipient { width: calc(100% - 68px); }
   .write-letter-recipient, .write-letter-recipient input { font-size: 16px; }
 }

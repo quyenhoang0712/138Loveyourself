@@ -3,7 +3,10 @@ import { SiteFooter } from './SiteFooter'
 import { assetUrl } from '../utils/assets'
 import './WriteLetterPage.css'
 
-const stampUrl = assetUrl('tem/Letter 138knitwear-12.svg')
+const stampOptions = [
+  { id: 'letter-12', label: 'Tem thư mẫu 1', image: assetUrl('tem/Letter 138knitwear-12.svg') },
+  { id: 'letter-14', label: 'Tem thư mẫu 2', image: assetUrl('tem/Letter 138knitwear-14.svg') },
+]
 const openEnvelopeUrl = assetUrl('letter-open.png')
 const closedEnvelopeUrl = assetUrl('letter-closed.png')
 const envelopeOptions = [
@@ -30,6 +33,8 @@ export function WriteLetterPage() {
   const [isPackaging, setIsPackaging] = useState(false)
   const [envelopeColor, setEnvelopeColor] = useState('blue')
   const [sealColor, setSealColor] = useState('lavender')
+  const [stampId, setStampId] = useState(stampOptions[0].id)
+  const [isStampPickerOpen, setIsStampPickerOpen] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -81,7 +86,7 @@ export function WriteLetterPage() {
           isAnonymous,
           envelopeColor,
           sealColor,
-          stampId: 'letter-12',
+          stampId,
         }),
       })
       const data = await response.json().catch(() => null)
@@ -106,8 +111,7 @@ export function WriteLetterPage() {
     <main className="write-letter-page">
       <header className="write-letter-header">
         <a className="write-letter-brand" href="/">
-          <strong>LOVE YOURSELF</strong>
-          <span>138knitwear</span>
+          <img src="/logo.svg" alt="LOVE YOURSELF 138knitwear" />
         </a>
       </header>
 
@@ -115,7 +119,30 @@ export function WriteLetterPage() {
         {!isPackaged ? <h1 id="write-letter-title">HÃY ĐỂ LẠI LỜI NHẮN CHO CỘNG ĐỒNG HOẶC NGƯỜI BẠN QUAN TÂM</h1> : null}
 
         {!isPackaged ? <form id="write-letter-form" className="write-letter-form" onSubmit={handlePackage}>
-          <img className="write-letter-stamp" src={stampUrl} alt="" aria-hidden="true" />
+          <div className="write-letter-stamp-picker">
+            <button
+              className="write-letter-stamp"
+              type="button"
+              aria-label="Chọn tem thư"
+              aria-expanded={isStampPickerOpen}
+              onClick={() => setIsStampPickerOpen((isOpen) => !isOpen)}
+            >
+              <img src={stampOptions.find((option) => option.id === stampId)?.image} alt="" />
+            </button>
+            {isStampPickerOpen ? <div className="write-letter-stamp-options" aria-label="Các mẫu tem thư">
+              {stampOptions.map((option) => <button
+                className={stampId === option.id ? 'is-active' : ''}
+                type="button"
+                key={option.id}
+                aria-label={option.label}
+                aria-pressed={stampId === option.id}
+                onClick={() => {
+                  setStampId(option.id)
+                  setIsStampPickerOpen(false)
+                }}
+              ><img src={option.image} alt="" /></button>)}
+            </div> : null}
+          </div>
           <time>{new Date().toLocaleDateString('vi-VN')}</time>
           <input
             className="write-letter-title-input"

@@ -136,9 +136,9 @@
 .community-section .is-community.is-search-results .community-sent-letter-track { position: relative; top: 0; padding: 0 14px 8px; animation: none; transform: none; }
 .community-section .is-community.is-search-results .community-sent-letter-row { touch-action: pan-x; }
 .community-section .is-community .community-sent-letter-row { flex-basis: min(380px, calc(100vw - 32px)); width: min(380px, calc(100vw - 32px)); height: 258px; padding: 20px 22px 16px; background: #eee7d4; border: 1.5px solid #478dc9; border-radius: 5px; box-shadow: 2px 3px #efa9b8; touch-action: pan-y; }
-.community-section .community-story-recipient { min-height: 24px; padding: 0; color: #796642; background: none; border: 0; box-shadow: none; font: 14px var(--font-regular); }
-.community-section .community-story-body { flex: none; margin-top: 4px; padding-right: 22px; color: #478dc9; font: 22px/1.35 var(--font-bold); -webkit-line-clamp: 1; }
-.community-story-excerpt { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; margin-top: 5px; color: #478dc9; font: 16px/1.5 var(--font-regular); }
+.community-section .community-story-recipient { min-height: 28px; padding: 2px 0; color: #796642; background: none; border: 0; box-shadow: none; font: 14px/1.45 var(--font-regular); }
+.community-section .community-story-body { flex: none; margin-top: 4px; padding-right: 22px; color: #478dc9; font: 400 22px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-synthesis: none; -webkit-line-clamp: 1; }
+.community-story-excerpt { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; margin-top: 5px; color: #478dc9; font: 400 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-synthesis: none; }
 .community-section .community-story-footer { min-height: 16px; margin: auto 0 0; padding: 8px 0 0; background: none; border: 0; }
 .community-section .community-story-footer strong { color: #796642; font: 14px var(--font-regular); }
 .community-section .community-story-footer em { color: #b95378; font: 16px var(--font-regular); }
@@ -150,6 +150,7 @@
 .community-compose-backdrop .community-letter-room.is-reading-letter { width: min(800px, 100%); }
 .community-compose-close { position: absolute; z-index: 20; right: -16px; top: -18px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #eee7d4; box-shadow: 2px 2px #efa9b8; color: #efa9b8; font: 38px/1 Arial, sans-serif; cursor: pointer; }
 .community-compose-backdrop .community-letter-form { display: flex; flex-direction: column; gap: 0; width: 100%; min-height: 734px; padding: 24px 62px 24px; background: url("https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg") center / 100% 100% no-repeat; border: 0; border-radius: 0; box-shadow: none; }
+.community-compose-backdrop .community-letter-form:not(.has-sent-letter) { overflow: visible; }
 .community-compose-backdrop .community-letter-form::before, .community-compose-backdrop .community-letter-form::after { display: none; }
 .community-compose-date { font: 10px/16px var(--font-regular); }
 .community-compose-backdrop .community-letter-form label { display: block; width: 100%; margin: 0; }
@@ -160,7 +161,8 @@
 .community-compose-backdrop .community-letter-form textarea { height: 468px; min-height: 468px; padding: 0; resize: vertical; font: 18px/36px var(--font-bold); background: repeating-linear-gradient(to bottom, transparent 0 34px, rgba(239, 169, 184, 0.62) 34px 36px); }
 .community-compose-backdrop .community-letter-form input, .community-compose-backdrop .community-letter-form textarea { color: #478dc9; border: 0; border-radius: 0; box-shadow: none; }
 .community-compose-backdrop .community-letter-form input { background: transparent; }
-.community-compose-backdrop .community-letter-stamp-picker { top: 26px; right: 62px; width: 90px; }
+.community-compose-backdrop .community-letter-stamp-picker { top: 26px; right: 62px; z-index: 30; width: 90px; }
+.community-compose-backdrop .community-letter-stamp-options { z-index: 31; }
 .community-compose-backdrop .community-letter-form > button { align-self: end; margin-top: auto; min-height: 48px; padding: 6px 20px; font-size: 16px; }
 .community-compose-backdrop .community-letter-reader { background: transparent; }
 @media (max-width: 1200px) {
@@ -195,7 +197,7 @@
 .community-compose-backdrop .community-letter-reader > header h2 { min-height: 30px; margin: 0; padding: 0; border: 0; color: #478dc9; font: 24px/30px var(--font-bold); overflow-wrap: anywhere; }
 .community-compose-backdrop .community-letter-reader-recipient { margin: 0 0 16px; padding: 0; min-height: 0; font: 17px/1.45 var(--font-regular); color: #478dc9; }
 .community-compose-backdrop .community-letter-reader-recipient strong { font-family: var(--font-bold); font-weight: bold; color: #478dc9; }
-.community-compose-backdrop .community-letter-reader-body { flex: 1; min-height: 120px; margin: 0; padding: 0 8px 18px 0; background: repeating-linear-gradient(to bottom, transparent 0 34px, rgba(239, 169, 184, 0.62) 34px 36px); color: #478dc9; font: 400 18px/36px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(71, 137, 200, 0.35) transparent; }
+.community-compose-backdrop .community-letter-reader-body { flex: 1; min-height: 120px; margin: 0; padding: 0 8px 18px 0; background: repeating-linear-gradient(to bottom, transparent 0 34px, rgba(239, 169, 184, 0.62) 34px 36px); color: #478dc9; font: 400 18px/36px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-synthesis: none; white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(71, 137, 200, 0.35) transparent; }
 .community-compose-backdrop .community-letter-reader-footer { margin-top: 18px; padding: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: transparent; border: 0; }
 .community-compose-backdrop .community-letter-reader-author { color: rgba(71, 137, 200, 0.7); font: 15px/1.4 var(--font-regular); }
 .community-compose-backdrop .community-letter-reader-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }

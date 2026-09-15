@@ -801,7 +801,7 @@ export function CommunitySection() {
                   type="button"
                   aria-label="Đổi tem thư"
                   aria-expanded={isStampMenuOpen}
-                  disabled={!canWriteLetter || isSendingLetter}
+                  disabled={isSendingLetter}
                   onClick={() => setIsStampMenuOpen((isOpen) => !isOpen)}
                 >
                   <img src={getStampImage(stampId)} alt="" />
