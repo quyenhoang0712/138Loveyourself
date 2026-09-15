@@ -18,6 +18,8 @@ export function QuoteSection({
   quoteLetters,
 }) {
   const [revealedLetterId, setRevealedLetterId] = useState(null)
+  const [visualConfig, setVisualConfig] = useState(null)
+  const [visualBreakpoint, setVisualBreakpoint] = useState(() => window.innerWidth <= 760 ? 'mobile' : window.innerWidth <= 1100 ? 'tablet' : 'desktop')
   const isQuoteRevealed = Boolean(openedLetterId && revealedLetterId === openedLetterId)
   const getLetterColorIndex = (letter) => Number(letter.id.split('-').pop()) || 1
 
@@ -28,15 +30,34 @@ export function QuoteSection({
     return () => window.clearTimeout(revealTimeout)
   }, [openedLetterId])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/developer/visual/card-room/published', { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (data?.config) setVisualConfig(data.config) })
+      .catch(() => {})
+    const handleResize = () => setVisualBreakpoint(window.innerWidth <= 760 ? 'mobile' : window.innerWidth <= 1100 ? 'tablet' : 'desktop')
+    const handleEditorConfig = (event) => {
+      if (event.origin !== window.location.origin || event.data?.type !== 'visual-editor-config') return
+      setVisualConfig(event.data.config)
+    }
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('message', handleEditorConfig)
+    return () => { controller.abort(); window.removeEventListener('resize', handleResize); window.removeEventListener('message', handleEditorConfig) }
+  }, [])
+
+  const visual = visualConfig?.[visualBreakpoint] || {}
+  const positionStyle = (element) => ({ translate: `${visual[element]?.x || 0}px ${visual[element]?.y || 0}px` })
+
   return (
     <section className="quote-section" id="quote">
       <div className={`quote-envelope-content ${openedLetter ? 'is-open' : ''}`}>
         <div className="quote-section-heading">
-          <h2>{openedLetter ? 'LỜI NHẮN CHO BẠN NÈ' : 'Phòng thông điệp'}</h2>
-          <p>Bạn hãy nhắm mắt lại và lắng nghe con tim mình mách bảo nha.</p>
+          <h2 data-visual-id="heading" style={!openedLetter ? positionStyle('heading') : undefined}>{openedLetter ? 'LỜI NHẮN CHO BẠN NÈ' : visualConfig?.content?.title || 'Phòng thông điệp'}</h2>
+          <p data-visual-id="subtitle" style={positionStyle('subtitle')}>{visualConfig?.content?.subtitle || 'Bạn hãy nhắm mắt lại và lắng nghe con tim mình mách bảo nha.'}</p>
         </div>
 
-        <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} aria-label={copy.quote.gridLabel}>
+        <div className={`letter-grid ${openedLetter ? 'has-open-letter' : ''}`} data-visual-id="letters" style={!openedLetter ? { ...positionStyle('letters'), scale: visual.letters?.scale || 1 } : undefined} aria-label={copy.quote.gridLabel}>
           {!openedLetter ? (
             <svg
               className="message-room-frame"
@@ -84,9 +105,9 @@ export function QuoteSection({
           ))}
         </div>
 
-        <div className="message-room-decoration" aria-hidden="true">
+        <div className="message-room-decoration" data-visual-id="decoration" style={positionStyle('decoration')} aria-hidden="true">
           <img className="message-room-line" src={assetUrl('thong-diep/linexanh.svg')} alt="" />
-          {!openedLetter ? <img className="message-room-mascot" src={assetUrl('thong-diep/mastcot1.svg')} alt="" /> : null}
+          {!openedLetter ? <img className="message-room-mascot" data-visual-id="mascot" style={{ ...positionStyle('mascot'), ...(visual.mascot?.width ? { width: `${visual.mascot.width}px` } : {}) }} src={assetUrl('thong-diep/mastcot1.svg')} alt="" /> : null}
         </div>
       </div>
 

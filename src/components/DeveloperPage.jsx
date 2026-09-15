@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import './DeveloperPage.css'
+import { VisualEditor } from './VisualEditor'
 
 async function readJson(response) {
   const data = await response.json().catch(() => ({}))
@@ -73,7 +74,7 @@ export function DeveloperPage() {
       <div className="developer-brand"><span>138</span><div><strong>DEV CONSOLE</strong><small>LOVE YOURSELF</small></div></div>
       <div className="developer-identity"><span>{user.role}</span><strong>{user.name}</strong><small>{user.email}</small></div>
       <nav aria-label="Developer navigation">
-        <a href="#dev-status">System Status</a><a href="#dev-connections">Connections</a><a href="#dev-api">API Explorer</a><a href="#dev-database">Database</a><a href="#dev-logs">Logs</a>
+        <a href="#dev-status">System Status</a><a href="#dev-connections">Connections</a><a href="#dev-api">API Explorer</a><a href="#dev-database">Database</a><a href="#dev-logs">Logs</a><a href="#dev-visual">Visual Editor</a>
       </nav>
       <div className="developer-sidebar-links"><a href="/admin">Admin page</a><a href="/">Main website</a></div>
     </aside>
@@ -108,6 +109,7 @@ export function DeveloperPage() {
       <section className="developer-section" id="dev-logs"><header><span>05</span><div><h2>System Logs</h2><p>Latest authentication and analytics events.</p></div></header>
         <div className="developer-log-viewer"><div className="developer-log-head"><span>TIME</span><span>SOURCE</span><span>EVENT</span><span>DETAIL</span></div>{logs.length ? logs.map((log) => <div className="developer-log-row" key={log.id}><time>{new Date(log.createdAt).toLocaleString('vi-VN')}</time><code>{log.source}</code><strong>{log.event}</strong><span>{log.detail}</span></div>) : <p>No logs found.</p>}</div>
       </section>
+      <VisualEditor />
     </div>
   </main>
 }

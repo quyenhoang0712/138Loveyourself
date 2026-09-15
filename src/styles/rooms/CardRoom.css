@@ -5,6 +5,8 @@
   padding: clamp(52px, 7vh, 76px) 20px 150px;
   overflow: visible;
 }
+body:has([data-visual-id]) [data-visual-id] { transition: outline-color 120ms ease; }
+body:has([data-visual-id]) [data-visual-id].is-visual-editor-selected { outline: 3px solid #61d095; outline-offset: 4px; }
 .landing-page-card-room .quote-envelope-content:not(.is-open) { width: min(1040px, calc(100% - 24px)); }
 .landing-page-card-room .quote-section-heading { margin-bottom: 28px; }
 .landing-page-card-room .quote-section-heading h2 {
