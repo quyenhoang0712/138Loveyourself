@@ -46,8 +46,9 @@ registration is disabled until both Resend variables are configured; Google,
 Facebook, and existing password accounts continue to work without them.
 
 `OPENAI_API_KEY` is server-only and enables AI moderation for public community
-letters, shared memory photos/captions, and the two admin featured photos. If
-the moderation service is unavailable, new public content is not published.
+letters and memory photos/captions shared by users. The two featured photos are
+admin-controlled and bypass AI moderation. If the key or moderation service is
+unavailable, new user-generated public content is not published.
 
 Analytics report:
 

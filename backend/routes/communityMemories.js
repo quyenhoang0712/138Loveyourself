@@ -90,13 +90,6 @@ router.put('/featured/:slot', publishLimit, async (req, res) => {
   const image = typeof req.body.image === 'string' ? req.body.image : ''
   if (![0, 1].includes(slot) || !validateImage(image)) return res.status(400).json({ error: 'Ảnh nổi bật chưa hợp lệ.' })
 
-  try {
-    const moderation = await moderateCommunityContent({ image })
-    if (moderation.flagged) return res.status(422).json({ error: moderationRejectedMessage })
-  } catch {
-    return res.status(503).json({ error: moderationUnavailableMessage })
-  }
-
   const existing = await CommunityMemoryFeature.findOne({ dateKey }).lean()
   const images = existing?.images ? [...existing.images] : []
   images[slot] = image
