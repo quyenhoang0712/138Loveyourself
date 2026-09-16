@@ -2,11 +2,6 @@ import { Router } from 'express'
 import { CommunityMemory } from '../models/CommunityMemory.js'
 import { CommunityMemoryFeature } from '../models/CommunityMemoryFeature.js'
 import { rateLimit } from '../middleware/rateLimit.js'
-import {
-  moderateCommunityContent,
-  moderationRejectedMessage,
-  moderationUnavailableMessage,
-} from '../services/contentModeration.js'
 import { getAuthenticatedUser } from './auth.js'
 
 const router = Router()
@@ -109,12 +104,6 @@ router.post('/', publishLimit, async (req, res) => {
   const caption = typeof req.body.caption === 'string' ? req.body.caption.trim() : ''
   if (!validateImage(image) || caption.length > 900) {
     return res.status(400).json({ error: 'Ảnh hoặc lời nhắn chưa hợp lệ.' })
-  }
-  try {
-    const moderation = await moderateCommunityContent({ text: caption, image })
-    if (moderation.flagged) return res.status(422).json({ error: moderationRejectedMessage })
-  } catch {
-    return res.status(503).json({ error: moderationUnavailableMessage })
   }
   const { end } = getVietnamDayRange()
   const memory = await CommunityMemory.create({ authorId: user._id, authorName: user.name, image, caption, expiresAt: end })

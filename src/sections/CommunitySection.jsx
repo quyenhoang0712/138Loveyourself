@@ -106,6 +106,7 @@ export function CommunitySection() {
   const [isComposerOpen, setIsComposerOpen] = useState(false)
   const [search, setSearch] = useState('')
   const composerRef = useRef(null)
+  const communityLettersPopupRef = useRef(null)
   const writeButtonRef = useRef(null)
   const [isIntroOpen, setIsIntroOpen] = useState(true)
   const [letters, setLetters] = useState([])
@@ -124,6 +125,7 @@ export function CommunitySection() {
   const [isStampMenuOpen, setIsStampMenuOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [isSentLettersPopupOpen, setIsSentLettersPopupOpen] = useState(false)
+  const [isCommunityLettersPopupOpen, setIsCommunityLettersPopupOpen] = useState(false)
   const [sentLettersPage, setSentLettersPage] = useState(1)
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false)
   const [isSubmittingLetter, setIsSubmittingLetter] = useState(false)
@@ -278,6 +280,23 @@ export function CommunitySection() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isSentLettersPopupOpen])
+
+  useEffect(() => {
+    if (!isCommunityLettersPopupOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsCommunityLettersPopupOpen(false)
+    }
+
+    document.body.style.overflow = 'hidden'
+    communityLettersPopupRef.current?.focus({ preventScroll: true })
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isCommunityLettersPopupOpen])
 
   useEffect(() => {
     if (!isComposerOpen) return undefined
@@ -461,6 +480,14 @@ export function CommunitySection() {
       requestAnimationFrame(() => {
       })
     }, 620)
+  }
+
+  const handleOpenCommunityPopupLetter = (letter) => {
+    setIsCommunityLettersPopupOpen(false)
+    setSendingLetter(letter)
+    setIsComposerOpen(true)
+    setIsSentLetterOpen(true)
+    trackAnalyticsEvent('community_letter_read', 'community', { stackId: 'community-popup' })
   }
 
   const handleVoteLetter = () => {
@@ -773,7 +800,17 @@ export function CommunitySection() {
       >
         <div className="community-sent-letter-boxes">
           <section className="community-sent-letter-box community-sent-letter-box-community">
-            <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
+            <div className="community-letters-heading">
+              <h3 id="community-sent-stack-title">Thư cộng đồng</h3>
+              <button
+                className="community-view-all-letters"
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setIsCommunityLettersPopupOpen(true)}
+              >
+                Xem tất cả thư <strong>{communityLetters.length}</strong>
+              </button>
+            </div>
             {renderLetterStack(
               visibleCommunityLetters.filter((letter) => `${letter.title} ${letter.body} ${letter.authorName || ''}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi'))),
               isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : (search ? 'Không tìm thấy lá thư phù hợp.' : 'Chưa có thư cộng đồng.'),
@@ -1014,6 +1051,69 @@ export function CommunitySection() {
       </section>
 
       <CommunityMemories user={user} />
+
+      {isCommunityLettersPopupOpen ? (
+        <div
+          className="community-letter-popup-backdrop"
+          role="presentation"
+          onClick={() => setIsCommunityLettersPopupOpen(false)}
+        >
+          <section
+            ref={communityLettersPopupRef}
+            className="community-all-letters-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="community-all-letters-title"
+            tabIndex={-1}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <span>{communityLetters.length} lá thư</span>
+                <h2 id="community-all-letters-title">Tất cả thư cộng đồng</h2>
+              </div>
+              <button
+                className="community-all-letters-close"
+                type="button"
+                aria-label="Đóng danh sách thư cộng đồng"
+                onClick={() => setIsCommunityLettersPopupOpen(false)}
+              >×</button>
+            </header>
+
+            {communityLetters.length ? (
+              <div className="community-all-letters-grid">
+                {communityLetters.map((letter) => (
+                  <button
+                    className="community-all-letter-card"
+                    type="button"
+                    key={letter.id}
+                    style={{
+                      '--community-story-card-color': getEnvelopeCardColor(letter.envelopeColor),
+                      '--community-story-envelope-filter': getEnvelopeFilter(letter.envelopeColor),
+                      '--community-story-seal-color': sealColorOptions.find((option) => option.id === letter.sealColor)?.color || '#fff1bf',
+                    }}
+                    aria-label={`Đọc thư ${letter.title}`}
+                    onClick={() => handleOpenCommunityPopupLetter(letter)}
+                  >
+                    <img className="community-story-stamp" src={getStampImage(letter.stampId)} alt="" />
+                    <span className="community-story-recipient">Đến: {letter.recipient || 'Cộng đồng'}</span>
+                    <span className="community-story-body">{letter.title}</span>
+                    <span className="community-story-excerpt">{letter.body}</span>
+                    <span className="community-story-footer">
+                      <strong>{letter.isAnonymous ? 'Ẩn danh' : letter.authorName || 'Một người bạn'}</strong>
+                      <em>{Number(letter.votes || 0)} ♥</em>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="community-all-letters-empty">
+                {isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.'}
+              </p>
+            )}
+          </section>
+        </div>
+      ) : null}
 
       {isSentLettersPopupOpen ? (
         <div
