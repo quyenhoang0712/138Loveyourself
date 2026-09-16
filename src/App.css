@@ -7716,7 +7716,9 @@ input {
   display: grid;
   place-items: center;
   padding: 24px;
+  overflow-x: hidden;
   overflow-y: auto;
+  box-sizing: border-box;
   background: rgba(39, 66, 96, 0.42);
   backdrop-filter: blur(7px);
 }
