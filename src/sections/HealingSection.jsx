@@ -964,11 +964,12 @@ export function HealingSection() {
                   </div>
                 ) : null}
               </div>
-              <div className="healing-2048-controls" aria-label="Điều khiển 2048">
-                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển lên" onClick={() => handle2048Move('up')}>↑</button>
-                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang trái" onClick={() => handle2048Move('left')}>←</button>
-                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển xuống" onClick={() => handle2048Move('down')}>↓</button>
-                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang phải" onClick={() => handle2048Move('right')}>→</button>
+              <div className="healing-2048-controls healing-2048-dpad" aria-label="Điều khiển 2048 kiểu máy game cổ điển">
+                <button className="dpad-up" type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển lên" onClick={() => handle2048Move('up')}>▲</button>
+                <button className="dpad-left" type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang trái" onClick={() => handle2048Move('left')}>◀</button>
+                <span className="dpad-center" aria-hidden="true" />
+                <button className="dpad-right" type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang phải" onClick={() => handle2048Move('right')}>▶</button>
+                <button className="dpad-down" type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển xuống" onClick={() => handle2048Move('down')}>▼</button>
               </div>
               <small>Dùng phím mũi tên hoặc W A S D trên bàn phím.</small>
             </section>

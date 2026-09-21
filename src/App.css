@@ -4906,8 +4906,61 @@
 .healing-2048-tile.tile-1024,
 .healing-2048-tile.tile-2048 { color: #796b50; background: #ffdf80; font-size: clamp(16px, 2.8vw, 30px); }
 
-.healing-2048-controls { display: flex; justify-content: center; gap: 10px; }
-.healing-2048-controls button { width: 48px; padding: 0; font-size: 24px; }
+.healing-2048-controls {
+  --dpad-size: 44px;
+  display: grid;
+  width: calc(var(--dpad-size) * 3);
+  height: calc(var(--dpad-size) * 3);
+  margin: 2px auto 0;
+  grid-template-columns: repeat(3, var(--dpad-size));
+  grid-template-rows: repeat(3, var(--dpad-size));
+  gap: 0;
+  filter: drop-shadow(5px 6px 0 #eba8b5);
+}
+
+.healing-2048-controls button {
+  width: var(--dpad-size);
+  min-width: var(--dpad-size);
+  height: var(--dpad-size);
+  min-height: var(--dpad-size);
+  padding: 0;
+  color: #478dc9;
+  background: #eee7d4;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -4px 0 rgb(121 107 80 / 22%), inset 0 2px 0 rgb(255 255 255 / 48%);
+  font: 700 16px/1 Arial, sans-serif;
+}
+
+.healing-2048-dpad .dpad-up { grid-column: 2; grid-row: 1; border-radius: 10px 10px 0 0; }
+.healing-2048-dpad .dpad-left { grid-column: 1; grid-row: 2; border-radius: 10px 0 0 10px; }
+.healing-2048-dpad .dpad-center { position: relative; grid-column: 2; grid-row: 2; background: #eee7d4; box-shadow: inset 0 -4px 0 rgb(121 107 80 / 22%); }
+.healing-2048-dpad .dpad-right { grid-column: 3; grid-row: 2; border-radius: 0 10px 10px 0; }
+.healing-2048-dpad .dpad-down { grid-column: 2; grid-row: 3; border-radius: 0 0 10px 10px; }
+
+.healing-2048-dpad .dpad-center::after {
+  content: '';
+  position: absolute;
+  inset: 30%;
+  background: rgb(71 141 201 / 12%);
+  border: 2px solid rgb(71 141 201 / 28%);
+  border-radius: 50%;
+}
+
+.healing-2048-controls button:not(:disabled):hover,
+.healing-2048-controls button:not(:disabled):focus-visible {
+  z-index: 1;
+  color: #2f79b8;
+  background: #ffdf80;
+  outline: 2px solid #478dc9;
+  outline-offset: -4px;
+}
+
+.healing-2048-controls button:not(:disabled):active {
+  box-shadow: inset 0 3px 0 rgb(121 107 80 / 28%);
+  transform: translateY(2px);
+}
+
 .healing-2048-controls button:disabled { cursor: not-allowed; opacity: .42; box-shadow: none; }
 .healing-2048-panel > small { text-align: center; opacity: .82; }
 
@@ -4946,7 +4999,7 @@
   .healing-room-arrow { top: 28px; font-size: 46px; transform: none; }
   .healing-room-arrow-left { left: 16px; }
   .healing-room-arrow-right { right: 16px; }
-  .healing-2048-controls button { min-width: 50px; min-height: 50px; }
+  .healing-2048-controls { --dpad-size: 48px; }
 }
 
 @media (max-width: 600px) {
@@ -4988,8 +5041,7 @@
   .healing-2048-board { border-width: 3px; border-radius: 14px; }
   .healing-2048-cell,
   .healing-2048-tile { border-radius: 8px; }
-  .healing-2048-controls { gap: 12px; }
-  .healing-2048-controls button { width: 54px; min-width: 54px; min-height: 54px; font-size: 27px; }
+  .healing-2048-controls { --dpad-size: 50px; }
   .healing-2048-panel > small { display: none; }
 }
 
