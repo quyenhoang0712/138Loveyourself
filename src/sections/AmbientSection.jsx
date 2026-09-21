@@ -28,7 +28,7 @@ export function AmbientSection({ activeAmbientSound, copy, onAmbientSoundToggle,
 
           <div className="ambient-mascot" aria-hidden="true">
             <img
-              src="https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/mascottaptrung-uVPEzbBGIVZJqt3QVm5JIa00vo7q4r.svg"
+              src="/assets/public/taptrung.svg"
               alt=""
               width="284"
               height="399"

@@ -1,0 +1,990 @@
+{
+  "recovered": [
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-background.png",
+      "file": "assets/homepage/home-store-background.png",
+      "bytes": 2274511,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "81dd1cc45da5fa88_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-1.png",
+      "file": "assets/PNG/xe-dap-1.png",
+      "bytes": 244052,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "07310451f3236830_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ngu-coc.png",
+      "file": "assets/PNG/ngu-coc.png",
+      "bytes": 191916,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "080c78f990ff42a4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/letter-open.png",
+      "file": "assets/letter-open.png",
+      "bytes": 503909,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "0e3a263e36b6523f_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/tay-trai-tim.png",
+      "file": "assets/PNG/tay-trai-tim.png",
+      "bytes": 106952,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "20b66460036f498f_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/dia-than.png",
+      "file": "assets/PNG/dia-than.png",
+      "bytes": 134623,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "71931d952eb19848_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-cam-loa.png",
+      "file": "assets/PNG/mascot-cam-loa.png",
+      "bytes": 125721,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "ba017a414916ab8d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-khien-do.png",
+      "file": "assets/PNG/mascot-khien-do.png",
+      "bytes": 143696,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "c5fadb8175b95da9_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa-2.png",
+      "file": "assets/PNG/sofa-2.png",
+      "bytes": 234126,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "1bff00cb92a6075b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/radio.png",
+      "file": "assets/PNG/radio.png",
+      "bytes": 156460,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "c74f2609b54c6440_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ipod.png",
+      "file": "assets/PNG/ipod.png",
+      "bytes": 115517,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "eef401687e15b241_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay.png",
+      "file": "assets/PNG/giay.png",
+      "bytes": 169399,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "f57fa171362a063e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/nhan-nut-warning.png",
+      "file": "assets/PNG/nhan-nut-warning.png",
+      "bytes": 107645,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "ee7165f179ed1182_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/banh-co-to-giay.png",
+      "file": "assets/PNG/banh-co-to-giay.png",
+      "bytes": 65044,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "228f36727e0a048b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-ngu.png",
+      "file": "assets/PNG/mascot-ngu.png",
+      "bytes": 73926,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "3e151beeb673c90d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/roi-nui.png",
+      "file": "assets/PNG/roi-nui.png",
+      "bytes": 115584,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "26a2d1ea0180eae3_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-2.png",
+      "file": "assets/PNG/xe-dap-2.png",
+      "bytes": 181957,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "277ebe97a1fd82f4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-4.png",
+      "file": "assets/PNG/xe-dap-4.png",
+      "bytes": 242297,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "73782241c064db63_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/headphone.png",
+      "file": "assets/PNG/headphone.png",
+      "bytes": 61557,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "8cbe4b1bda6213d2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/may-anh.png",
+      "file": "assets/PNG/may-anh.png",
+      "bytes": 53540,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "286e839e53fdf1a8_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-nhac.png",
+      "file": "assets/PNG/hop-nhac.png",
+      "bytes": 106956,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "8bfd61f668ff8e2b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-mascot.png",
+      "file": "assets/homepage/home-store-mascot.png",
+      "bytes": 132694,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "b4889fdc10673c14_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/letter-closed.png",
+      "file": "assets/letter-closed.png",
+      "bytes": 588129,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "34ffbe1cb7422202_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-shop.png",
+      "file": "assets/homepage/home-store-shop.png",
+      "bytes": 344566,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "36f7a64357deb4e0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ao-khan-len.png",
+      "file": "assets/PNG/ao-khan-len.png",
+      "bytes": 126620,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "374e82d9fd0c7ed5_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/vua-IyqN6GbnVjAzeA0zMgKPs72KlK49TS.svg",
+      "file": "assets/thong-diep/vua-IyqN6GbnVjAzeA0zMgKPs72KlK49TS.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "3811820861b61e1a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/brush.png",
+      "file": "assets/PNG/brush.png",
+      "bytes": 4190,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "46dae42a9d6feed1_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-hero-art.gif",
+      "file": "assets/homepage/home-hero-art.gif",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "47473dffc0dd876c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa.png",
+      "file": "assets/PNG/sofa.png",
+      "bytes": 882827,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "5ae6cbed9685c3b5_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa-3.png",
+      "file": "assets/PNG/sofa-3.png",
+      "bytes": 145535,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "480b785434693e24_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hoa-ly.png",
+      "file": "assets/PNG/hoa-ly.png",
+      "bytes": 382783,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "4a7fbbf05d1ea3de_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/cuon-len.png",
+      "file": "assets/PNG/cuon-len.png",
+      "bytes": 130941,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "4f5d8d24d41a5239_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/xe-HcGB2eXO8v1qJtkxKi1vQkyWDwQNmT.svg",
+      "file": "assets/thong-diep/xe-HcGB2eXO8v1qJtkxKi1vQkyWDwQNmT.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "5050a038243a268c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ly-but.png",
+      "file": "assets/PNG/ly-but.png",
+      "bytes": 94892,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "568ae9f8e0502e27_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ngoi-sao.png",
+      "file": "assets/PNG/ngoi-sao.png",
+      "bytes": 43959,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "b86e62620b98b162_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-community-edge.png",
+      "file": "assets/homepage/home-community-edge.png",
+      "bytes": 982129,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "81509cf4da00575b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-3.png",
+      "file": "assets/PNG/xe-dap-3.png",
+      "bytes": 291644,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "bfd43b7c4d923f4e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/ma-9qCtLApVNHmhxFn3R1ZoY06YXf8oLv.svg",
+      "file": "assets/thong-diep/ma-9qCtLApVNHmhxFn3R1ZoY06YXf8oLv.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "5e1ee71ec4cfa871_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-3-YSZKDiIJ8i3L2tngwcmEEbVHlFoySh.svg",
+      "file": "assets/Vector-3-YSZKDiIJ8i3L2tngwcmEEbVHlFoySh.svg",
+      "bytes": 855,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "cacheEntry": "62e4f33b0ab314b4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-profile-art.gif",
+      "file": "assets/homepage/home-profile-art.gif",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "6460a0b6e90a1a07_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-community-art.gif",
+      "file": "assets/homepage/home-community-art.gif",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "64b785c2c41af999_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-nhay.png",
+      "file": "assets/PNG/mascot-nhay.png",
+      "bytes": 220567,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "68f8024b134f4ff2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/vong-xoay.png",
+      "file": "assets/PNG/vong-xoay.png",
+      "bytes": 136705,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "68fbfe967aa41fcd_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/thu-tay.png",
+      "file": "assets/PNG/thu-tay.png",
+      "bytes": 111465,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "98fde57f915e6d78_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Line140-FcNqEFfkF2M3eDXYteTUfX5gZlfi9R.svg",
+      "file": "assets/Line140-FcNqEFfkF2M3eDXYteTUfX5gZlfi9R.svg",
+      "bytes": 219,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "cacheEntry": "6de6c1abfa89b9c4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/goi.png",
+      "file": "assets/PNG/goi.png",
+      "bytes": 202744,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "78bc1ce5c89ba6e4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/ig.svg",
+      "file": "assets/footer/ig.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "70dcfb55d0bf1f86_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay-3.png",
+      "file": "assets/PNG/giay-3.png",
+      "bytes": 143691,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "719000f482a7099c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay-2.png",
+      "file": "assets/PNG/giay-2.png",
+      "bytes": 175123,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "7828396004f10cd9_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/bo-hoa.png",
+      "file": "assets/PNG/bo-hoa.png",
+      "bytes": 480638,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "7ca77324bab31f4c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/cua-so.png",
+      "file": "assets/PNG/cua-so.png",
+      "bytes": 154794,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "7da2b20025d6f024_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-1-daZbEB9EVYcRR0FpMFNwGTfWTuKYgp.svg",
+      "file": "assets/Vector-1-daZbEB9EVYcRR0FpMFNwGTfWTuKYgp.svg",
+      "bytes": 909,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "cacheEntry": "7fa00d92e5565399_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/note.png",
+      "file": "assets/PNG/note.png",
+      "bytes": 168605,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "ef376e9cc37ec070_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-mascot.png",
+      "file": "assets/PNG/hop-mascot.png",
+      "bytes": 411332,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "842d091ba5cb4e4b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-da-chan.png",
+      "file": "assets/PNG/mascot-da-chan.png",
+      "bytes": 144188,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "def28ed97cb98cd3_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-2-jDNJC9ukj5qIjnSK9dMWsgKc4SxSCm.svg",
+      "file": "assets/Vector-2-jDNJC9ukj5qIjnSK9dMWsgKc4SxSCm.svg",
+      "bytes": 495,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "cacheEntry": "979367f06bf1bf49_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/hau-5lcPd64RAwNDP9M0Fy12GAHaCsLxTu.svg",
+      "file": "assets/thong-diep/hau-5lcPd64RAwNDP9M0Fy12GAHaCsLxTu.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "9a0b1585493f7d7e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/dong-ho.png",
+      "file": "assets/PNG/dong-ho.png",
+      "bytes": 105981,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "b36cd68510b75903_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Line139-m13IgJkTAbco9x5Y6e6O8GoJFOY9al.svg",
+      "file": "assets/Line139-m13IgJkTAbco9x5Y6e6O8GoJFOY9al.svg",
+      "bytes": 242,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "cacheEntry": "ac5da67ff941dd40_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/tem/Letter%20138knitwear-14.svg",
+      "file": "assets/tem/Letter 138knitwear-14.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "ba211ee166561145_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg",
+      "file": "assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "bf1ff912676fa2f0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector.gif",
+      "file": "assets/Vector.gif",
+      "bytes": 488052,
+      "contentType": "image/gif",
+      "encoding": "identity",
+      "cacheEntry": "c1105fffc9ad18c0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/favicon.ico",
+      "file": "assets/favicon.ico",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "c8ad487fea7e0641_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/tot-Llo24nUy7ZJttj2bb9xsVeD9870Qzb.svg",
+      "file": "assets/thong-diep/tot-Llo24nUy7ZJttj2bb9xsVeD9870Qzb.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "d47298d042e00a69_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-tim.png",
+      "file": "assets/PNG/hop-tim.png",
+      "bytes": 261356,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "ef0d4ab2ab392162_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop.png",
+      "file": "assets/PNG/hop.png",
+      "bytes": 729971,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "cacheEntry": "e881e3c3216e2b6a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/tuong-blURPz5ytNHbXuDZI4kjBnGo5ndx6P.svg",
+      "file": "assets/thong-diep/tuong-blURPz5ytNHbXuDZI4kjBnGo5ndx6P.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "f9e8fad3c6e89aa7_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg",
+      "file": "assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg",
+      "bytes": 18,
+      "contentType": "",
+      "encoding": "identity",
+      "cacheEntry": "ff1f48d650a905e0_0"
+    }
+  ],
+  "failures": [
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/002152dbcdf6fde2_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/0051982539b9e8e9_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/023aebb9c5f7e9b6_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/04d11aafcb45dd57_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/04dd7b8cd3adb309_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/0785d4a517f3813d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/0b756f696b1eccdc_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/0db4d64119c83c5f_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/0e232054ec58d2a8_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/11aa6c63e47da757_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/13e19fa4df6990e4_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/199f942bd11fbf8e_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/19e425b7d7ea785c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/1db3e8c81f9d7cf0_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/2029785cba759ebf_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/217283c71b0b0da5_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/27ea6718762ba25c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/282e5dcf475ddf45_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/2bf1b32595c27e51_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/2c2492b6c61ab745_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/2ccd7c142c3a61de_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/2f50f4bde5e80c27_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/357645413272bb68_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/38221a826d42329a_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/3af21fb838b359cd_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/3c569c640085c654_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/3d0d6d47f3218d8f_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/3f431c35bfc6c4dd_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/405ce9d29abb1074_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/40b68f6a028dbad0_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/413b80c4ead24de6_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4477c3e370a71c49_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/46091535dfdf97ac_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/46abc563688d193b_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/46dbdb3cfd432168_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/46f088df57fc4720_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/47206be5d26024b2_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4763948d6669cea9_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/49b744edb6609b40_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4be031cbeaca47d2_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4c0be38af8b184bb_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4d600427991018d7_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4ebbbc74b32a161a_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4ef1c1c99654749b_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/4f856a72551d18ee_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/50c09ff7f4062679_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/51feee80449d4006_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/53f018ac8d5907c6_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/5430490c20f4b052_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/55c465e9b09eb422_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/56e96049dd813533_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/5a273143bbaf8563_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/5b273dcfa986e12e_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/633b9e34cfec8af2_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/6a56b2a50f9c5918_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/6b27548e42b47d0c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/70be7ddbb8d2c8a7_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/74efffd50b475746_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/77d74f57a60a1a2a_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/7a345877fd25a848_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/7dac14855c044408_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/8649235ff74db5f8_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/8c932851b1526715_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/8fc0b9dbb936db0b_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/8ff2af99f2ffc5ea_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/97e11e78a7ff9cc6_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/997730305323f340_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/a7e0e2cfd21f5e5c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/aaa101cae805726d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/aee76ef932226f5d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/af885fe4e4393741_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/af8ef95e615375d9_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/afcde11d786c6f86_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/b1f6e578b46a0cf2_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ba48e20dd2fb1d11_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/bc51568b288a50dd_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/bc72c1fac353933d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/c37486339a2549d1_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/c3e76d9a00cba2dc_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/c40a287e892c2a06_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/c49237ab78b7029b_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/c6dc15cd0dd7f00c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/caa29a4f1fd49870_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ce6d807a0dd08c19_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/cec7edf2690d4b34_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/d3c867c39d91c1de_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/d4d5feea460e49d0_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/d5229544d1f93fbc_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/d86d4bb6b279c8bf_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/d8ba4782bc73686f_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/da4495756053847f_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/db346412a7018ddd_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/deec56ec1e055e17_0",
+      "error": "Error: unexpected end of file"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/df6e6bf945ff194b_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/e327a47d61ea3643_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/e3353a3a9894ef80_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/e6690f3f7ce4d9c1_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/e7dbd21e80b8b65c_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/e7ebde75a1a10556_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ebe5f77d459da009_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ed5e777f9e3a1027_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/edb7cc68e606f5dd_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ee670bd3b959e94d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/f3c9a0a955b4dfd0_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/f456123ce9f7ebce_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/f55e901555b445cb_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/fbd9ecea074a2a0d_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/fcdffac2a1a1b347_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/fce926e3a1394463_0",
+      "error": "Error: Decompression failed"
+    },
+    {
+      "source": "/Users/jarvisvrs1/Library/Caches/Google/Chrome/Profile 1/Cache/Cache_Data/ff336087b9821ce4_0",
+      "error": "Error: Decompression failed"
+    }
+  ]
+}

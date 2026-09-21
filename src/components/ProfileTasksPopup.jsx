@@ -20,7 +20,7 @@ export function ProfileTasksPopup({ user, loading, error, tasks, onClose }) {
         <ol className="profile-tasks-list" aria-busy={loading}>
           {items.map((item, index) => (
             <li key={item.text} className={item.complete ? 'is-complete' : ''}>
-              <img src="https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/nv-B1m7S6GaIqAhhVPUnj3UwhafPIf5Ow.svg" alt="" />
+              <img src="/assets/public/nv-B1m7S6GaIqAhhVPUnj3UwhafPIf5Ow.svg" alt="" />
               <span className="profile-task-number" aria-hidden="true">0{index + 1}</span>
               <span className="profile-task-text">{item.text}{index === 1 && ready ? <small className="profile-task-progress">{Math.min(tasks.meltedCubes, 4)}/4 cục đá</small> : null}</span>
               {item.complete ? <span className="profile-task-check" aria-label="Đã hoàn thành">✓</span> : null}

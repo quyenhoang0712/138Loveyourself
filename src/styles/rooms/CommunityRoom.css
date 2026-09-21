@@ -149,7 +149,7 @@
 .community-compose-backdrop .community-letter-room { position: relative; width: min(736px, 100%); margin: 0 auto; outline: none; }
 .community-compose-backdrop .community-letter-room.is-reading-letter { width: min(800px, 100%); }
 .community-compose-close { position: absolute; z-index: 20; right: -16px; top: -18px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #eee7d4; box-shadow: 2px 2px #efa9b8; color: #efa9b8; font: 38px/1 Arial, sans-serif; cursor: pointer; }
-.community-compose-backdrop .community-letter-form { display: flex; flex-direction: column; gap: 0; width: 100%; min-height: 734px; padding: 24px 62px 24px; background: url("https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg") center / 100% 100% no-repeat; border: 0; border-radius: 0; box-shadow: none; }
+.community-compose-backdrop .community-letter-form { display: flex; flex-direction: column; gap: 0; width: 100%; min-height: 734px; padding: 24px 62px 24px; background: url("/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg") center / 100% 100% no-repeat; border: 0; border-radius: 0; box-shadow: none; }
 .community-compose-backdrop .community-letter-form:not(.has-sent-letter) { overflow: visible; }
 .community-compose-backdrop .community-letter-form::before, .community-compose-backdrop .community-letter-form::after { display: none; }
 .community-compose-date { font: 10px/16px var(--font-regular); }
@@ -174,7 +174,7 @@
 }
 @media (max-width: 760px) {
   .community-compose-backdrop { padding: 38px 20px; }
-  .community-compose-backdrop .community-letter-form { padding: 24px 22px 24px 38px; background: url("https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg") center / 100% 100% no-repeat; }
+  .community-compose-backdrop .community-letter-form { padding: 24px 22px 24px 38px; background: url("/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg") center / 100% 100% no-repeat; }
   .community-compose-backdrop .community-letter-stamp-picker { right: 22px; width: 60px; }
   .community-compose-backdrop .community-letter-form label:first-of-type { width: calc(100% - 64px); }
 }

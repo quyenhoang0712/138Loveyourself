@@ -6,7 +6,7 @@
 .write-letter-brand span { margin-top: 7px; font: 800 15px/1 var(--font-regular); }
 .write-letter-stage { min-height: 900px; padding: 58px 24px 72px; text-align: center; }
 .write-letter-stage h1 { margin: 0 auto 28px; color: #478dc9; font: 700 clamp(18px, 2vw, 25px)/1.35 var(--font-regular); }
-.write-letter-form { position: relative; display: flex; flex-direction: column; width: min(880px, 100%); height: min(880px, calc(100vh - 130px)); min-height: 680px; margin: 0 auto; padding: 16px 82px 36px 74px; overflow: hidden; color: #478dc9; background: url('https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg') center / 100% 100% no-repeat; text-align: left; }
+.write-letter-form { position: relative; display: flex; flex-direction: column; width: min(880px, 100%); height: min(880px, calc(100vh - 130px)); min-height: 680px; margin: 0 auto; padding: 16px 82px 36px 74px; overflow: hidden; color: #478dc9; background: url('/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg') center / 100% 100% no-repeat; text-align: left; }
 .write-letter-stamp-picker { position: absolute; z-index: 5; top: 28px; right: 68px; width: 92px; }
 .write-letter-stamp { display: block; width: 92px; height: 122px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .write-letter-stamp > img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }

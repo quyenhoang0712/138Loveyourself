@@ -1,0 +1,968 @@
+{
+  "recovered": [
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/taikhoan.svg",
+      "file": "assets/profile-room/taikhoan.svg",
+      "bytes": 78921,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "002152dbcdf6fde2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/xe-HcGB2eXO8v1qJtkxKi1vQkyWDwQNmT.svg",
+      "file": "assets/thong-diep/xe-HcGB2eXO8v1qJtkxKi1vQkyWDwQNmT.svg",
+      "bytes": 4744,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "0051982539b9e8e9_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/hau-5lcPd64RAwNDP9M0Fy12GAHaCsLxTu.svg",
+      "file": "assets/thong-diep/hau-5lcPd64RAwNDP9M0Fy12GAHaCsLxTu.svg",
+      "bytes": 5519,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "023aebb9c5f7e9b6_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/auth/Vectorlogin-rVv7nKjyED6YWxbVTIoJInkW6qduLT.svg",
+      "file": "assets/auth/Vectorlogin-rVv7nKjyED6YWxbVTIoJInkW6qduLT.svg",
+      "bytes": 4806,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "04d11aafcb45dd57_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/binhthuong-Sbnl5Z1tT7I4hcMSw8BbBtxxS9XfPe.svg",
+      "file": "assets/diary/binhthuong-Sbnl5Z1tT7I4hcMSw8BbBtxxS9XfPe.svg",
+      "bytes": 2476,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "04dd7b8cd3adb309_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-1.png",
+      "file": "assets/PNG/xe-dap-1.png",
+      "bytes": 244056,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "07310451f3236830_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/nv-B1m7S6GaIqAhhVPUnj3UwhafPIf5Ow.svg",
+      "file": "assets/public/nv-B1m7S6GaIqAhhVPUnj3UwhafPIf5Ow.svg",
+      "bytes": 13117,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "0785d4a517f3813d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ngu-coc.png",
+      "file": "assets/PNG/ngu-coc.png",
+      "bytes": 191920,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "080c78f990ff42a4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/lich.svg",
+      "file": "assets/profile-room/lich.svg",
+      "bytes": 9427,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "0b756f696b1eccdc_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/wheel/nutphai.svg",
+      "file": "assets/wheel/nutphai.svg",
+      "bytes": 1810,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "0e232054ec58d2a8_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/letter-open.png",
+      "file": "assets/letter-open.png",
+      "bytes": 503913,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "0e3a263e36b6523f_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/iconfront.svg",
+      "file": "assets/footer/iconfront.svg",
+      "bytes": 22424,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "11aa6c63e47da757_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/ratzui-5Sjsx97b4vgGvjb3PFYdRPMYaTklFE.svg",
+      "file": "assets/diary/ratzui-5Sjsx97b4vgGvjb3PFYdRPMYaTklFE.svg",
+      "bytes": 3215,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "13e19fa4df6990e4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/maytinh.svg",
+      "file": "assets/profile-room/maytinh.svg",
+      "bytes": 9520,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "199f942bd11fbf8e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/cuaso.svg",
+      "file": "assets/profile-room/cuaso.svg",
+      "bytes": 6001,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "19e425b7d7ea785c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa-2.png",
+      "file": "assets/PNG/sofa-2.png",
+      "bytes": 234130,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "1bff00cb92a6075b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/vua-IyqN6GbnVjAzeA0zMgKPs72KlK49TS.svg",
+      "file": "assets/thong-diep/vua-IyqN6GbnVjAzeA0zMgKPs72KlK49TS.svg",
+      "bytes": 6577,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "1db3e8c81f9d7cf0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/tay-trai-tim.png",
+      "file": "assets/PNG/tay-trai-tim.png",
+      "bytes": 106956,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "20b66460036f498f_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/activity-HIw8d3Jiz97I6z4qoUj83LCAvkO9CT.svg",
+      "file": "assets/icons/toolbar/activity-HIw8d3Jiz97I6z4qoUj83LCAvkO9CT.svg",
+      "bytes": 68615,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "217283c71b0b0da5_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/banh-co-to-giay.png",
+      "file": "assets/PNG/banh-co-to-giay.png",
+      "bytes": 65048,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "228f36727e0a048b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/roi-nui.png",
+      "file": "assets/PNG/roi-nui.png",
+      "bytes": 115588,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "26a2d1ea0180eae3_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-2.png",
+      "file": "assets/PNG/xe-dap-2.png",
+      "bytes": 181961,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "277ebe97a1fd82f4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/nhelong-bJ3oBRWa7xQlSKRUAryUvmL8okmUbP.svg",
+      "file": "assets/diary/nhelong-bJ3oBRWa7xQlSKRUAryUvmL8okmUbP.svg",
+      "bytes": 2481,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "27ea6718762ba25c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/may-anh.png",
+      "file": "assets/PNG/may-anh.png",
+      "bytes": 53544,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "286e839e53fdf1a8_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/ma-9qCtLApVNHmhxFn3R1ZoY06YXf8oLv.svg",
+      "file": "assets/thong-diep/ma-9qCtLApVNHmhxFn3R1ZoY06YXf8oLv.svg",
+      "bytes": 3709,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "2c2492b6c61ab745_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/tem/Letter%20138knitwear-14.svg",
+      "file": "assets/tem/Letter 138knitwear-14.svg",
+      "bytes": 5744,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "2f50f4bde5e80c27_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/letter-closed.png",
+      "file": "assets/letter-closed.png",
+      "bytes": 588133,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "34ffbe1cb7422202_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/lathu-1XNF6kMnM0XFQyZwHVHeWJmGgr24ai.svg",
+      "file": "assets/thong-diep/lathu-1XNF6kMnM0XFQyZwHVHeWJmGgr24ai.svg",
+      "bytes": 6669,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "357645413272bb68_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-shop.png",
+      "file": "assets/homepage/home-store-shop.png",
+      "bytes": 344570,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "36f7a64357deb4e0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ao-khan-len.png",
+      "file": "assets/PNG/ao-khan-len.png",
+      "bytes": 126624,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "374e82d9fd0c7ed5_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/wheel/nuttrai.svg",
+      "file": "assets/wheel/nuttrai.svg",
+      "bytes": 1808,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "38221a826d42329a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/site/favicon.svg",
+      "file": "assets/site/favicon.svg",
+      "bytes": 7616,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "3af21fb838b359cd_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/auth/iconlogin-NvTpBPEY6tqLd9pXihFITfgFoQKBMh.svg",
+      "file": "assets/auth/iconlogin-NvTpBPEY6tqLd9pXihFITfgFoQKBMh.svg",
+      "bytes": 41381,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "3c569c640085c654_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-ngu.png",
+      "file": "assets/PNG/mascot-ngu.png",
+      "bytes": 73930,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "3e151beeb673c90d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/den.svg",
+      "file": "assets/profile-room/den.svg",
+      "bytes": 6534,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "3f431c35bfc6c4dd_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/tem/Letter%20138knitwear-12.svg",
+      "file": "assets/tem/Letter 138knitwear-12.svg",
+      "bytes": 4699,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "405ce9d29abb1074_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/profile-QP2iNmtxFJYjnICxSGplzWmLlU80gD.svg",
+      "file": "assets/icons/toolbar/profile-QP2iNmtxFJYjnICxSGplzWmLlU80gD.svg",
+      "bytes": 34940,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "413b80c4ead24de6_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/tiktok.svg",
+      "file": "assets/footer/tiktok.svg",
+      "bytes": 17855,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "46091535dfdf97ac_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg",
+      "file": "assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg",
+      "bytes": 73541,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "46abc563688d193b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/brush.png",
+      "file": "assets/PNG/brush.png",
+      "bytes": 4194,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "46dae42a9d6feed1_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/hoituidiroituitraloicho-JOX2VpwG9obVyq6wG01Okx4KLAIp5g.svg",
+      "file": "assets/hoituidiroituitraloicho-JOX2VpwG9obVyq6wG01Okx4KLAIp5g.svg",
+      "bytes": 26707,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "46dbdb3cfd432168_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa-3.png",
+      "file": "assets/PNG/sofa-3.png",
+      "bytes": 145539,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "480b785434693e24_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hoa-ly.png",
+      "file": "assets/PNG/hoa-ly.png",
+      "bytes": 382787,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "4a7fbbf05d1ea3de_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/hoichung-lse0vh8eu7hEf49hUzXWRciyWWlAut.svg",
+      "file": "assets/diary/hoichung-lse0vh8eu7hEf49hUzXWRciyWWlAut.svg",
+      "bytes": 2773,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "4be031cbeaca47d2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg",
+      "file": "assets/public/khungvietthu-CLROEgh6taF4bcwuMRde5msH3FSDuo.svg",
+      "bytes": 1261,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "4c0be38af8b184bb_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/tuong-blURPz5ytNHbXuDZI4kjBnGo5ndx6P.svg",
+      "file": "assets/thong-diep/tuong-blURPz5ytNHbXuDZI4kjBnGo5ndx6P.svg",
+      "bytes": 4862,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "4ebbbc74b32a161a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/anhden.svg",
+      "file": "assets/profile-room/anhden.svg",
+      "bytes": 1819,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "4ef1c1c99654749b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/cuon-len.png",
+      "file": "assets/PNG/cuon-len.png",
+      "bytes": 130945,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "4f5d8d24d41a5239_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/not-found-404-4bRuOsGDYjWX8iLOM0ZxWb8VdARKWs.svg",
+      "file": "assets/system/not-found-404-4bRuOsGDYjWX8iLOM0ZxWb8VdARKWs.svg",
+      "bytes": 49672,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "51feee80449d4006_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/linexanh-kc3opzK6IOeuSuoct1QIC6oT8NMzek.svg",
+      "file": "assets/thong-diep/linexanh-kc3opzK6IOeuSuoct1QIC6oT8NMzek.svg",
+      "bytes": 4805,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "53f018ac8d5907c6_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-bubble.svg",
+      "file": "assets/homepage/home-store-bubble.svg",
+      "bytes": 22859,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "5430490c20f4b052_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ly-but.png",
+      "file": "assets/PNG/ly-but.png",
+      "bytes": 94896,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "568ae9f8e0502e27_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/hop-fnaSUepb5e5FuxQSQKxXX4W6SE7zIl.svg",
+      "file": "assets/thong-diep/hop-fnaSUepb5e5FuxQSQKxXX4W6SE7zIl.svg",
+      "bytes": 28877,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "5a273143bbaf8563_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/sofa.png",
+      "file": "assets/PNG/sofa.png",
+      "bytes": 882831,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "5ae6cbed9685c3b5_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/home-Q45kKqSNR4OpSArr5UMmk5MdjCrsKd.svg",
+      "file": "assets/icons/toolbar/home-Q45kKqSNR4OpSArr5UMmk5MdjCrsKd.svg",
+      "bytes": 36422,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "5b273dcfa986e12e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-3-YSZKDiIJ8i3L2tngwcmEEbVHlFoySh.svg",
+      "file": "assets/Vector-3-YSZKDiIJ8i3L2tngwcmEEbVHlFoySh.svg",
+      "bytes": 859,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "kind": "svg",
+      "cacheEntry": "62e4f33b0ab314b4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-nhay.png",
+      "file": "assets/PNG/mascot-nhay.png",
+      "bytes": 220571,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "68f8024b134f4ff2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/vong-xoay.png",
+      "file": "assets/PNG/vong-xoay.png",
+      "bytes": 136709,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "68fbfe967aa41fcd_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Line140-FcNqEFfkF2M3eDXYteTUfX5gZlfi9R.svg",
+      "file": "assets/Line140-FcNqEFfkF2M3eDXYteTUfX5gZlfi9R.svg",
+      "bytes": 223,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "kind": "svg",
+      "cacheEntry": "6de6c1abfa89b9c4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/shop-8cyf1q3ptKswtFInZM8FAfwbiZI9ZN.svg",
+      "file": "assets/icons/toolbar/shop-8cyf1q3ptKswtFInZM8FAfwbiZI9ZN.svg",
+      "bytes": 51622,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "70be7ddbb8d2c8a7_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay-3.png",
+      "file": "assets/PNG/giay-3.png",
+      "bytes": 143695,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "719000f482a7099c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/dia-than.png",
+      "file": "assets/PNG/dia-than.png",
+      "bytes": 134627,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "71931d952eb19848_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-4.png",
+      "file": "assets/PNG/xe-dap-4.png",
+      "bytes": 242301,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "73782241c064db63_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/thu2-FBw3LupHf3Fc2T6PTXPPWNGyLwTtbv.svg",
+      "file": "assets/thong-diep/thu2-FBw3LupHf3Fc2T6PTXPPWNGyLwTtbv.svg",
+      "bytes": 31916,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "74efffd50b475746_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/tot-Llo24nUy7ZJttj2bb9xsVeD9870Qzb.svg",
+      "file": "assets/thong-diep/tot-Llo24nUy7ZJttj2bb9xsVeD9870Qzb.svg",
+      "bytes": 4386,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "77d74f57a60a1a2a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay-2.png",
+      "file": "assets/PNG/giay-2.png",
+      "bytes": 175127,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "7828396004f10cd9_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/goi.png",
+      "file": "assets/PNG/goi.png",
+      "bytes": 202748,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "78bc1ce5c89ba6e4_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/thu4-6ENS095e0XZDNU0VOUxS3jfLK9AFZj.svg",
+      "file": "assets/thong-diep/thu4-6ENS095e0XZDNU0VOUxS3jfLK9AFZj.svg",
+      "bytes": 12876,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "7a345877fd25a848_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/bo-hoa.png",
+      "file": "assets/PNG/bo-hoa.png",
+      "bytes": 480642,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "7ca77324bab31f4c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/cua-so.png",
+      "file": "assets/PNG/cua-so.png",
+      "bytes": 154798,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "7da2b20025d6f024_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-1-daZbEB9EVYcRR0FpMFNwGTfWTuKYgp.svg",
+      "file": "assets/Vector-1-daZbEB9EVYcRR0FpMFNwGTfWTuKYgp.svg",
+      "bytes": 913,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "kind": "svg",
+      "cacheEntry": "7fa00d92e5565399_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-community-edge.png",
+      "file": "assets/homepage/home-community-edge.png",
+      "bytes": 982133,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "81509cf4da00575b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-background.png",
+      "file": "assets/homepage/home-store-background.png",
+      "bytes": 2274515,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "81dd1cc45da5fa88_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-mascot.png",
+      "file": "assets/PNG/hop-mascot.png",
+      "bytes": 411336,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "842d091ba5cb4e4b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-nhac.png",
+      "file": "assets/PNG/hop-nhac.png",
+      "bytes": 106960,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "8bfd61f668ff8e2b_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-kXAPfTnX10E8YLcC85OVtKQUrfnB8C.svg",
+      "file": "assets/Vector-kXAPfTnX10E8YLcC85OVtKQUrfnB8C.svg",
+      "bytes": 26766,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "8c932851b1526715_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/headphone.png",
+      "file": "assets/PNG/headphone.png",
+      "bytes": 61561,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "8cbe4b1bda6213d2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector-2-jDNJC9ukj5qIjnSK9dMWsgKc4SxSCm.svg",
+      "file": "assets/Vector-2-jDNJC9ukj5qIjnSK9dMWsgKc4SxSCm.svg",
+      "bytes": 499,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "kind": "svg",
+      "cacheEntry": "979367f06bf1bf49_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/thu-tay.png",
+      "file": "assets/PNG/thu-tay.png",
+      "bytes": 111469,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "98fde57f915e6d78_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/thu3-4zKvzOrIVPhmu5lmRIUb3Opb3qfv05.svg",
+      "file": "assets/thong-diep/thu3-4zKvzOrIVPhmu5lmRIUb3Opb3qfv05.svg",
+      "bytes": 29998,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "aaa101cae805726d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Line139-m13IgJkTAbco9x5Y6e6O8GoJFOY9al.svg",
+      "file": "assets/Line139-m13IgJkTAbco9x5Y6e6O8GoJFOY9al.svg",
+      "bytes": 246,
+      "contentType": "image/svg+xml",
+      "encoding": "identity",
+      "kind": "svg",
+      "cacheEntry": "ac5da67ff941dd40_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/vongduoi.svg",
+      "file": "assets/footer/vongduoi.svg",
+      "bytes": 18919,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "aee76ef932226f5d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/ig.svg",
+      "file": "assets/footer/ig.svg",
+      "bytes": 78887,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "af885fe4e4393741_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/metnhieu-fIR7bQs6EOXXGV33ynN3zYgjXuyIqw.svg",
+      "file": "assets/diary/metnhieu-fIR7bQs6EOXXGV33ynN3zYgjXuyIqw.svg",
+      "bytes": 14978,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "b1f6e578b46a0cf2_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/dong-ho.png",
+      "file": "assets/PNG/dong-ho.png",
+      "bytes": 105985,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "b36cd68510b75903_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/homepage/home-store-mascot.png",
+      "file": "assets/homepage/home-store-mascot.png",
+      "bytes": 132698,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "b4889fdc10673c14_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ngoi-sao.png",
+      "file": "assets/PNG/ngoi-sao.png",
+      "bytes": 43963,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "b86e62620b98b162_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-cam-loa.png",
+      "file": "assets/PNG/mascot-cam-loa.png",
+      "bytes": 125725,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "ba017a414916ab8d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/music-aV8fx3lbYKIS83OX2SvQiWLoWG6JRg.svg",
+      "file": "assets/icons/toolbar/music-aV8fx3lbYKIS83OX2SvQiWLoWG6JRg.svg",
+      "bytes": 67442,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "bc51568b288a50dd_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/xe-dap-3.png",
+      "file": "assets/PNG/xe-dap-3.png",
+      "bytes": 291648,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "bfd43b7c4d923f4e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/Vector.gif",
+      "file": "assets/Vector.gif",
+      "bytes": 488056,
+      "contentType": "image/gif",
+      "encoding": "identity",
+      "kind": "gif",
+      "cacheEntry": "c1105fffc9ad18c0_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/thu1-9GZeN55mRAZKtP31W3OGFlsSDMk83T.svg",
+      "file": "assets/thong-diep/thu1-9GZeN55mRAZKtP31W3OGFlsSDMk83T.svg",
+      "bytes": 21761,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "c3e76d9a00cba2dc_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-khien-do.png",
+      "file": "assets/PNG/mascot-khien-do.png",
+      "bytes": 143700,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "c5fadb8175b95da9_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/radio.png",
+      "file": "assets/PNG/radio.png",
+      "bytes": 156464,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "c74f2609b54c6440_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/footer/fb.svg",
+      "file": "assets/footer/fb.svg",
+      "bytes": 35725,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "d5229544d1f93fbc_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/mastcot1-5MVSRSU1U3g7CL5qS6fLTqldCXyYLw.svg",
+      "file": "assets/thong-diep/mastcot1-5MVSRSU1U3g7CL5qS6fLTqldCXyYLw.svg",
+      "bytes": 945125,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "d86d4bb6b279c8bf_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/mascot-da-chan.png",
+      "file": "assets/PNG/mascot-da-chan.png",
+      "bytes": 144192,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "def28ed97cb98cd3_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/dongho.svg",
+      "file": "assets/profile-room/dongho.svg",
+      "bytes": 8619,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "e7dbd21e80b8b65c_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop.png",
+      "file": "assets/PNG/hop.png",
+      "bytes": 729975,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "e881e3c3216e2b6a_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg",
+      "file": "assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg",
+      "bytes": 192861,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "ee670bd3b959e94d_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/nhan-nut-warning.png",
+      "file": "assets/PNG/nhan-nut-warning.png",
+      "bytes": 107649,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "ee7165f179ed1182_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/ipod.png",
+      "file": "assets/PNG/ipod.png",
+      "bytes": 115521,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "eef401687e15b241_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/hop-tim.png",
+      "file": "assets/PNG/hop-tim.png",
+      "bytes": 261360,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "ef0d4ab2ab392162_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/note.png",
+      "file": "assets/PNG/note.png",
+      "bytes": 168609,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "ef376e9cc37ec070_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/profile-room/picdautrang.svg",
+      "file": "assets/profile-room/picdautrang.svg",
+      "bytes": 301870,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "f55e901555b445cb_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/PNG/giay.png",
+      "file": "assets/PNG/giay.png",
+      "bytes": 169403,
+      "contentType": "image/png",
+      "encoding": "identity",
+      "kind": "png",
+      "cacheEntry": "f57fa171362a063e_0"
+    },
+    {
+      "url": "https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/thong-diep/line-YXyoSlbJi1cCtj2zEqlY26O5E5MUrj.svg",
+      "file": "assets/thong-diep/line-YXyoSlbJi1cCtj2zEqlY26O5E5MUrj.svg",
+      "bytes": 14539,
+      "contentType": "image/svg+xml",
+      "encoding": "br",
+      "kind": "svg",
+      "cacheEntry": "fce926e3a1394463_0"
+    }
+  ],
+  "failures": []
+}

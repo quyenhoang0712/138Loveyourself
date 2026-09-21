@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const loadingArtwork = 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg'
+const loadingArtwork = '/assets/system/loading-73cbb0In9su66UltK2xMWPRBmTlopO.svg'
 
 const initialProgress = 15
 const maximumWaitingProgress = 90

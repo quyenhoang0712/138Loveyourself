@@ -4,32 +4,32 @@ const MOODS = [
   {
     id: 1,
     label: 'Mệt nhiều',
-    iconBlob: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/metnhieu-fIR7bQs6EOXXGV33ynN3zYgjXuyIqw.svg',
-    iconLocal: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/metnhieu-JjVL4aGrlG5hpKIvbP4EE6vIHOvdXY.svg',
+    iconBlob: '/assets/diary/metnhieu-fIR7bQs6EOXXGV33ynN3zYgjXuyIqw.svg',
+    iconLocal: '/assets/diary/metnhieu-fIR7bQs6EOXXGV33ynN3zYgjXuyIqw.svg',
   },
   {
     id: 2,
     label: 'Hơi chùng',
-    iconBlob: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/hoichung-lse0vh8eu7hEf49hUzXWRciyWWlAut.svg',
-    iconLocal: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/hoichung-wtbMGfYTQeByaWaZ0CEfE7LtCPaoKp.svg',
+    iconBlob: '/assets/diary/hoichung-lse0vh8eu7hEf49hUzXWRciyWWlAut.svg',
+    iconLocal: '/assets/diary/hoichung-lse0vh8eu7hEf49hUzXWRciyWWlAut.svg',
   },
   {
     id: 3,
     label: 'Bình thường',
-    iconBlob: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/binhthuong-Sbnl5Z1tT7I4hcMSw8BbBtxxS9XfPe.svg',
-    iconLocal: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/binhthuong-uQaEyeMl0AxAfj0Kk5o5VgZ39PyeXV.svg',
+    iconBlob: '/assets/diary/binhthuong-Sbnl5Z1tT7I4hcMSw8BbBtxxS9XfPe.svg',
+    iconLocal: '/assets/diary/binhthuong-Sbnl5Z1tT7I4hcMSw8BbBtxxS9XfPe.svg',
   },
   {
     id: 4,
     label: 'Nhẹ lòng',
-    iconBlob: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/nhelong-bJ3oBRWa7xQlSKRUAryUvmL8okmUbP.svg',
-    iconLocal: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/nhelong-QqdFWqKIMHCDYMC28hMaQLdAkEq98z.svg',
+    iconBlob: '/assets/diary/nhelong-bJ3oBRWa7xQlSKRUAryUvmL8okmUbP.svg',
+    iconLocal: '/assets/diary/nhelong-bJ3oBRWa7xQlSKRUAryUvmL8okmUbP.svg',
   },
   {
     id: 5,
     label: 'Rất zui',
-    iconBlob: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/diary/ratzui-5Sjsx97b4vgGvjb3PFYdRPMYaTklFE.svg',
-    iconLocal: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/public/ratzui-7ujxztXX1jQr6rbqII7n4M36wImLxi.svg',
+    iconBlob: '/assets/diary/ratzui-5Sjsx97b4vgGvjb3PFYdRPMYaTklFE.svg',
+    iconLocal: '/assets/diary/ratzui-5Sjsx97b4vgGvjb3PFYdRPMYaTklFE.svg',
   },
 ]
 

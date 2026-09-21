@@ -17,12 +17,12 @@ const activityLinks = [
 const activityRoomIds = new Set(activityLinks.map((link) => link.room))
 
 const iconUrls = {
-  activity: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/activity-HIw8d3Jiz97I6z4qoUj83LCAvkO9CT.svg',
-  community: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg',
-  home: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/home-Q45kKqSNR4OpSArr5UMmk5MdjCrsKd.svg',
-  music: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/music-aV8fx3lbYKIS83OX2SvQiWLoWG6JRg.svg',
-  profile: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/profile-QP2iNmtxFJYjnICxSGplzWmLlU80gD.svg',
-  shop: 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/icons/toolbar/shop-8cyf1q3ptKswtFInZM8FAfwbiZI9ZN.svg',
+  activity: '/assets/icons/toolbar/activity-HIw8d3Jiz97I6z4qoUj83LCAvkO9CT.svg',
+  community: '/assets/icons/toolbar/community-ihsQg41EF8cA5m2n6m4kS0PGQNswQ8.svg',
+  home: '/assets/icons/toolbar/home-Q45kKqSNR4OpSArr5UMmk5MdjCrsKd.svg',
+  music: '/assets/icons/toolbar/music-aV8fx3lbYKIS83OX2SvQiWLoWG6JRg.svg',
+  profile: '/assets/icons/toolbar/profile-QP2iNmtxFJYjnICxSGplzWmLlU80gD.svg',
+  shop: '/assets/icons/toolbar/shop-8cyf1q3ptKswtFInZM8FAfwbiZI9ZN.svg',
 }
 
 export function BottomToolbar({

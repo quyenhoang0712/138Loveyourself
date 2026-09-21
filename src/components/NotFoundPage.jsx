@@ -1,7 +1,7 @@
 import './NotFoundPage.css'
 
-const notFoundArtwork = 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/not-found-404-4bRuOsGDYjWX8iLOM0ZxWb8VdARKWs.svg'
-const bicycleArtwork = 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com/assets/system/not-found-illustration-7MXtPFZC9UH19MOMlcZBiAEnnZ4ZIF.svg'
+const notFoundArtwork = '/assets/system/not-found-404-4bRuOsGDYjWX8iLOM0ZxWb8VdARKWs.svg'
+const bicycleArtwork = '/assets/system/not-found-illustration.svg'
 
 export function NotFoundPage() {
   return (
