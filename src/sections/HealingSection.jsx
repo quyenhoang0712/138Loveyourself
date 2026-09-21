@@ -306,7 +306,87 @@ function CapturedPiecesRow({ label, pieces, score, otherScore }) {
   )
 }
 
+const game2048Directions = {
+  left: Array.from({ length: 4 }, (_, row) => Array.from({ length: 4 }, (_, column) => row * 4 + column)),
+  right: Array.from({ length: 4 }, (_, row) => Array.from({ length: 4 }, (_, column) => row * 4 + (3 - column))),
+  up: Array.from({ length: 4 }, (_, column) => Array.from({ length: 4 }, (_, row) => row * 4 + column)),
+  down: Array.from({ length: 4 }, (_, column) => Array.from({ length: 4 }, (_, row) => (3 - row) * 4 + column)),
+}
+
+function addRandom2048Tile(board) {
+  const emptyIndexes = board.flatMap((value, index) => value ? [] : [index])
+  if (!emptyIndexes.length) return board
+  const nextBoard = [...board]
+  const index = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)]
+  nextBoard[index] = Math.random() < 0.9 ? 2 : 4
+  return nextBoard
+}
+
+function create2048Board() {
+  return addRandom2048Tile(addRandom2048Tile(Array(16).fill(0)))
+}
+
+function move2048Board(board, direction) {
+  const nextBoard = Array(16).fill(0)
+  const motions = []
+  const mergedIndexes = []
+  let gainedScore = 0
+
+  game2048Directions[direction].forEach((indexes) => {
+    const tiles = indexes
+      .map((boardIndex) => ({ boardIndex, value: board[boardIndex] }))
+      .filter((tile) => tile.value)
+    let destinationOffset = 0
+
+    for (let index = 0; index < tiles.length; index += 1) {
+      const tile = tiles[index]
+      const nextTile = tiles[index + 1]
+      const destinationIndex = indexes[destinationOffset]
+
+      if (tile.value === nextTile?.value) {
+        const mergedValue = tile.value * 2
+        nextBoard[destinationIndex] = mergedValue
+        motions.push(
+          { from: tile.boardIndex, merged: true, to: destinationIndex, value: tile.value },
+          { from: nextTile.boardIndex, merged: true, to: destinationIndex, value: nextTile.value },
+        )
+        mergedIndexes.push(destinationIndex)
+        gainedScore += mergedValue
+        index += 1
+      } else {
+        nextBoard[destinationIndex] = tile.value
+        motions.push({ from: tile.boardIndex, merged: false, to: destinationIndex, value: tile.value })
+      }
+
+      destinationOffset += 1
+    }
+  })
+
+  return {
+    board: nextBoard,
+    changed: nextBoard.some((value, index) => value !== board[index]),
+    gainedScore,
+    mergedIndexes,
+    motions,
+  }
+}
+
+function canMove2048(board) {
+  if (board.some((value) => value === 0)) return true
+  return board.some((value, index) => (
+    (index % 4 < 3 && value === board[index + 1]) ||
+    (index < 12 && value === board[index + 4])
+  ))
+}
+
 export function HealingSection() {
+  const [activeGame, setActiveGame] = useState('chess')
+  const [game2048, setGame2048] = useState(() => ({
+    board: create2048Board(), lastMergedIndexes: [], lastNewTileIndex: -1, moveCount: 0, score: 0,
+  }))
+  const [game2048Animation, setGame2048Animation] = useState(null)
+  const [is2048Started, setIs2048Started] = useState(false)
+  const [isGameTransitioning, setIsGameTransitioning] = useState(false)
   const [gameFen, setGameFen] = useState(() => getFreshChess().fen())
   const [playerColor, setPlayerColor] = useState('w')
   const [isBotThinking, setIsBotThinking] = useState(false)
@@ -318,6 +398,12 @@ export function HealingSection() {
   const [pieceEnterMode, setPieceEnterMode] = useState('edge')
   const [resetReturnStyles, setResetReturnStyles] = useState({})
   const chessAudioContextRef = useRef(null)
+  const gameTransitionTimersRef = useRef([])
+  const didPlay2048WinRef = useRef(false)
+  const didPlay2048GameOverRef = useRef(false)
+  const didPlayChessGameOverRef = useRef(false)
+  const game2048AnimationTimerRef = useRef(null)
+  const game2048PointerStartRef = useRef(null)
   const chess = useMemo(() => new Chess(gameFen), [gameFen])
   const botColor = playerColor === 'w' ? 'b' : 'w'
   const boardRows = useMemo(() => {
@@ -339,6 +425,15 @@ export function HealingSection() {
   const botCapturedPieces = capturedPieces[botColor]
   const playerCapturedScore = getCapturedScore(playerCapturedPieces)
   const botCapturedScore = getCapturedScore(botCapturedPieces)
+  const game2048Board = game2048.board
+  const game2048Score = game2048.score
+  const highest2048Tile = Math.max(...game2048Board)
+  const is2048GameOver = is2048Started && !canMove2048(game2048Board)
+  const game2048Status = !is2048Started
+    ? 'Nhấn Bắt đầu khi bạn đã sẵn sàng.'
+    : highest2048Tile >= 2048
+    ? 'Bạn đã chạm tới 2048! Có thể tiếp tục chơi nha.'
+    : is2048GameOver ? 'Hết nước đi rồi. Mình chơi ván mới nhé!' : 'Ghép các ô giống nhau để chạm tới 2048.'
 
   const getChessAudioContext = useCallback(() => {
     if (!chessAudioContextRef.current) {
@@ -382,10 +477,163 @@ export function HealingSection() {
     playChessTone({ delay: 0.035, duration: 0.055, frequency: 420, gain: 0.026, type: 'square' })
   }, [playChessTone])
 
+  const playChessSelectSound = useCallback(() => {
+    playChessTone({ duration: 0.045, frequency: 360, gain: 0.022, type: 'sine' })
+  }, [playChessTone])
+
   const playChessCheckSound = useCallback(() => {
     playChessTone({ delay: 0.12, duration: 0.1, frequency: 880, gain: 0.045, type: 'triangle' })
     playChessTone({ delay: 0.22, duration: 0.12, frequency: 1174.66, gain: 0.035, type: 'sine' })
   }, [playChessTone])
+
+  const playCaptureSound = useCallback(() => {
+    playChessTone({ duration: 0.11, frequency: 150, gain: 0.07, type: 'square' })
+    playChessTone({ delay: 0.055, duration: 0.12, frequency: 105, gain: 0.045, type: 'triangle' })
+  }, [playChessTone])
+
+  const playGameSwitchSound = useCallback(() => {
+    playChessTone({ duration: 0.12, frequency: 330, gain: 0.035, type: 'sine' })
+    playChessTone({ delay: 0.08, duration: 0.13, frequency: 493.88, gain: 0.04, type: 'sine' })
+    playChessTone({ delay: 0.16, duration: 0.16, frequency: 659.25, gain: 0.035, type: 'triangle' })
+  }, [playChessTone])
+
+  const play2048MoveSound = useCallback((didMerge) => {
+    playChessTone({ duration: 0.055, frequency: didMerge ? 520 : 260, gain: 0.035, type: 'triangle' })
+    if (didMerge) playChessTone({ delay: 0.045, duration: 0.11, frequency: 780, gain: 0.04, type: 'sine' })
+  }, [playChessTone])
+
+  const playBlockedMoveSound = useCallback(() => {
+    playChessTone({ duration: 0.06, frequency: 125, gain: 0.025, type: 'square' })
+  }, [playChessTone])
+
+  const playGameStartSound = useCallback(() => {
+    ;[392, 523.25, 659.25].forEach((frequency, index) => {
+      playChessTone({ delay: index * 0.075, duration: 0.14, frequency, gain: 0.035, type: 'sine' })
+    })
+  }, [playChessTone])
+
+  const playWinSound = useCallback(() => {
+    ;[523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+      playChessTone({ delay: index * 0.1, duration: 0.2, frequency, gain: 0.04, type: 'triangle' })
+    })
+  }, [playChessTone])
+
+  const playGameOverSound = useCallback(() => {
+    ;[392, 311.13, 233.08, 174.61].forEach((frequency, index) => {
+      playChessTone({ delay: index * 0.12, duration: 0.22, frequency, gain: 0.04, type: 'triangle' })
+    })
+  }, [playChessTone])
+
+  const handle2048Move = useCallback((direction) => {
+    if (!is2048Started || is2048GameOver || game2048Animation) return
+    const result = move2048Board(game2048Board, direction)
+    if (!result.changed) {
+      playBlockedMoveSound()
+      return
+    }
+
+    play2048MoveSound(result.gainedScore > 0)
+    const nextBoard = addRandom2048Tile(result.board)
+    const newTileIndex = nextBoard.findIndex((value, index) => value && !result.board[index])
+    setGame2048Animation({ id: game2048.moveCount + 1, motions: result.motions })
+    setGame2048({
+      board: nextBoard,
+      lastMergedIndexes: result.mergedIndexes,
+      lastNewTileIndex: newTileIndex,
+      score: game2048Score + result.gainedScore,
+      moveCount: game2048.moveCount + 1,
+    })
+    window.clearTimeout(game2048AnimationTimerRef.current)
+    game2048AnimationTimerRef.current = window.setTimeout(() => setGame2048Animation(null), 190)
+  }, [game2048.moveCount, game2048Animation, game2048Board, game2048Score, is2048GameOver, is2048Started, play2048MoveSound, playBlockedMoveSound])
+
+  const start2048 = useCallback(() => {
+    didPlay2048WinRef.current = false
+    didPlay2048GameOverRef.current = false
+    window.clearTimeout(game2048AnimationTimerRef.current)
+    setGame2048Animation(null)
+    setGame2048({ board: create2048Board(), lastMergedIndexes: [], lastNewTileIndex: -1, score: 0, moveCount: 0 })
+    setIs2048Started(true)
+    playGameStartSound()
+  }, [playGameStartSound])
+
+  const handle2048PointerDown = useCallback((event) => {
+    if (!is2048Started || is2048GameOver || game2048Animation) return
+    game2048PointerStartRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY }
+    if (event.nativeEvent.isTrusted) event.currentTarget.setPointerCapture?.(event.pointerId)
+  }, [game2048Animation, is2048GameOver, is2048Started])
+
+  const handle2048PointerUp = useCallback((event) => {
+    const start = game2048PointerStartRef.current
+    game2048PointerStartRef.current = null
+    if (!start || start.pointerId !== event.pointerId) return
+    const moveX = event.clientX - start.x
+    const moveY = event.clientY - start.y
+    if (Math.max(Math.abs(moveX), Math.abs(moveY)) < 24) return
+    const direction = Math.abs(moveX) > Math.abs(moveY)
+      ? moveX > 0 ? 'right' : 'left'
+      : moveY > 0 ? 'down' : 'up'
+    handle2048Move(direction)
+  }, [handle2048Move])
+
+  const handleGameSwitch = useCallback(() => {
+    if (isGameTransitioning) return
+    gameTransitionTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    playGameSwitchSound()
+    setIsGameTransitioning(true)
+    const swapTimer = window.setTimeout(() => {
+      setActiveGame((currentGame) => currentGame === 'chess' ? '2048' : 'chess')
+    }, 220)
+    const finishTimer = window.setTimeout(() => setIsGameTransitioning(false), 520)
+    gameTransitionTimersRef.current = [swapTimer, finishTimer]
+  }, [isGameTransitioning, playGameSwitchSound])
+
+  useEffect(() => () => {
+    gameTransitionTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+    window.clearTimeout(game2048AnimationTimerRef.current)
+  }, [])
+
+  useEffect(() => {
+    if (activeGame !== '2048' || !is2048Started) return undefined
+    const keyDirections = {
+      ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up',
+      a: 'left', d: 'right', s: 'down', w: 'up',
+    }
+    const handleKeyDown = (event) => {
+      const direction = keyDirections[event.key]
+      if (!direction) return
+      event.preventDefault()
+      handle2048Move(direction)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeGame, handle2048Move, is2048Started])
+
+  useEffect(() => {
+    if (highest2048Tile >= 2048 && !didPlay2048WinRef.current) {
+      didPlay2048WinRef.current = true
+      playWinSound()
+    }
+  }, [highest2048Tile, playWinSound])
+
+  useEffect(() => {
+    if (is2048GameOver && !didPlay2048GameOverRef.current) {
+      didPlay2048GameOverRef.current = true
+      playGameOverSound()
+    }
+  }, [is2048GameOver, playGameOverSound])
+
+  useEffect(() => {
+    if (!chess.isGameOver()) {
+      didPlayChessGameOverRef.current = false
+      return
+    }
+    if (didPlayChessGameOverRef.current) return
+    didPlayChessGameOverRef.current = true
+    const playerWon = chess.isCheckmate() && chess.turn() !== playerColor
+    if (playerWon) playWinSound()
+    else playGameOverSound()
+  }, [chess, playGameOverSound, playWinSound, playerColor])
 
   useEffect(() => {
     if (chess.turn() !== botColor || chess.isGameOver() || isBoardSwitching || isPiecesEntering) {
@@ -402,6 +650,7 @@ export function HealingSection() {
       const nextChess = new Chess(gameFen)
       nextChess.move(getMovePayload(botMove))
       playChessMoveSound()
+      if (botMove.captured) playCaptureSound()
       if (nextChess.isCheck()) playChessCheckSound()
       setLastMove({ captured: Boolean(botMove.captured), from: botMove.from, to: botMove.to })
       if (botMove.captured) {
@@ -419,7 +668,7 @@ export function HealingSection() {
     }, 1200)
 
     return () => window.clearTimeout(botMoveTimer)
-  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering, playChessCheckSound, playChessMoveSound, playerColor])
+  }, [botColor, chess, gameFen, isBoardSwitching, isPiecesEntering, playCaptureSound, playChessCheckSound, playChessMoveSound, playerColor])
 
   useEffect(() => {
     if (!isBoardSwitching) return undefined
@@ -454,7 +703,10 @@ export function HealingSection() {
     ) return
 
     if (!selectedSquare) {
-      if (piece?.color === playerColor) setSelectedSquare(square)
+      if (piece?.color === playerColor) {
+        playChessSelectSound()
+        setSelectedSquare(square)
+      }
       return
     }
 
@@ -464,6 +716,7 @@ export function HealingSection() {
     }
 
     if (piece?.color === playerColor) {
+      playChessSelectSound()
       setSelectedSquare(square)
       return
     }
@@ -474,6 +727,7 @@ export function HealingSection() {
     const nextChess = new Chess(gameFen)
     nextChess.move(getMovePayload(targetMove))
     playChessMoveSound()
+    if (targetMove.captured) playCaptureSound()
     if (nextChess.isCheck()) playChessCheckSound()
     setLastMove({ captured: Boolean(targetMove.captured), from: selectedSquare, to: square })
     if (targetMove.captured) {
@@ -493,6 +747,8 @@ export function HealingSection() {
   const resetChessBoard = () => {
     const returnStyles = getResetReturnStyles(gameFen, playerColor)
 
+    didPlayChessGameOverRef.current = false
+    playGameStartSound()
     setResetReturnStyles(returnStyles)
     setGameFen(getFreshChess().fen())
     setCapturedPieces({ b: [], w: [] })
@@ -508,6 +764,8 @@ export function HealingSection() {
   const handlePlayerColorChange = (nextColor) => {
     if (nextColor === playerColor) return
 
+    didPlayChessGameOverRef.current = false
+    playGameStartSound()
     setIsBoardSwitching(true)
     setIsPiecesEntering(false)
     setPieceEnterMode('edge')
@@ -525,10 +783,9 @@ export function HealingSection() {
       <header className="healing-room-title">
         <h1>Phòng thư giãn</h1>
       </header>
-      <div className="healing-game-stage">
-        <h2>CỜ VUA</h2>
-        <span className="healing-room-arrow healing-room-arrow-left" aria-hidden="true">←</span>
-        <span className="healing-room-arrow healing-room-arrow-right" aria-hidden="true">→</span>
+      <div className={`healing-game-stage ${isGameTransitioning ? 'is-game-switching' : ''}`}>
+        <h2>{activeGame === 'chess' ? 'CỜ VUA' : '2048'}</h2>
+        {activeGame === 'chess' ? (
         <div className="healing-simple-shell">
           <div className="healing-chess-panel">
           <div className="healing-chess-heading">
@@ -648,6 +905,90 @@ export function HealingSection() {
             />
           </div>
           </div>
+        </div>
+        ) : (
+          <div className="healing-simple-shell healing-2048-shell">
+            <section className="healing-2048-panel" aria-labelledby="healing-2048-title">
+              <header className="healing-2048-heading">
+                <div><span>Điểm</span><strong>{game2048Score}</strong></div>
+                <p id="healing-2048-title">Ghép ô thật nhẹ nhàng</p>
+                <button type="button" onClick={start2048}>{is2048Started ? 'Ván mới' : 'Bắt đầu'}</button>
+              </header>
+              <p className="healing-2048-status">{game2048Status}</p>
+              <div className="healing-2048-board-wrap">
+                <div
+                  className={`healing-2048-board ${game2048Animation ? 'is-animating' : ''}`}
+                  role="grid"
+                  aria-label={`Bàn 2048, điểm ${game2048Score}. Có thể vuốt trực tiếp để di chuyển.`}
+                  onPointerCancel={() => { game2048PointerStartRef.current = null }}
+                  onPointerDown={handle2048PointerDown}
+                  onPointerUp={handle2048PointerUp}
+                >
+                  {game2048Board.map((value, index) => (
+                    <div
+                      className="healing-2048-cell"
+                      role="gridcell"
+                      aria-label={value ? `Ô ${value}` : 'Ô trống'}
+                      key={index}
+                    >
+                      {!game2048Animation && value ? (
+                        <span
+                          className={`healing-2048-tile tile-${value} ${game2048.lastMergedIndexes.includes(index) ? 'is-merged' : ''} ${game2048.lastNewTileIndex === index ? 'is-new' : ''}`}
+                          key={`${index}-${value}-${game2048.moveCount}`}
+                        >{value}</span>
+                      ) : null}
+                    </div>
+                  ))}
+                  {game2048Animation ? (
+                    <div className="healing-2048-motion-layer" aria-hidden="true">
+                      {game2048Animation.motions.map((motion, index) => (
+                        <span
+                          className={`healing-2048-tile healing-2048-moving-tile tile-${motion.value} ${motion.merged ? 'is-merging-source' : ''}`}
+                          key={`${game2048Animation.id}-${motion.from}-${motion.to}-${index}`}
+                          style={{
+                            '--tile-dx': (motion.from % 4) - (motion.to % 4),
+                            '--tile-dy': Math.floor(motion.from / 4) - Math.floor(motion.to / 4),
+                            gridColumn: (motion.to % 4) + 1,
+                            gridRow: Math.floor(motion.to / 4) + 1,
+                          }}
+                        >{motion.value}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                {is2048GameOver ? (
+                  <div className="healing-2048-game-over" role="alert">
+                    <strong>Thua cuộc</strong>
+                    <span>Điểm của bạn: {game2048Score}</span>
+                    <button type="button" onClick={start2048}>Chơi lại</button>
+                  </div>
+                ) : null}
+              </div>
+              <div className="healing-2048-controls" aria-label="Điều khiển 2048">
+                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển lên" onClick={() => handle2048Move('up')}>↑</button>
+                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang trái" onClick={() => handle2048Move('left')}>←</button>
+                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển xuống" onClick={() => handle2048Move('down')}>↓</button>
+                <button type="button" disabled={!is2048Started || is2048GameOver || Boolean(game2048Animation)} aria-label="Di chuyển sang phải" onClick={() => handle2048Move('right')}>→</button>
+              </div>
+              <small>Dùng phím mũi tên hoặc W A S D trên bàn phím.</small>
+            </section>
+          </div>
+        )}
+        <div className="healing-game-switch-controls" aria-label="Chuyển trò chơi">
+          <button
+            className="healing-room-arrow healing-room-arrow-left"
+            type="button"
+            aria-label={`Xem trò chơi trước: ${activeGame === 'chess' ? '2048' : 'Cờ vua'}`}
+            disabled={isGameTransitioning}
+            onClick={handleGameSwitch}
+          >←</button>
+          <button
+            className="healing-room-arrow healing-room-arrow-right"
+            type="button"
+            aria-label={`Xem trò chơi tiếp theo: ${activeGame === 'chess' ? '2048' : 'Cờ vua'}`}
+            disabled={isGameTransitioning}
+            onClick={handleGameSwitch}
+          >→</button>
         </div>
       </div>
     </section>

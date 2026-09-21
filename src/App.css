@@ -4632,6 +4632,18 @@
   font: 900 clamp(28px, 2.5vw, 38px)/1.1 Arial, sans-serif;
 }
 
+.healing-game-stage.is-game-switching {
+  pointer-events: none;
+  animation: healing-game-stage-switch 520ms ease-in-out both;
+}
+
+@keyframes healing-game-stage-switch {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  42% { opacity: 0; transform: translateX(-22px) scale(.985); }
+  58% { opacity: 0; transform: translateX(22px) scale(.985); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
 .landing-page-healing-room .healing-simple-shell {
   width: min(760px, 100%);
 }
@@ -4697,23 +4709,244 @@
   border-radius: 0;
 }
 
+.healing-game-switch-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
 .healing-room-arrow {
   position: absolute;
   top: 49%;
-  z-index: 2;
+  min-width: 72px;
+  padding: 4px 10px;
   color: #478dc9;
+  background: transparent;
+  border: 0;
   font: 400 clamp(48px, 5vw, 72px)/1 var(--font-bold);
   text-shadow: 5px 5px 0 #eba8b5;
   transform: translateY(-50%);
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
   user-select: none;
 }
 
 .healing-room-arrow-left { left: clamp(28px, 10vw, 180px); }
 .healing-room-arrow-right { right: clamp(28px, 10vw, 180px); }
 
+.healing-room-arrow:hover,
+.healing-room-arrow:focus-visible {
+  outline: none;
+  color: #2f79b8;
+  text-shadow: 3px 3px 0 #eba8b5;
+}
+
+.healing-room-arrow:disabled {
+  cursor: wait;
+}
+
+.landing-page-healing-room .healing-2048-shell {
+  width: min(680px, 100%);
+}
+
+.healing-2048-panel {
+  display: grid;
+  gap: 16px;
+  width: min(620px, 100%);
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 30px);
+  box-sizing: border-box;
+  color: #fff8e8;
+  background: #478dc9;
+  border: 3px solid #eee7d4;
+  border-radius: 22px;
+  box-shadow: 8px 8px 0 #eba8b5;
+}
+
+.healing-2048-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.healing-2048-heading > div {
+  display: grid;
+  min-width: 82px;
+  padding: 7px 12px;
+  place-items: center;
+  color: #478dc9;
+  background: #eee7d4;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #eba8b5;
+}
+
+.healing-2048-heading span { font: 12px/1 var(--font-regular); text-transform: uppercase; }
+.healing-2048-heading strong { margin-top: 3px; font: 800 22px/1 var(--font-bold); }
+.healing-2048-heading p { margin: 0; color: #ffdf80; font: 400 23px/1.1 var(--font-bold); text-align: center; }
+.healing-2048-heading button,
+.healing-2048-controls button,
+.healing-2048-game-over button {
+  min-height: 40px;
+  padding: 7px 14px;
+  color: #478dc9;
+  background: #eee7d4;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 #eba8b5;
+  font: 700 14px/1 var(--font-regular);
+  cursor: pointer;
+}
+
+.healing-2048-status { min-height: 20px; margin: 0; font: 14px/1.4 var(--font-regular); text-align: center; }
+.healing-2048-board-wrap {
+  position: relative;
+  width: min(100%, 510px);
+  margin: 0 auto;
+}
+
+.healing-2048-board {
+  --board-gap: clamp(7px, 1.2vw, 12px);
+  --board-padding: clamp(8px, 1.4vw, 14px);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: var(--board-gap);
+  width: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: var(--board-padding);
+  box-sizing: border-box;
+  background: #796b50;
+  border: 5px solid #f8dc91;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 3px #eee7d4;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.healing-2048-cell {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: stretch;
+  background: rgb(238 231 212 / 28%);
+  border-radius: 12px;
+}
+
+.healing-2048-tile {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  place-items: center;
+  color: #478dc9;
+  background: #eee7d4;
+  border-radius: 12px;
+  box-shadow: inset 0 -5px 0 rgb(121 107 80 / 14%);
+  font: 800 clamp(22px, 4vw, 42px)/1 var(--font-bold);
+}
+
+.healing-2048-tile.is-new { animation: healing-2048-tile-pop 180ms ease-out both; }
+.healing-2048-tile.is-merged { animation: healing-2048-tile-merge 240ms ease-out both; }
+
+@keyframes healing-2048-tile-pop {
+  from { opacity: .72; transform: scale(.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes healing-2048-tile-merge {
+  0% { transform: scale(.88); }
+  55% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+.healing-2048-motion-layer {
+  position: absolute;
+  inset: var(--board-padding);
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: var(--board-gap);
+  pointer-events: none;
+}
+
+.healing-2048-moving-tile {
+  animation: healing-2048-tile-slide 180ms cubic-bezier(.2, .75, .25, 1) both;
+  will-change: transform;
+}
+
+.healing-2048-moving-tile.is-merging-source {
+  z-index: 2;
+}
+
+@keyframes healing-2048-tile-slide {
+  from {
+    transform: translate(
+      calc(var(--tile-dx) * (100% + var(--board-gap))),
+      calc(var(--tile-dy) * (100% + var(--board-gap)))
+    );
+  }
+  to { transform: translate(0, 0); }
+}
+
+.healing-2048-tile.tile-4 { background: #fff1bf; }
+.healing-2048-tile.tile-8 { color: #796b50; background: #f8dc91; }
+.healing-2048-tile.tile-16 { color: #fff8e8; background: #efa9b8; }
+.healing-2048-tile.tile-32 { color: #fff8e8; background: #6ca58b; }
+.healing-2048-tile.tile-64 { color: #fff8e8; background: #d77f9c; }
+.healing-2048-tile.tile-128,
+.healing-2048-tile.tile-256 { color: #fff8e8; background: #478dc9; font-size: clamp(19px, 3.3vw, 35px); }
+.healing-2048-tile.tile-512,
+.healing-2048-tile.tile-1024,
+.healing-2048-tile.tile-2048 { color: #796b50; background: #ffdf80; font-size: clamp(16px, 2.8vw, 30px); }
+
+.healing-2048-controls { display: flex; justify-content: center; gap: 10px; }
+.healing-2048-controls button { width: 48px; padding: 0; font-size: 24px; }
+.healing-2048-controls button:disabled { cursor: not-allowed; opacity: .42; box-shadow: none; }
+.healing-2048-panel > small { text-align: center; opacity: .82; }
+
+.healing-2048-game-over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-content: center;
+  place-items: center;
+  gap: 12px;
+  color: #fff8e8;
+  text-align: center;
+  background: rgb(71 141 201 / 92%);
+  border: 5px solid #f8dc91;
+  border-radius: 18px;
+  backdrop-filter: blur(3px);
+  animation: healing-2048-game-over-in 360ms ease-out both;
+}
+
+.healing-2048-game-over strong {
+  color: #ffdf80;
+  font: 400 clamp(34px, 6vw, 54px)/1 var(--font-bold);
+}
+
+.healing-2048-game-over span { font: 700 18px/1.3 var(--font-regular); }
+.healing-2048-game-over button { margin-top: 6px; min-width: 124px; }
+
+@keyframes healing-2048-game-over-in {
+  from { opacity: 0; transform: scale(.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @media (max-width: 900px) {
   .healing-game-stage { padding-inline: 28px; }
-  .healing-room-arrow { display: none; }
+  .healing-room-arrow { top: 28px; font-size: 46px; transform: none; }
+  .healing-room-arrow-left { left: 16px; }
+  .healing-room-arrow-right { right: 16px; }
+  .healing-2048-controls button { min-width: 50px; min-height: 50px; }
 }
 
 @media (max-width: 600px) {
@@ -4731,6 +4964,33 @@
   .healing-chess-heading button,
   .landing-page-healing-room .healing-chess-heading button { min-height: 32px; padding-inline: 10px; }
   .healing-chess-piece { font-size: clamp(1.4rem, 5.5vw, 4rem); }
+  .healing-game-switch-controls {
+    position: relative;
+    z-index: 46;
+    inset: auto;
+    display: flex;
+    margin: 28px auto 96px;
+    justify-content: center;
+    gap: 44px;
+    touch-action: manipulation;
+  }
+  .healing-room-arrow {
+    position: static;
+    min-width: 76px;
+    padding: 2px 12px;
+    font-size: 52px;
+    transform: none;
+  }
+  .healing-2048-panel { padding: 14px 10px 18px; border-width: 2px; }
+  .healing-2048-heading { grid-template-columns: auto 1fr; }
+  .healing-2048-heading p { grid-column: 1 / -1; grid-row: 2; font-size: 20px; }
+  .healing-2048-heading button { justify-self: end; }
+  .healing-2048-board { border-width: 3px; border-radius: 14px; }
+  .healing-2048-cell,
+  .healing-2048-tile { border-radius: 8px; }
+  .healing-2048-controls { gap: 12px; }
+  .healing-2048-controls button { width: 54px; min-width: 54px; min-height: 54px; font-size: 27px; }
+  .healing-2048-panel > small { display: none; }
 }
 
 :where(
