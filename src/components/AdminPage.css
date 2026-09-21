@@ -56,7 +56,7 @@
 .admin-message-grid form small { opacity: .62; }
 .admin-message-grid button { padding: 8px 15px; color: #fffaf0; background: var(--love-blue); border: 0; border-radius: 999px; cursor: pointer; }
 .admin-message-grid button:disabled { cursor: wait; opacity: .5; }
-.admin-message-list { display: grid; gap: 8px; max-height: 330px; margin-top: 18px; overflow: auto; }
+.admin-message-list { display: grid; gap: 8px; margin-top: 18px; }
 .admin-message-list > div { display: flex; align-items: start; gap: 12px; padding: 11px 12px; background: rgba(255,251,239,.7); border: 1px solid rgba(71,137,200,.16); border-radius: 10px; }
 .admin-message-list p { min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-message-list > div p { flex: 1; }

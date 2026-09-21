@@ -50,6 +50,18 @@ function formatDisplayDate(date) {
   return `${weekday}, ${day}/${month}/${year}`
 }
 
+function getVietnamTodayKey() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date()).reduce((result, part) => ({ ...result, [part.type]: part.value }), {})
+  return `${parts.year}-${parts.month}-${parts.day}`
+}
+
+function getVietnamToday() {
+  const [year, month, day] = getVietnamTodayKey().split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 function getStoredLocalDrafts() {
   if (typeof window === 'undefined') return {}
   try {
@@ -71,7 +83,7 @@ function saveStoredLocalDraft(dateKey, data) {
 }
 
 export function ProfileDiarySection({ user, requestedDate, onSaved }) {
-  const [currentDate, setCurrentDate] = useState(() => new Date())
+  const [currentDate, setCurrentDate] = useState(getVietnamToday)
   const [entriesMap, setEntriesMap] = useState(() => getStoredLocalDrafts())
   const [drafts, setDrafts] = useState({})
   const [isSaving, setIsSaving] = useState(false)
@@ -82,9 +94,11 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
 
   const dateKey = useMemo(() => formatToKey(currentDate), [currentDate])
   const displayDate = useMemo(() => formatDisplayDate(currentDate), [currentDate])
-  const todayKey = useMemo(() => formatToKey(new Date()), [])
+  const todayKey = useMemo(() => getVietnamTodayKey(), [])
   const isFuture = dateKey > todayKey
+  const isPast = dateKey < todayKey
   const isToday = dateKey === todayKey
+  const isReadOnly = !isToday
 
   // Load entries from server when user is authenticated
   useEffect(() => {
@@ -158,7 +172,7 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
   }, [dateKey, todayKey, turnToDate])
 
   const handleMoodSelect = useCallback((moodId) => {
-    if (isFuture) return
+    if (isReadOnly) return
     setDrafts((prev) => {
       const current = prev[dateKey] ?? entriesMap[dateKey] ?? { note: '', mood: null }
       return {
@@ -170,10 +184,10 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
       }
     })
     setSaveStatus(null)
-  }, [dateKey, entriesMap, isFuture])
+  }, [dateKey, entriesMap, isReadOnly])
 
   const handleNoteChange = useCallback((text) => {
-    if (isFuture) return
+    if (isReadOnly) return
     setDrafts((prev) => {
       const current = prev[dateKey] ?? entriesMap[dateKey] ?? { note: '', mood: null }
       return {
@@ -185,9 +199,13 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
       }
     })
     setSaveStatus(null)
-  }, [dateKey, entriesMap, isFuture])
+  }, [dateKey, entriesMap, isReadOnly])
 
   const handleSave = async () => {
+    if (isPast) {
+      setSaveStatus({ type: 'error', text: 'Nhật ký của ngày trước chỉ có thể xem lại, không thể chỉnh sửa hoặc xóa.' })
+      return
+    }
     if (isFuture) {
       setSaveStatus({ type: 'error', text: 'Bạn chưa thể viết trước nhật ký cho ngày trong tương lai nè!' })
       return
@@ -262,6 +280,7 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
                 key={mood.id}
                 role="radio"
                 aria-checked={isSelected}
+                disabled={isReadOnly}
                 className={`profile-diary-mood-card ${isSelected ? 'is-active' : ''}`}
                 onClick={() => handleMoodSelect(mood.id)}
               >
@@ -331,10 +350,9 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
               <textarea
                 className="profile-diary-textarea"
                 value={noteContent}
-                readOnly={isFuture}
-                disabled={isFuture}
+                readOnly={isReadOnly}
                 onChange={(e) => handleNoteChange(e.target.value)}
-                placeholder={isFuture ? 'Chưa tới ngày này nên chưa thể viết nhật ký trước nha...' : 'Hãy viết vài điều bạn biết ơn trong ngày hôm nay nha...'}
+                placeholder={isFuture ? 'Chưa tới ngày này nên chưa thể viết nhật ký trước nha...' : isPast ? 'Ngày này chưa có nội dung nhật ký.' : 'Hãy viết vài điều bạn biết ơn trong ngày hôm nay nha...'}
                 aria-label={`Nội dung nhật ký ngày ${displayDate}`}
                 rows={14}
               />
@@ -347,10 +365,10 @@ export function ProfileDiarySection({ user, requestedDate, onSaved }) {
           <button
             type="button"
             className="profile-diary-save-btn"
-            disabled={isSaving || isFuture}
+            disabled={isSaving || isReadOnly}
             onClick={handleSave}
           >
-            {isSaving ? 'Đang lưu…' : 'Lưu lại'}
+            {isSaving ? 'Đang lưu…' : isPast ? 'Chỉ xem nhật ký cũ' : 'Lưu lại'}
           </button>
 
           {saveStatus ? (

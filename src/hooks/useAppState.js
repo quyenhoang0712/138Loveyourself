@@ -16,10 +16,12 @@ import { createShareImageBlob, getShareQuoteFontSize } from '../utils/shareImage
 import { formatTime } from '../utils/time'
 
 function getNextDecisionMessage(currentMessage = '', messages = defaultDecisionMessages) {
+  const availableMessages = messages.filter(Boolean)
+  if (availableMessages.length === 0) return ''
   const nextOptions =
-    messages.length > 1
-      ? messages.filter((message) => message !== currentMessage)
-      : messages
+    availableMessages.length > 1
+      ? availableMessages.filter((message) => message !== currentMessage)
+      : availableMessages
 
   return nextOptions[Math.floor(Math.random() * nextOptions.length)]
 }
@@ -27,7 +29,8 @@ function getNextDecisionMessage(currentMessage = '', messages = defaultDecisionM
 export function useAppState() {
   const [quoteLetters] = useState(getQuoteLetters)
   const [randomQuote] = useState(getRandomQuote)
-  const [additionalQuotes, setAdditionalQuotes] = useState([])
+  const [activeQuotes, setActiveQuotes] = useState([])
+  const [contentMessagesLoaded, setContentMessagesLoaded] = useState(false)
   const [decisionMessages, setDecisionMessages] = useState(defaultDecisionMessages)
   const [quote, setQuote] = useState('')
   const [openedLetterId, setOpenedLetterId] = useState(null)
@@ -88,8 +91,9 @@ export function useAppState() {
         const nextDecisionMessages = Array.isArray(data.decisionMessages)
           ? data.decisionMessages.map((item) => item.text).filter(Boolean)
           : []
-        setAdditionalQuotes(nextQuotes)
-        setDecisionMessages([...defaultDecisionMessages, ...nextDecisionMessages])
+        setActiveQuotes(nextQuotes)
+        setDecisionMessages(nextDecisionMessages)
+        setContentMessagesLoaded(true)
       })
       .catch(() => {})
     return () => controller.abort()
@@ -467,7 +471,7 @@ export function useAppState() {
 
   const handleOpenLetter = (letter) => {
     setOpenedLetterId(letter.id)
-    setQuote(additionalQuotes.length ? getRandomQuote(additionalQuotes) : randomQuote)
+    setQuote(contentMessagesLoaded ? getRandomQuote(activeQuotes) : randomQuote)
     trackAnalyticsEvent('letter_open', 'card-room', { letterId: letter.id })
   }
 

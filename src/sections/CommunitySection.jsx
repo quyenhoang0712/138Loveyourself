@@ -30,6 +30,7 @@ const stampOptions = [
   { id: 'letter-14', label: 'Tem thư mẫu 2', image: assetUrl('tem/Letter 138knitwear-14.svg') },
 ]
 const sentLettersPerPage = 4
+const communityLettersPerPage = 9
 const defaultStampId = stampOptions[0].id
 const communityWriteInvitations = [
   {
@@ -113,6 +114,7 @@ export function CommunitySection() {
   const [communityLetters, setCommunityLetters] = useState([])
   const [isLoadingCommunityLetters, setIsLoadingCommunityLetters] = useState(true)
   const [isLoadingSentLetters, setIsLoadingSentLetters] = useState(false)
+  const [sentLettersError, setSentLettersError] = useState('')
   const [user, setUser] = useState(null)
   const [isCheckingUser, setIsCheckingUser] = useState(true)
   const [recipient, setRecipient] = useState('')
@@ -127,6 +129,7 @@ export function CommunitySection() {
   const [isSentLettersPopupOpen, setIsSentLettersPopupOpen] = useState(false)
   const [isCommunityLettersPopupOpen, setIsCommunityLettersPopupOpen] = useState(false)
   const [sentLettersPage, setSentLettersPage] = useState(1)
+  const [communityLettersPage, setCommunityLettersPage] = useState(1)
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false)
   const [isSubmittingLetter, setIsSubmittingLetter] = useState(false)
   const [isSendingLetter, setIsSendingLetter] = useState(false)
@@ -144,12 +147,21 @@ export function CommunitySection() {
   const draggingLetterRef = useRef(null)
   const draggedLetterRef = useRef(false)
   const canWriteLetter = Boolean(user)
+  const sentLettersCountLabel = user && isLoadingSentLetters && !letters.length
+    ? '…'
+    : user && sentLettersError && !letters.length ? '—' : user ? letters.length : 0
   const sentLettersPageCount = Math.max(1, Math.ceil(letters.length / sentLettersPerPage))
   const activeSentLettersPage = Math.min(sentLettersPage, sentLettersPageCount)
   const paginatedSentLetters = useMemo(() => letters.slice(
     (activeSentLettersPage - 1) * sentLettersPerPage,
     activeSentLettersPage * sentLettersPerPage,
   ), [activeSentLettersPage, letters])
+  const communityLettersPageCount = Math.max(1, Math.ceil(communityLetters.length / communityLettersPerPage))
+  const activeCommunityLettersPage = Math.min(communityLettersPage, communityLettersPageCount)
+  const paginatedCommunityLetters = useMemo(() => communityLetters.slice(
+    (activeCommunityLettersPage - 1) * communityLettersPerPage,
+    activeCommunityLettersPage * communityLettersPerPage,
+  ), [activeCommunityLettersPage, communityLetters])
   const visibleCommunityLetters = communityLetters.length || isLoadingCommunityLetters
     ? communityLetters
     : communityWriteInvitations
@@ -229,18 +241,26 @@ export function CommunitySection() {
     async function loadSentLetters() {
       if (!user) {
         setLetters([])
+        setSentLettersError('')
         return
       }
 
       setIsLoadingSentLetters(true)
+      setSentLettersError('')
 
       try {
-        const response = await fetch('/api/community-letters/mine', { signal: controller.signal })
+        const response = await fetch('/api/community-letters/mine', {
+          cache: 'no-store',
+          credentials: 'include',
+          signal: controller.signal,
+        })
         const data = await readApiResponse(response)
         if (!response.ok) throw new Error(data.error)
         if (!ignore) setLetters(Array.isArray(data.letters) ? data.letters : [])
       } catch (error) {
-        if (!ignore && error.name !== 'AbortError') setLetters([])
+        if (!ignore && error.name !== 'AbortError') {
+          setSentLettersError(error.message || 'Chưa tải được số thư bạn đã viết.')
+        }
       } finally {
         if (!ignore) setIsLoadingSentLetters(false)
       }
@@ -290,7 +310,12 @@ export function CommunitySection() {
     }
 
     document.body.style.overflow = 'hidden'
-    communityLettersPopupRef.current?.focus({ preventScroll: true })
+    if (communityLettersPopupRef.current) {
+      communityLettersPopupRef.current.focus({ preventScroll: true })
+      if (communityLettersPopupRef.current.parentElement) {
+        communityLettersPopupRef.current.parentElement.scrollLeft = 0
+      }
+    }
     window.addEventListener('keydown', handleKeyDown)
     return () => {
       document.body.style.overflow = previousOverflow
@@ -377,6 +402,7 @@ export function CommunitySection() {
     try {
       const response = await fetch('/api/community-letters', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient: normalizedRecipient || 'Cộng đồng',
@@ -563,7 +589,7 @@ export function CommunitySection() {
 
     if (currentDrag.isOverTrash && draggedLetterRef.current) {
       try {
-        const response = await fetch(`/api/community-letters/${letter.id}`, { method: 'DELETE' })
+        const response = await fetch(`/api/community-letters/${letter.id}`, { method: 'DELETE', credentials: 'include' })
         if (!response.ok) throw new Error()
         setCommunityLetters((currentLetters) => (
           currentLetters.filter((communityLetter) => communityLetter.id !== letter.id)
@@ -785,7 +811,7 @@ export function CommunitySection() {
       <header className="community-room-toolbar">
         <div className="community-room-actions">
           <button ref={writeButtonRef} type="button" onClick={handleWriteNewLetter} aria-haspopup="dialog">✎ <span>Viết lá thư mới</span></button>
-          <button type="button" onClick={() => { setSentLettersPage(1); setIsSentLettersPopupOpen(true) }} aria-haspopup="dialog"><strong>{letters.length}</strong> Thư bạn đã gửi</button>
+          <button type="button" onClick={() => { setSentLettersPage(1); setIsSentLettersPopupOpen(true) }} aria-haspopup="dialog"><strong>{sentLettersCountLabel}</strong> Thư bạn đã gửi</button>
         </div>
         <h1>Phòng cộng đồng</h1>
         <label className="community-room-search">
@@ -806,7 +832,7 @@ export function CommunitySection() {
                 className="community-view-all-letters"
                 type="button"
                 aria-haspopup="dialog"
-                onClick={() => setIsCommunityLettersPopupOpen(true)}
+                onClick={() => { setCommunityLettersPage(1); setIsCommunityLettersPopupOpen(true) }}
               >
                 Xem tất cả thư <strong>{communityLetters.length}</strong>
               </button>
@@ -1035,7 +1061,7 @@ export function CommunitySection() {
           }}
         >
           <span>Thư bạn đã gửi</span>
-          <strong>{user ? letters.length : 0} thư</strong>
+          <strong>{sentLettersCountLabel} thư</strong>
         </button>
 
         {draggingLetter ? (
@@ -1080,9 +1106,9 @@ export function CommunitySection() {
               >×</button>
             </header>
 
-            {communityLetters.length ? (
-              <div className="community-all-letters-grid">
-                {communityLetters.map((letter) => (
+            {communityLetters.length ? (<>
+              <div className="community-all-letters-grid" key={activeCommunityLettersPage}>
+                {paginatedCommunityLetters.map((letter) => (
                   <button
                     className="community-all-letter-card"
                     type="button"
@@ -1106,6 +1132,22 @@ export function CommunitySection() {
                   </button>
                 ))}
               </div>
+              <nav className="community-all-letters-pagination" aria-label="Phân trang thư cộng đồng">
+                <button
+                  type="button"
+                  aria-label="Trang thư trước"
+                  disabled={activeCommunityLettersPage === 1}
+                  onClick={() => setCommunityLettersPage(activeCommunityLettersPage - 1)}
+                >←</button>
+                <span aria-live="polite">Trang {activeCommunityLettersPage}/{communityLettersPageCount}</span>
+                <button
+                  type="button"
+                  aria-label="Trang thư sau"
+                  disabled={activeCommunityLettersPage === communityLettersPageCount}
+                  onClick={() => setCommunityLettersPage(activeCommunityLettersPage + 1)}
+                >→</button>
+              </nav>
+            </>
             ) : (
               <p className="community-all-letters-empty">
                 {isLoadingCommunityLetters ? 'Đang mở hộp thư cộng đồng...' : 'Chưa có thư cộng đồng.'}
@@ -1134,7 +1176,7 @@ export function CommunitySection() {
             <button className="community-sent-letters-close" type="button" aria-label="Đóng hộp thư" onClick={() => setIsSentLettersPopupOpen(false)}>×</button>
             <div className="community-sent-letters-summary">
               <span>Trang {activeSentLettersPage}/{sentLettersPageCount}</span>
-              <span>Bạn đã viết được<br />{user ? letters.length : 0} bức thư</span>
+              <span>Bạn đã viết được<br />{sentLettersCountLabel} bức thư</span>
             </div>
             <header>
               <button type="button" aria-label="Trang trước" disabled={activeSentLettersPage === 1} onClick={() => setSentLettersPage(activeSentLettersPage - 1)}>←</button>
@@ -1144,7 +1186,9 @@ export function CommunitySection() {
             {renderLetterStack(
               user ? paginatedSentLetters : [],
               user
-                ? (isLoadingSentLetters ? 'Đang mở hộp thư của bạn...' : 'Bạn chưa gửi lá thư nào.')
+                ? (isLoadingSentLetters
+                    ? 'Đang mở hộp thư của bạn...'
+                    : sentLettersError || 'Bạn chưa gửi lá thư nào.')
                 : 'Đăng nhập để xem thư bạn đã gửi.',
               { canDelete: true, stackId: 'sent' }
             )}

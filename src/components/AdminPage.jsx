@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { AnalyticsReport } from '../sections/AnalyticsReport'
 import './AdminPage.css'
 
-function todayKey() {
+function currentWeekKey() {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
   }).formatToParts(new Date()).reduce((result, part) => ({ ...result, [part.type]: part.value }), {})
-  return `${parts.year}-${parts.month}-${parts.day}`
+  const date = new Date(Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day)))
+  const day = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7)
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
 }
 
 async function readJson(response) {
@@ -44,8 +49,8 @@ async function optimizeImage(file, slot) {
   throw new Error('Ảnh còn quá lớn, hãy chọn ảnh khác.')
 }
 
-function DailyImages() {
-  const [date, setDate] = useState(todayKey)
+function WeeklyImages() {
+  const [week, setWeek] = useState(currentWeekKey)
   const [images, setImages] = useState([])
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(true)
@@ -54,12 +59,12 @@ function DailyImages() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch(`/api/community-memories?date=${date}`, { cache: 'no-store', credentials: 'include', signal: controller.signal })
+    fetch(`/api/community-memories?week=${week}`, { cache: 'no-store', credentials: 'include', signal: controller.signal })
       .then(readJson).then((data) => setImages(data.featuredImages || []))
       .catch((error) => { if (error.name !== 'AbortError') setMessage(error.message) })
       .finally(() => { if (!controller.signal.aborted) setBusy(false) })
     return () => controller.abort()
-  }, [date])
+  }, [week])
 
   async function upload(event) {
     const file = event.target.files?.[0]
@@ -72,21 +77,21 @@ function DailyImages() {
       const image = await optimizeImage(file, slot)
       const data = await fetch(`/api/community-memories/featured/${slot}`, {
         method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, image }),
+        body: JSON.stringify({ week, image }),
       }).then(readJson)
       setImages(data.featuredImages || [])
-      setMessage(`Đã lưu ảnh ${slot + 1} cho ngày ${date}.`)
+      setMessage(`Đã lưu ảnh ${slot + 1} cho tuần ${week}.`)
     } catch (error) { setMessage(error.message) }
     finally { setBusy(false) }
   }
 
   return <section className="admin-daily-images" id="admin-images">
-    <div className="admin-section-heading"><div><h2>Ảnh nổi bật theo ngày</h2><p>Chọn ngày và cập nhật hai ảnh hiển thị tại Góc kỷ niệm.</p></div><input type="date" value={date} onChange={(event) => { setBusy(true); setMessage(''); setDate(event.target.value) }} /></div>
+    <div className="admin-section-heading"><div><h2>Ảnh nổi bật theo tuần</h2><p>Chọn tuần và cập nhật hai ảnh hiển thị tại Góc kỷ niệm từ Thứ Hai đến Chủ Nhật.</p></div><input type="week" value={week} onChange={(event) => { setBusy(true); setMessage(''); setWeek(event.target.value) }} /></div>
     <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={upload} />
     <div className="admin-image-grid">{[0, 1].map((slot) => <article className={slot === 0 ? 'is-portrait' : 'is-landscape'} key={slot}>
       <div className="admin-image-format"><strong>Ảnh {slot + 1}</strong><span>{slot === 0 ? 'Ảnh đứng · 720 × 960 · JPG' : 'Ảnh ngang · 960 × 560 · JPG'}</span></div>
       <div className="admin-image-preview">
-        {images[slot] ? <img src={images[slot]} alt={`Ảnh nổi bật ${slot + 1} ngày ${date}`} /> : <span>Chưa có ảnh {slot + 1}</span>}
+        {images[slot] ? <img src={images[slot]} alt={`Ảnh nổi bật ${slot + 1} tuần ${week}`} /> : <span>Chưa có ảnh {slot + 1}</span>}
       </div>
       <button type="button" disabled={busy} onClick={() => { slotRef.current = slot; inputRef.current?.click() }}>{images[slot] ? 'Thay ảnh' : 'Thêm ảnh'}</button>
     </article>)}</div>
@@ -147,7 +152,7 @@ function ContentMessages() {
     <div className="admin-section-heading"><div><h2>Quote &amp; decision messages</h2><p>Thêm nội dung mới cho Phòng thông điệp và Hộp thư thoại LOVA.</p></div></div>
     <div className="admin-message-grid">
       {contentGroups.map((group) => <article key={group.type}>
-        <header><div><h3>{group.title}</h3><span>{items[group.key].length} nội dung bổ sung</span></div></header>
+        <header><div><h3>{group.title}</h3><span>{items[group.key].length} nội dung đang hiển thị</span></div></header>
         <form onSubmit={(event) => addMessage(event, group)}>
           <textarea
             value={drafts[group.type]}
@@ -161,7 +166,7 @@ function ContentMessages() {
           {items[group.key].length ? items[group.key].map((item) => <div key={item.id}>
             <p>{item.text}</p>
             <button type="button" disabled={Boolean(busyType)} onClick={() => removeMessage(group, item.id)}>Xóa</button>
-          </div>) : <p className="admin-message-empty">Chưa có nội dung bổ sung.</p>}
+          </div>) : <p className="admin-message-empty">Chưa có nội dung đang hiển thị.</p>}
         </div>
       </article>)}
     </div>
@@ -184,7 +189,7 @@ export function AdminPage() {
         <a href="#admin-overview"><span>01</span>Tổng quan</a>
         <a href="#admin-users"><span>02</span>Người dùng</a>
         <a href="#admin-activity"><span>03</span>Hoạt động</a>
-        <a href="#admin-images"><span>04</span>Ảnh theo ngày</a>
+        <a href="#admin-images"><span>04</span>Ảnh theo tuần</a>
         <a href="#admin-messages"><span>05</span>Quote &amp; lời nhắn</a>
       </nav>
       <a className="admin-sidebar-home" href="/">← Về trang chính</a>
@@ -192,7 +197,7 @@ export function AdminPage() {
     <div className="admin-content">
       <header className="admin-content-header"><div><span>ADMIN DASHBOARD</span><h2>Trang quản trị</h2></div><p>Dữ liệu hệ thống và nội dung kỷ niệm</p></header>
       <AnalyticsReport embeddedUser={user} />
-      <DailyImages />
+      <WeeklyImages />
       <ContentMessages />
     </div>
   </main>

@@ -38,7 +38,6 @@ router.get('/', readLimit, async (req, res) => {
   })
     .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
-    .limit(50)
     .lean()
 
   res.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=30')
@@ -46,6 +45,11 @@ router.get('/', readLimit, async (req, res) => {
 })
 
 router.get('/mine', async (req, res) => {
+  res.set({
+    'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
+    'CDN-Cache-Control': 'no-store',
+    'Vercel-CDN-Cache-Control': 'no-store',
+  })
   const user = await getAuthenticatedUser(req)
   if (!user) {
     res.status(401).json({ error: 'Bạn cần đăng nhập để xem thư đã gửi.' })
@@ -55,7 +59,6 @@ router.get('/mine', async (req, res) => {
   const letters = await CommunityLetter.find({ authorId: user._id })
     .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
-    .limit(50)
     .lean()
 
   res.json({ letters: letters.map(publicLetter) })

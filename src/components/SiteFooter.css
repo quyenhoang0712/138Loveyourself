@@ -168,6 +168,25 @@
 }
 
 @media (min-width: 1024px) {
+  .site-footer {
+    min-height: max(780px, 100svh);
+  }
+
+  .site-footer-brand {
+    width: min(1040px, calc(100% - 80px));
+    margin-top: clamp(64px, 5vw, 96px);
+  }
+
+  .site-footer-mascot {
+    width: clamp(340px, 24.9vw, 468px);
+    margin-bottom: clamp(30px, 2.2vw, 42px);
+  }
+
+  .site-footer-logo {
+    width: clamp(680px, 49vw, 920px);
+    max-width: 92%;
+  }
+
   .site-footer-decoration {
     bottom: 20px;
   }

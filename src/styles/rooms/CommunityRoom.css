@@ -467,7 +467,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(1080px, 100%);
+  width: min(1080px, calc(100% - 16px));
   max-height: calc(100dvh - 48px);
   margin: auto;
   padding: 34px clamp(22px, 4vw, 44px) 38px;
@@ -490,26 +490,33 @@
 .community-all-letters-popup > header {
   position: relative;
   z-index: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   padding: 0 8px 22px;
-  text-align: left;
+  text-align: center;
+}
+.community-all-letters-popup > header > div {
+  grid-column: 2;
+  text-align: center;
 }
 .community-all-letters-popup > header span {
   display: block;
   margin-bottom: 4px;
   color: #eee7d4;
   font: 15px/1.3 var(--font-regular);
+  text-align: center;
 }
 .community-all-letters-popup h2 {
   margin: 0;
   color: #ffdf80;
   font: 400 clamp(30px, 4vw, 46px)/1.1 var(--font-bold);
+  text-align: center;
 }
 .community-all-letters-close {
-  flex: 0 0 auto;
+  grid-column: 3;
+  justify-self: end;
   display: grid;
   place-items: center;
   width: 44px;
@@ -583,10 +590,41 @@
   color: #eee7d4;
   font: 20px/1.5 var(--font-regular);
 }
+.community-all-letters-pagination {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex: none;
+  padding: 18px 10px 2px;
+  color: #eee7d4;
+  font: 17px/1.2 var(--font-regular);
+}
+.community-all-letters-pagination button {
+  display: grid;
+  width: 42px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  border: 2px solid #eee7d4;
+  border-radius: 999px;
+  color: #4789c8;
+  background: #eee7d4;
+  box-shadow: 2px 3px 0 #efa9b8;
+  font: 22px/1 var(--font-regular);
+  cursor: pointer;
+}
+.community-all-letters-pagination button:disabled {
+  cursor: default;
+  opacity: 0.42;
+  box-shadow: none;
+}
 
 @media (max-width: 900px) {
   .community-all-letters-popup {
-    width: min(720px, 100%);
+    width: min(720px, calc(100% - 16px));
     margin: auto;
   }
   .community-all-letters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -596,8 +634,10 @@
   .community-letter-popup-backdrop {
     padding: 16px 14px;
     overflow-x: hidden;
+    overflow-x: clip;
   }
   .community-all-letters-popup {
+    width: calc(100% - 12px);
     margin: auto;
   }
 }
@@ -606,11 +646,12 @@
   .community-letter-popup-backdrop {
     padding: 12px 10px;
     overflow-x: hidden;
+    overflow-x: clip;
   }
   .community-letters-heading { display: flex; flex-direction: column; margin-inline: 16px; }
   .community-view-all-letters { align-self: center; }
   .community-all-letters-popup {
-    width: 100%;
+    width: calc(100% - 8px);
     max-width: 520px;
     max-height: calc(100dvh - 24px);
     margin: auto;
@@ -620,9 +661,14 @@
     box-sizing: border-box;
   }
   .community-all-letters-popup::before { inset: 9px; border-radius: 15px; }
-  .community-all-letters-popup > header { gap: 12px; padding: 0 4px 16px; }
+  .community-all-letters-popup > header {
+    grid-template-columns: 38px 1fr 38px;
+    gap: 8px;
+    padding: 0 4px 16px;
+  }
   .community-all-letters-popup h2 { font-size: 28px; }
   .community-all-letters-close { width: 38px; height: 38px; font-size: 32px; }
   .community-all-letters-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; padding-inline: 4px; }
   .community-all-letter-card { min-height: 200px; }
+  .community-all-letters-pagination { padding-top: 14px; }
 }

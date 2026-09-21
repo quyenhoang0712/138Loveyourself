@@ -30,7 +30,7 @@
 .memory-feature-note { width: min(100%, 420px); aspect-ratio: 12 / 7; min-height: 0; padding: 0; overflow: hidden; }
 .memory-feature-note > img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .memory-feature-note .memory-empty-note { display: grid; height: 100%; margin: 0; padding: 30px; place-items: center; }
-.memory-album-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(100%, 900px); margin: 34px auto 12px; color: #478dc9; font: 600 18px var(--font-mono); }
+.memory-album-heading { display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 14px; width: min(100%, 900px); margin: 34px auto 12px; color: #478dc9; font: 600 18px var(--font-mono); text-align: center; }
 .memory-album-heading button { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 6px 16px; color: var(--love-page-cream); background: #478dc9; border: 0; border-radius: 22px; box-shadow: 3px 3px #efa9b8; font: 15px var(--font-regular); cursor: pointer; }
 .memory-album-heading button > span { font-size: 22px; line-height: 1; }
 .memory-album-heading button:disabled { opacity: .55; cursor: default; }
@@ -129,7 +129,7 @@
   .memory-date { min-width: 0; width: 100%; max-width: 320px; padding: 16px 20px; margin-bottom: 18px; box-sizing: border-box; }
   .memory-note { min-height: 190px; padding: 18px; }
   .memory-feature-note { width: min(100%, 330px); min-height: 0; padding: 0; }
-  .memory-album-heading { align-items: flex-start; flex-direction: column; }
+  .memory-album-heading { align-items: center; }
   .memory-album-form { grid-template-columns: 86px minmax(0, 1fr); padding: 14px; }
   .memory-album-form > img { width: 86px; }
   .memory-carousel { padding: 0 34px; }

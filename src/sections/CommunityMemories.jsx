@@ -179,7 +179,7 @@ export function CommunityMemories({ user }) {
           body: JSON.stringify({ image: croppedImage }),
         }).then(readResponse)
         setFeaturedImages(data.featuredImages || [])
-        setMessage(`Đã cập nhật ảnh nổi bật ${uploadTarget.slot + 1} của hôm nay.`)
+        setMessage(`Đã cập nhật ảnh nổi bật ${uploadTarget.slot + 1} của tuần này.`)
       } else {
         setDraft(croppedImage)
       }

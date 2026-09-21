@@ -290,6 +290,7 @@
 .header-logout-button {
   width: 42px;
   height: 42px;
+  background: var(--love-page-cream);
   color: #b75870;
   transition:
     background 180ms ease,
@@ -7713,11 +7714,13 @@ input {
   position: fixed;
   inset: 0;
   z-index: 98;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 24px;
-  overflow-x: hidden;
   overflow-y: auto;
+  overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
   background: rgba(39, 66, 96, 0.42);
   backdrop-filter: blur(7px);

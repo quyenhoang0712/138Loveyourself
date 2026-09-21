@@ -63,6 +63,13 @@ function noStore(req, res, next) {
   next()
 }
 
+function getVietnamDateKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date).reduce((result, part) => ({ ...result, [part.type]: part.value }), {})
+  return `${parts.year}-${parts.month}-${parts.day}`
+}
+
 async function requireAdmin(req, res, next) {
   const user = await getAuthenticatedUser(req)
   if (!user) {
@@ -410,6 +417,7 @@ router.put('/diary', noStore, diaryWriteLimit, requireUser, async (req, res) => 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date || !note || note.length > 20000 || (mood != null && (!Number.isInteger(mood) || mood < 1 || mood > 5))) {
     return res.status(400).json({ error: 'Ngày hoặc nội dung nhật ký chưa hợp lệ.' })
   }
+  if (date !== getVietnamDateKey()) return res.status(403).json({ error: 'Nhật ký của ngày trước chỉ có thể xem lại, không thể chỉnh sửa hoặc xóa.' })
   const entry = await DiaryEntry.findOneAndUpdate({ userId: String(req.user._id), date }, { $set: { note, mood: mood ?? null } }, { upsert: true, returnDocument: 'after', runValidators: true })
   res.json({ entry })
 })

@@ -22,21 +22,47 @@ function formatVietnamDate(date = new Date()) {
   return new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }).format(date)
 }
 
-function getVietnamDateKey(date = new Date()) {
+function getIsoWeek(date = new Date()) {
   const localDate = new Date(date.getTime() + vietnamOffset)
-  return [localDate.getUTCFullYear(), String(localDate.getUTCMonth() + 1).padStart(2, '0'), String(localDate.getUTCDate()).padStart(2, '0')].join('-')
+  const day = localDate.getUTCDay() || 7
+  localDate.setUTCDate(localDate.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(localDate.getUTCFullYear(), 0, 1))
+  const week = Math.ceil((((localDate - yearStart) / (24 * 60 * 60 * 1000)) + 1) / 7)
+  return `${localDate.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
 }
 
-function normalizeDateKey(value) {
-  const dateKey = String(value || '')
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return ''
-  const parsed = new Date(`${dateKey}T00:00:00.000Z`)
-  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== dateKey ? '' : dateKey
+function normalizeWeekKey(value) {
+  const match = /^(\d{4})-W(\d{2})$/.exec(String(value || ''))
+  if (!match) return ''
+  const year = Number(match[1])
+  const week = Number(match[2])
+  if (week < 1 || week > 53) return ''
+  const januaryFourth = new Date(Date.UTC(year, 0, 4))
+  const monday = new Date(januaryFourth)
+  monday.setUTCDate(januaryFourth.getUTCDate() - (januaryFourth.getUTCDay() || 7) + 1 + ((week - 1) * 7))
+  return getIsoWeek(new Date(monday.getTime() - vietnamOffset)) === value ? value : ''
 }
 
-function getVietnamDateEnd(dateKey) {
-  const vietnamMidnightUtc = Date.parse(`${dateKey}T00:00:00.000Z`) - vietnamOffset
-  return new Date(vietnamMidnightUtc + 24 * 60 * 60 * 1000)
+function getWeekStartDateKey(weekKey) {
+  const [year, week] = weekKey.split('-W').map(Number)
+  const januaryFourth = new Date(Date.UTC(year, 0, 4))
+  januaryFourth.setUTCDate(januaryFourth.getUTCDate() - (januaryFourth.getUTCDay() || 7) + 1 + ((week - 1) * 7))
+  return januaryFourth.toISOString().slice(0, 10)
+}
+
+function getVietnamWeekEnd(weekKey) {
+  const mondayKey = getWeekStartDateKey(weekKey)
+  const vietnamMondayUtc = Date.parse(`${mondayKey}T00:00:00.000Z`) - vietnamOffset
+  return new Date(vietnamMondayUtc + 7 * 24 * 60 * 60 * 1000)
+}
+
+function formatWeekLabel(weekKey) {
+  const startKey = getWeekStartDateKey(weekKey)
+  const start = new Date(`${startKey}T12:00:00.000Z`)
+  const end = new Date(start)
+  end.setUTCDate(end.getUTCDate() + 6)
+  const formatter = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' })
+  return `${formatter.format(start)} – ${formatter.format(end)}`
 }
 
 function validateImage(image) {
@@ -53,10 +79,11 @@ const serialize = (memory) => ({
 
 router.get('/', readLimit, async (req, res) => {
   const { start, end } = getVietnamDayRange()
-  const requestedDate = normalizeDateKey(req.query.date)
-  const user = requestedDate ? await getAuthenticatedUser(req) : null
-  if (req.query.date && (!requestedDate || user?.role !== 'admin')) return res.status(403).json({ error: 'Chỉ admin mới xem được ảnh theo ngày.' })
-  const dateKey = requestedDate || getVietnamDateKey()
+  const requestedWeek = normalizeWeekKey(req.query.week)
+  const user = req.query.week ? await getAuthenticatedUser(req) : null
+  if (req.query.week && (!requestedWeek || user?.role !== 'admin')) return res.status(403).json({ error: 'Chỉ admin mới xem được ảnh theo tuần.' })
+  const weekKey = requestedWeek || getIsoWeek()
+  const dateKey = getWeekStartDateKey(weekKey)
   const [memories, feature] = await Promise.all([
     CommunityMemory.find({ createdAt: { $gte: start, $lt: end }, expiresAt: { $gt: new Date() } })
     .select('image caption authorName createdAt')
@@ -65,7 +92,7 @@ router.get('/', readLimit, async (req, res) => {
     .lean(),
     CommunityMemoryFeature.findOne({ dateKey }).select('images expiresAt').lean(),
   ])
-  const featureExpiry = getVietnamDateEnd(dateKey)
+  const featureExpiry = getVietnamWeekEnd(weekKey)
   if (feature && feature.expiresAt?.getTime() !== featureExpiry.getTime()) {
     await CommunityMemoryFeature.updateOne({ _id: feature._id }, { $set: { expiresAt: featureExpiry } })
   }
@@ -74,21 +101,22 @@ router.get('/', readLimit, async (req, res) => {
     'CDN-Cache-Control': 'no-store',
     'Vercel-CDN-Cache-Control': 'no-store',
   })
-  res.json({ memories: memories.map(serialize), featuredImages: feature?.images || [], dateLabel: requestedDate ? new Intl.DateTimeFormat('vi-VN').format(new Date(`${requestedDate}T12:00:00Z`)) : formatVietnamDate() })
+  res.json({ memories: memories.map(serialize), featuredImages: feature?.images || [], dateLabel: formatVietnamDate(), featuredWeekLabel: formatWeekLabel(weekKey) })
 })
 
 router.put('/featured/:slot', publishLimit, async (req, res) => {
   const user = await getAuthenticatedUser(req)
   if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Chỉ admin mới được thay hai ảnh nổi bật.' })
   const slot = Number(req.params.slot)
-  const dateKey = normalizeDateKey(req.body.date) || getVietnamDateKey()
+  const weekKey = normalizeWeekKey(req.body.week) || getIsoWeek()
+  const dateKey = getWeekStartDateKey(weekKey)
   const image = typeof req.body.image === 'string' ? req.body.image : ''
   if (![0, 1].includes(slot) || !validateImage(image)) return res.status(400).json({ error: 'Ảnh nổi bật chưa hợp lệ.' })
 
   const existing = await CommunityMemoryFeature.findOne({ dateKey }).lean()
   const images = existing?.images ? [...existing.images] : []
   images[slot] = image
-  const expiresAt = getVietnamDateEnd(dateKey)
+  const expiresAt = getVietnamWeekEnd(weekKey)
   const feature = await CommunityMemoryFeature.findOneAndUpdate(
     { dateKey },
     { $set: { images, updatedBy: user._id, expiresAt } },
