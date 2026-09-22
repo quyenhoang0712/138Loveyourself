@@ -57,6 +57,10 @@ const communityLetterSchema = new mongoose.Schema({
     min: 0,
     default: 0,
   },
+  voterIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
 }, {
   timestamps: true,
   versionKey: false,

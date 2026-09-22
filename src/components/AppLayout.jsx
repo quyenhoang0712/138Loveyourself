@@ -1020,6 +1020,7 @@ export function AppLayout({ state }) {
 
   return (
     <main
+      data-visual-page={currentPageKey}
       className={`landing-page ${activeRoom ? `landing-page-room landing-page-${activeRoom}` : ''} ${
         isAnalyticsReportOpen ? 'landing-page-analytics' : ''
       } ${

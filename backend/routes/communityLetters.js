@@ -11,8 +11,9 @@ const stampIds = new Set(['letter-12', 'letter-14'])
 const readLimit = rateLimit({ scope: 'letter-read', limit: 120, windowMs: 60 * 1000 })
 const publishLimit = rateLimit({ scope: 'letter-publish', limit: 12, windowMs: 60 * 60 * 1000 })
 const deleteLimit = rateLimit({ scope: 'letter-delete', limit: 30, windowMs: 60 * 60 * 1000 })
+const voteLimit = rateLimit({ scope: 'letter-vote', limit: 30, windowMs: 60 * 1000, key: (req) => req.params.id })
 
-function publicLetter(letter) {
+function publicLetter(letter, userId = null) {
   return {
     id: String(letter._id),
     recipient: letter.recipient || 'Cộng đồng',
@@ -21,6 +22,7 @@ function publicLetter(letter) {
     authorName: letter.isAnonymous ? '' : letter.authorName,
     isAnonymous: letter.isAnonymous,
     votes: Number(letter.votes || 0),
+    hasVoted: Boolean(userId && letter.voterIds?.some((voterId) => String(voterId) === String(userId))),
     envelopeColor: letter.envelopeColor,
     sealColor: letter.sealColor,
     stampId: stampIds.has(letter.stampId) ? letter.stampId : 'letter-12',
@@ -30,18 +32,19 @@ function publicLetter(letter) {
 }
 
 router.get('/', readLimit, async (req, res) => {
+  const user = await getAuthenticatedUser(req)
   const letters = await CommunityLetter.find({
     $or: [
       { recipient: 'Cộng đồng' },
       { recipient: { $exists: false } },
     ],
   })
-    .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
+    .select('recipient title body authorName isAnonymous votes voterIds envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
     .lean()
 
-  res.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=30')
-  res.json({ letters: letters.map(publicLetter) })
+  res.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
+  res.json({ letters: letters.map((letter) => publicLetter(letter, user?._id)) })
 })
 
 router.get('/mine', async (req, res) => {
@@ -57,11 +60,11 @@ router.get('/mine', async (req, res) => {
   }
 
   const letters = await CommunityLetter.find({ authorId: user._id })
-    .select('recipient title body authorName isAnonymous votes envelopeColor sealColor stampId createdAt')
+    .select('recipient title body authorName isAnonymous votes voterIds envelopeColor sealColor stampId createdAt')
     .sort({ createdAt: -1 })
     .lean()
 
-  res.json({ letters: letters.map(publicLetter) })
+  res.json({ letters: letters.map((letter) => publicLetter(letter, user._id)) })
 })
 
 router.post('/', publishLimit, async (req, res) => {
@@ -103,6 +106,45 @@ router.post('/', publishLimit, async (req, res) => {
   })
 
   res.status(201).json({ letter: publicLetter(letter) })
+})
+
+router.post('/:id/vote', voteLimit, async (req, res) => {
+  const user = await getAuthenticatedUser(req)
+  if (!user) {
+    res.status(401).json({ error: 'Bạn cần đăng nhập để thả tim lá thư.' })
+    return
+  }
+
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    res.status(404).json({ error: 'Không tìm thấy lá thư.' })
+    return
+  }
+
+  const voterId = user._id
+  const currentVoters = { $ifNull: ['$voterIds', []] }
+  const nextVoters = {
+    $cond: [
+      { $in: [voterId, currentVoters] },
+      { $setDifference: [currentVoters, [voterId]] },
+      { $setUnion: [currentVoters, [voterId]] },
+    ],
+  }
+  const letter = await CommunityLetter.findOneAndUpdate(
+    { _id: req.params.id },
+    [
+      { $set: { voterIds: nextVoters } },
+      { $set: { votes: { $size: '$voterIds' } } },
+    ],
+    { returnDocument: 'after' },
+  )
+
+  if (!letter) {
+    res.status(404).json({ error: 'Không tìm thấy lá thư.' })
+    return
+  }
+
+  res.set('Cache-Control', 'private, no-store')
+  res.json({ letter: publicLetter(letter, user._id) })
 })
 
 router.delete('/:id', deleteLimit, async (req, res) => {

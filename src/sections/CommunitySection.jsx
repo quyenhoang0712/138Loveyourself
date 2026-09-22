@@ -8,16 +8,16 @@ import { assetUrl } from '../utils/assets'
 const closedLetterImage = assetUrl('letter-closed.png')
 const openLetterImage = assetUrl('letter-open.png')
 const envelopeColorOptions = [
-  { id: 'blue', label: 'Xanh', swatch: '#4b91cf', filter: 'none' },
-  { id: 'pink', label: 'Hồng', swatch: '#d77f9c', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
-  { id: 'green', label: 'Xanh lá', swatch: '#6ca58b', filter: 'hue-rotate(286deg) saturate(0.62) brightness(0.98)' },
-  { id: 'violet', label: 'Tím', swatch: '#8c83c7', filter: 'hue-rotate(52deg) saturate(0.72) brightness(1.02)' },
+  { id: 'blue', label: 'Xanh', swatch: '#4687c8', filter: 'none' },
+  { id: 'pink', label: 'Hồng', swatch: '#ebaab4', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
+  { id: 'green', label: 'Nâu', swatch: '#71624a', filter: 'sepia(.72) saturate(.65) brightness(.72)' },
+  { id: 'violet', label: 'Vàng', swatch: '#f8db8e', filter: 'sepia(.9) saturate(1.2) brightness(1.15)' },
 ]
 const envelopeCardColors = {
-  blue: '#8ec3ee',
-  pink: '#ef9fb5',
-  green: '#86c8a8',
-  violet: '#b59ae0',
+  blue: '#4687c8',
+  pink: '#ebaab4',
+  green: '#71624a',
+  violet: '#f8db8e',
 }
 const sealColorOptions = [
   { id: 'cream', label: 'Kem', color: '#fff1bf' },
@@ -133,6 +133,7 @@ export function CommunitySection() {
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false)
   const [isSubmittingLetter, setIsSubmittingLetter] = useState(false)
   const [isSendingLetter, setIsSendingLetter] = useState(false)
+  const [isVotingLetter, setIsVotingLetter] = useState(false)
   const [sendingLetter, setSendingLetter] = useState(null)
   const [isSentLetterOpen, setIsSentLetterOpen] = useState(false)
   const [flyingLetter, setFlyingLetter] = useState(null)
@@ -214,7 +215,7 @@ export function CommunitySection() {
       setIsLoadingCommunityLetters(true)
 
       try {
-        const response = await fetch('/api/community-letters', { signal: controller.signal })
+        const response = await fetch('/api/community-letters', { credentials: 'include', signal: controller.signal })
         const data = await readApiResponse(response)
         if (!response.ok) throw new Error(data.error)
         if (!ignore) setCommunityLetters(Array.isArray(data.letters) ? data.letters : [])
@@ -516,22 +517,36 @@ export function CommunitySection() {
     trackAnalyticsEvent('community_letter_read', 'community', { stackId: 'community-popup' })
   }
 
-  const handleVoteLetter = () => {
-    if (!sendingLetter) return
-
-    const hasVoted = Boolean(sendingLetter.hasVoted)
-    const nextLetter = {
-      ...sendingLetter,
-      hasVoted: !hasVoted,
-      votes: Math.max(0, Number(sendingLetter.votes || 0) + (hasVoted ? -1 : 1)),
+  const handleVoteLetter = async () => {
+    if (!sendingLetter || isVotingLetter) return
+    if (!user) {
+      setMessage('Bạn cần đăng nhập để thả tim lá thư nha.')
+      return
     }
-    setSendingLetter(nextLetter)
-    setLetters((currentLetters) => currentLetters.map((letter) => (
-      letter.id === nextLetter.id ? nextLetter : letter
-    )))
-    setCommunityLetters((currentLetters) => currentLetters.map((letter) => (
-      letter.id === nextLetter.id ? nextLetter : letter
-    )))
+
+    setIsVotingLetter(true)
+    setMessage('')
+    try {
+      const response = await fetch(`/api/community-letters/${sendingLetter.id}/vote`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const data = await readApiResponse(response)
+      if (!response.ok) throw new Error(data.error || 'Chưa thả tim được lá thư.')
+
+      const nextLetter = { ...sendingLetter, ...data.letter }
+      setSendingLetter(nextLetter)
+      setLetters((currentLetters) => currentLetters.map((letter) => (
+        letter.id === nextLetter.id ? { ...letter, ...nextLetter } : letter
+      )))
+      setCommunityLetters((currentLetters) => currentLetters.map((letter) => (
+        letter.id === nextLetter.id ? { ...letter, ...nextLetter } : letter
+      )))
+    } catch (error) {
+      setMessage(error.message || 'Chưa thả tim được lá thư.')
+    } finally {
+      setIsVotingLetter(false)
+    }
   }
 
   const handleWriteNewLetter = useCallback(() => {
@@ -933,6 +948,7 @@ export function CommunitySection() {
                           className={`community-letter-reader-like ${sendingLetter.hasVoted ? 'is-voted' : ''}`}
                           type="button"
                           aria-pressed={Boolean(sendingLetter.hasVoted)}
+                          disabled={isVotingLetter}
                           onClick={handleVoteLetter}
                         >
                           <span className="community-letter-reader-heart" aria-hidden="true">{sendingLetter.hasVoted ? '♥' : '♡'}</span>
@@ -950,6 +966,7 @@ export function CommunitySection() {
                     key={sendingLetter.id}
                     style={{
                       '--community-envelope-filter': getEnvelopeFilter(sendingLetter.envelopeColor),
+                      '--community-envelope-color': getEnvelopeCardColor(sendingLetter.envelopeColor),
                       '--community-seal-color': sealColorOptions.find((option) => option.id === sendingLetter.sealColor)?.color || '#fff1bf',
                     }}
                   >

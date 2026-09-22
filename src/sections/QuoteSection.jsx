@@ -80,8 +80,11 @@ export function QuoteSection({
               className={`letter-card letter-color-${getLetterColorIndex(letter)} ${openedLetterId === letter.id ? 'is-open' : ''}`}
               type="button"
               key={letter.id}
-              onClick={() => onOpenLetter(letter)}
+              onClick={() => {
+                if (!openedLetterId) onOpenLetter(letter)
+              }}
               aria-pressed={openedLetterId === letter.id}
+              aria-disabled={openedLetterId === letter.id}
             >
               <span className="letter-paper">
                 <img className="letter-paper-art" src={assetUrl('thong-diep/lathu.svg')} alt="" aria-hidden="true" />

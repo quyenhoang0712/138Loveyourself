@@ -27,6 +27,98 @@ const visualDefaults = {
   mobile: { heading: { x: 0, y: 0 }, subtitle: { x: 0, y: 0 }, letters: { x: 0, y: 0, scale: 1 }, decoration: { x: 0, y: 0 }, mascot: { x: 0, y: 0, width: 0 } },
 }
 
+const siteVisualPages = new Set([
+  'home', 'community', 'card-room', 'focus-room', 'healing-room',
+  'sound-room', 'play-room', 'profile', 'analytics',
+])
+const siteVisualBreakpoints = ['desktop', 'tablet', 'mobile']
+const siteVisualStyleDefaults = {
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  scale: 1,
+  rotate: 0,
+  opacity: 1,
+  fontSize: 0,
+  padding: 0,
+  borderRadius: 0,
+  color: '',
+  backgroundColor: '',
+}
+const siteVisualDefaults = { version: 1, pages: {} }
+
+function mergeSiteVisualConfig(config = {}) {
+  const pages = {}
+  for (const page of siteVisualPages) {
+    const source = config?.pages?.[page]
+    if (!source) continue
+    pages[page] = Object.fromEntries(siteVisualBreakpoints.map((breakpoint) => [
+      breakpoint,
+      Array.isArray(source[breakpoint]) ? source[breakpoint] : [],
+    ]))
+  }
+  return { version: 1, pages }
+}
+
+function sanitizeColor(value) {
+  const color = String(value || '').trim().slice(0, 64)
+  if (!color) return ''
+  if (/^#[0-9a-f]{3,8}$/i.test(color)) return color
+  if (/^(?:rgb|rgba|hsl|hsla)\([0-9.,%\s-]+\)$/i.test(color)) return color
+  if (/^[a-z]{3,24}$/i.test(color)) return color
+  return ''
+}
+
+function sanitizeSiteVisualConfig(input) {
+  const source = mergeSiteVisualConfig(input)
+  const pages = {}
+
+  for (const page of siteVisualPages) {
+    const pageSource = source.pages[page]
+    if (!pageSource) continue
+    const breakpoints = {}
+
+    for (const breakpoint of siteVisualBreakpoints) {
+      const seen = new Set()
+      const elements = []
+      for (const item of pageSource[breakpoint].slice(0, 250)) {
+        const selector = String(item?.selector || '').trim().slice(0, 500)
+        if (!selector || seen.has(selector) || /[{};]/.test(selector)) continue
+        seen.add(selector)
+
+        const rawStyles = item?.styles || {}
+        const styles = { ...siteVisualStyleDefaults }
+        for (const key of ['x', 'y']) styles[key] = Math.min(2000, Math.max(-2000, Math.round(Number(rawStyles[key]) || 0)))
+        for (const key of ['width', 'height']) styles[key] = Math.min(4000, Math.max(0, Math.round(Number(rawStyles[key]) || 0)))
+        styles.scale = Math.min(3, Math.max(.1, Number(rawStyles.scale) || 1))
+        styles.rotate = Math.min(180, Math.max(-180, Number(rawStyles.rotate) || 0))
+        styles.opacity = Math.min(1, Math.max(0, Number.isFinite(Number(rawStyles.opacity)) ? Number(rawStyles.opacity) : 1))
+        for (const key of ['fontSize', 'padding', 'borderRadius']) styles[key] = Math.min(500, Math.max(0, Math.round(Number(rawStyles[key]) || 0)))
+        styles.color = sanitizeColor(rawStyles.color)
+        styles.backgroundColor = sanitizeColor(rawStyles.backgroundColor)
+
+        const textMode = ['element', 'direct'].includes(item?.textMode) ? item.textMode : ''
+        const text = typeof item?.text === 'string' ? item.text.slice(0, 1200) : null
+        elements.push({
+          selector,
+          label: String(item?.label || selector).trim().slice(0, 160),
+          styles,
+          ...(textMode && text !== null ? {
+            text,
+            textMode,
+            textNodeIndex: Math.min(30, Math.max(0, Math.round(Number(item?.textNodeIndex) || 0))),
+          } : {}),
+        })
+      }
+      breakpoints[breakpoint] = elements
+    }
+    pages[page] = breakpoints
+  }
+
+  return { version: 1, pages }
+}
+
 function mergeVisualConfig(config = {}) {
   return {
     content: { ...visualDefaults.content, ...(config.content || {}) },
@@ -63,6 +155,12 @@ router.get('/visual/card-room/published', async (req, res) => {
   res.json({ config: mergeVisualConfig(config?.published), updatedAt: config?.updatedAt || null })
 })
 
+router.get('/visual/site/published', async (req, res) => {
+  const config = await VisualConfig.findOne({ page: 'site' }).select('published updatedAt').lean()
+  res.set('Cache-Control', 'public, s-maxage=20, stale-while-revalidate=60')
+  res.json({ config: mergeSiteVisualConfig(config?.published), updatedAt: config?.updatedAt || null })
+})
+
 async function requireDeveloper(req, res, next) {
   const user = await getAuthenticatedUser(req)
   if (!user) return res.status(401).json({ error: 'Bạn cần đăng nhập.' })
@@ -97,6 +195,51 @@ router.get('/visual/card-room', async (req, res) => {
       publishedAt: revision.publishedAt, publishedBy: revision.publishedBy,
     })),
   })
+})
+
+router.get('/visual/site', async (req, res) => {
+  const config = await VisualConfig.findOne({ page: 'site' }).lean()
+  res.set('Cache-Control', 'no-store')
+  res.json({
+    draft: mergeSiteVisualConfig(config?.draft || config?.published || siteVisualDefaults),
+    published: mergeSiteVisualConfig(config?.published || siteVisualDefaults),
+    revisions: (config?.revisions || []).slice(-10).reverse().map((revision) => ({
+      publishedAt: revision.publishedAt,
+      publishedBy: revision.publishedBy,
+    })),
+  })
+})
+
+router.put('/visual/site/draft', visualWriteLimit, async (req, res) => {
+  const draft = sanitizeSiteVisualConfig(req.body?.config)
+  await VisualConfig.findOneAndUpdate(
+    { page: 'site' },
+    { $set: { draft, updatedBy: req.user._id } },
+    { upsert: true, returnDocument: 'after', runValidators: true },
+  )
+  res.json({ draft })
+})
+
+router.post('/visual/site/publish', visualWriteLimit, async (req, res) => {
+  const existing = await VisualConfig.findOne({ page: 'site' }).lean()
+  const published = sanitizeSiteVisualConfig(existing?.draft || existing?.published || siteVisualDefaults)
+  const revisions = [...(existing?.revisions || []), { config: published, publishedBy: req.user._id, publishedAt: new Date() }].slice(-20)
+  await VisualConfig.findOneAndUpdate(
+    { page: 'site' },
+    { $set: { draft: published, published, revisions, updatedBy: req.user._id } },
+    { upsert: true, returnDocument: 'after', runValidators: true },
+  )
+  res.json({ published })
+})
+
+router.post('/visual/site/reset', visualWriteLimit, async (req, res) => {
+  const existing = await VisualConfig.findOne({ page: 'site' }).select('published').lean()
+  const draft = mergeSiteVisualConfig(existing?.published || siteVisualDefaults)
+  await VisualConfig.findOneAndUpdate(
+    { page: 'site' }, { $set: { draft, updatedBy: req.user._id } },
+    { upsert: true, returnDocument: 'after', runValidators: true },
+  )
+  res.json({ draft })
 })
 
 router.put('/visual/card-room/draft', visualWriteLimit, async (req, res) => {

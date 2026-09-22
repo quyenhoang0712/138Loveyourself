@@ -93,8 +93,8 @@ function getHelmetOptions() {
         connectSrc: ["'self'"],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
         formAction: ["'self'"],
-        frameAncestors: ["'none'"],
-        frameSrc: ['https://open.spotify.com'],
+        frameAncestors: ["'self'"],
+        frameSrc: ["'self'", 'https://open.spotify.com'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
         mediaSrc: ["'self'", 'blob:', 'https://cdn.hstatic.net', 'https://dccpjtvtpue8ic8d.public.blob.vercel-storage.com'],
         objectSrc: ["'none'"],
@@ -107,7 +107,7 @@ function getHelmetOptions() {
     hsts: isProduction
       ? { maxAge: 31536000, includeSubDomains: true, preload: true }
       : false,
-    frameguard: { action: 'deny' },
+    frameguard: { action: 'sameorigin' },
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   }
 }

@@ -4,6 +4,7 @@ import { AdminPage } from './components/AdminPage'
 import { DeveloperPage } from './components/DeveloperPage'
 import { NotFoundPage } from './components/NotFoundPage'
 import { WriteLetterPage } from './components/WriteLetterPage'
+import { SiteVisualRuntime } from './components/SiteVisualRuntime'
 import { useAppState } from './hooks/useAppState'
 import './App.css'
 import './styles/rooms/FocusRoom.css'
@@ -21,12 +22,14 @@ function HomePage() {
 }
 
 function App() {
-  if (window.location.pathname === '/auth') return <AuthPage />
-  if (window.location.pathname === '/admin') return <AdminPage />
-  if (window.location.pathname === '/developer') return <DeveloperPage />
-  if (window.location.pathname === '/write-letter') return <WriteLetterPage />
-  if (window.location.pathname === '/') return <HomePage />
-  return <NotFoundPage />
+  let page
+  if (window.location.pathname === '/auth') page = <AuthPage />
+  else if (window.location.pathname === '/admin') page = <AdminPage />
+  else if (window.location.pathname === '/developer') page = <DeveloperPage />
+  else if (window.location.pathname === '/write-letter') page = <WriteLetterPage />
+  else if (window.location.pathname === '/') page = <HomePage />
+  else page = <NotFoundPage />
+  return <><SiteVisualRuntime />{page}</>
 }
 
 export default App

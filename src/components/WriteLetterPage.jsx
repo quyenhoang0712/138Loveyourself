@@ -10,9 +10,9 @@ const stampOptions = [
 const openEnvelopeUrl = assetUrl('letter-open.png')
 const closedEnvelopeUrl = assetUrl('letter-closed.png')
 const envelopeOptions = [
-  { id: 'blue', label: 'Xanh', color: '#4b91cf', filter: 'none' },
-  { id: 'pink', label: 'Hồng', color: '#d77f9c', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
-  { id: 'green', label: 'Nâu', color: '#796b50', filter: 'sepia(.72) saturate(.65) brightness(.72)' },
+  { id: 'blue', label: 'Xanh', color: '#4687c8', filter: 'none' },
+  { id: 'pink', label: 'Hồng', color: '#ebaab4', filter: 'hue-rotate(122deg) saturate(0.72) brightness(1.08)' },
+  { id: 'green', label: 'Nâu', color: '#71624a', filter: 'sepia(.72) saturate(.65) brightness(.72)' },
   { id: 'violet', label: 'Vàng', color: '#f8db8e', filter: 'sepia(.9) saturate(1.2) brightness(1.15)' },
 ]
 const sealOptions = [
@@ -183,6 +183,7 @@ export function WriteLetterPage() {
                 className={`community-letter-send-card ${!isPackaging ? 'is-closed-letter' : ''}`}
                 style={{
                   '--community-envelope-filter': envelopeOptions.find((option) => option.id === envelopeColor)?.filter || 'none',
+                  '--community-envelope-color': envelopeOptions.find((option) => option.id === envelopeColor)?.color || '#4687c8',
                   '--community-seal-color': sealOptions.find((option) => option.id === sealColor)?.color || '#f8db8e',
                 }}
               >

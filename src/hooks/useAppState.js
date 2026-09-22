@@ -470,6 +470,7 @@ export function useAppState() {
   }, [])
 
   const handleOpenLetter = (letter) => {
+    if (openedLetterId || quote) return
     setOpenedLetterId(letter.id)
     setQuote(contentMessagesLoaded ? getRandomQuote(activeQuotes) : randomQuote)
     trackAnalyticsEvent('letter_open', 'card-room', { letterId: letter.id })
